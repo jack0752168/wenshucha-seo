@@ -1,0 +1,72 @@
+# wenshucha-seo 站点 + URL 配置
+# 这里集中维护"哪些站、哪些 URL 要被搜索引擎收录"
+
+global:
+  # IndexNow key(8-128 chars,只能 a-z A-Z 0-9 -)
+  # 同一个 key 在所有 host 根目录的 {key}.txt 中,内容就是 key 本身
+  indexnow_key: "a8f3b9c2d1e5f7a8b9c0d1e2f3a4b5c6"
+  ssl_warn_days: 30          # SSL < 30 天告警
+  ssl_critical_days: 14      # SSL < 14 天紧急告警
+
+sites:
+
+  - name: wenshucha-main
+    host: wenshucha.com
+    sitemap: https://wenshucha.com/sitemap.xml
+    urls_to_push:
+      - https://wenshucha.com/
+      - https://wenshucha.com/#workbench
+      - https://wenshucha.com/#api-pricing
+      - https://wenshucha.com/#api
+      - https://wenshucha.com/#solution
+      - https://wenshucha.com/#types
+      - https://wenshucha.com/#faq
+      - https://wenshucha.com/#about
+    check_ssl: true
+
+  - name: sinoverdict-en
+    host: sinoverdict.wenshucha.com
+    sitemap: https://sinoverdict.wenshucha.com/sitemap.xml
+    urls_to_push:
+      - https://sinoverdict.wenshucha.com/
+      - https://sinoverdict.wenshucha.com/#how
+      - https://sinoverdict.wenshucha.com/#access
+      - https://sinoverdict.wenshucha.com/#faq
+    check_ssl: true
+
+  - name: mcp-zh-dev
+    host: mcp.wenshucha.com
+    sitemap: https://mcp.wenshucha.com/sitemap.xml
+    urls_to_push:
+      - https://mcp.wenshucha.com/
+    check_ssl: true
+
+# 关键词地图(给 check_indexed 和 weekly report 用)
+keywords:
+  cn:
+    high_intent:        # 高商业意图,目标排进 top 10
+      - "裁判文书API"
+      - "裁判文书数据"
+      - "全国裁判文书数据库"
+      - "类案检索API"
+      - "律师工作台"
+      - "案件胜算"
+      - "MCP裁判文书"
+    long_tail:          # 长尾,目标排进 top 20
+      - "1.5亿裁判文书"
+      - "裁判文书批量下载"
+      - "法律大数据API"
+      - "司法大数据"
+      - "Claude MCP 法律"
+      - "法律AI数据源"
+  en:
+    high_intent:
+      - "Chinese case law API"
+      - "Chinese court judgments database"
+      - "MCP server legal"
+      - "China legal AI"
+    long_tail:
+      - "Chinese case law for legal AI"
+      - "MCP Chinese law"
+      - "China litigation database for law firms"
+      - "Claude MCP China law"

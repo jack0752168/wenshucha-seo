@@ -1,0 +1,11 @@
+# wenshucha-seo Lighthouse cron 部署示例
+# 加到 root 的 crontab:crontab -e
+
+# 每 15 分钟自动从 GitHub 拉同步(取代手动维护)
+*/15 * * * * cd /opt/wenshucha-seo && git pull origin main --quiet 2>&1 | tail -3
+
+# 每天 09:00 跑 daily(IndexNow 推送 + SSL 监控)
+0 9 * * * cd /opt/wenshucha-seo && bash scripts/daily_run.sh >> logs/daily.log 2>&1
+
+# 每周一 10:00 跑 weekly(收录量 + 周报推送微信)
+0 10 * * 1 cd /opt/wenshucha-seo && bash scripts/weekly_run.sh >> logs/weekly.log 2>&1
