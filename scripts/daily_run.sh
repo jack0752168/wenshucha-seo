@@ -1,5 +1,6 @@
 #!/bin/bash
 # 每日 09:00 SEO 自动化编排
+# 0) self-update(tarball 拉最新 wenshucha-seo,避免 git clone 在境内不稳)
 # 1) IndexNow 主动推 URL 给 Bing / Yandex
 # 2) 百度推送(如果 Jack 已配 token)
 # 3) Google Indexing API(如果 Jack 已配 service account)
@@ -14,6 +15,21 @@ TS=$(date '+%Y-%m-%d %H:%M:%S')
 echo "============================================================"
 echo "[$TS] wenshucha-seo daily run"
 echo "============================================================"
+
+echo
+echo "--- [0/4] self-update from GitHub tarball ---"
+if [ -d "$ROOT" ] && [ -w "$ROOT" ]; then
+    cd /tmp && rm -rf wenshucha-seo-main seo.tar.gz
+    if curl -sSLo seo.tar.gz https://codeload.github.com/jack0752168/wenshucha-seo/tar.gz/main; then
+        tar xzf seo.tar.gz
+        # 保留 logs/ 和 secrets/(.gitignore 内,不被 tar 覆盖)
+        cp -rf wenshucha-seo-main/. "$ROOT/" 2>/dev/null && echo "  ✓ updated"
+        rm -rf wenshucha-seo-main seo.tar.gz
+    else
+        echo "  ⚠️  tarball 拉取失败,跳过更新继续跑"
+    fi
+    cd "$ROOT"
+fi
 
 echo
 echo "--- [1/4] IndexNow → Bing/Yandex ---"
