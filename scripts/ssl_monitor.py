@@ -25,7 +25,6 @@ CRITICAL = CONFIG["global"].get("ssl_critical_days", 14)
 
 NOTIFY_WECHAT = Path.home() / ".claude/bin/notify-wechat.py"
 NOTIFY_IMESSAGE = Path.home() / ".claude/bin/notify-imessage.sh"
-NOTIFY_FEISHU = Path(__file__).resolve().parent / "notify_feishu.py"
 
 
 def get_ssl_days_left(hostname: str, port: int = 443, timeout: int = 10):
@@ -44,36 +43,21 @@ def get_ssl_days_left(hostname: str, port: int = 443, timeout: int = 10):
 
 
 def notify(msg: str, title: str = "wenshucha SEO · SSL 到期告警"):
-    """三通道告警:飞书(主)+ iMessage(备 1)+ 微信(备 2)
-    任一通道成功就算成功;全部失败才 return False
+    """跟 wenshucha-monitor 同款双通道:iMessage(主)+ 微信(备)
+    任一通道成功即可
     """
     sent = False
 
-    # 1) 飞书(主通道,国内直连)
-    if NOTIFY_FEISHU.exists():
-        try:
-            r = subprocess.run(
-                ["python3", str(NOTIFY_FEISHU), title],
-                input=msg,
-                timeout=20,
-                capture_output=True,
-                text=True,
-            )
-            if r.returncode == 0:
-                sent = True
-        except Exception as e:
-            print(f"飞书推送异常: {e}")
-
-    # 2) iMessage(备 1)
+    # 1) iMessage(主通道,osascript → Messages.app)
     if NOTIFY_IMESSAGE.exists() and os.access(NOTIFY_IMESSAGE, os.X_OK):
         try:
             r = subprocess.run([str(NOTIFY_IMESSAGE), msg], timeout=20, capture_output=True, text=True)
             if r.returncode == 0:
                 sent = True
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"iMessage 推送异常: {e}")
 
-    # 3) 微信(备 2,Hermes 可能限流但聊胜于无)
+    # 2) 微信(备通道,Hermes 可能限流但聊胜于无)
     if NOTIFY_WECHAT.exists() and os.access(NOTIFY_WECHAT, os.X_OK):
         try:
             r = subprocess.run([str(NOTIFY_WECHAT), msg], timeout=20, capture_output=True, text=True)

@@ -70,14 +70,15 @@ cp /tmp/seo_daily_narrative.md "$DAILY_DIR/$TODAY.md"
 cp /tmp/seo_daily_narrative.md "$DAILY_DIR/latest.md"
 echo "  ✓ 日报已写到 $DAILY_DIR/$TODAY.md"
 
-# 推飞书(主通道,国内直连)
-if [ -f secrets/feishu_webhook ]; then
-    python3 scripts/notify_feishu.py "🌱 SEO 日报 $(date '+%-m月%-d日')" "$DAILY_DIR/$TODAY.md" || true
+# 推 iMessage(跟 wenshucha-monitor 同款通道)+ 微信备份
+TITLE="🌱 SEO 日报 $(date '+%-m月%-d日')"
+
+if [ -x ~/.claude/bin/notify-imessage.sh ]; then
+    ~/.claude/bin/notify-imessage.sh "$(cat $DAILY_DIR/$TODAY.md)" 2>/dev/null || true
 fi
 
-# 微信备份(如果可用)
 if [ -x ~/.claude/bin/notify-wechat.py ]; then
-    head -25 "$DAILY_DIR/$TODAY.md" | ~/.claude/bin/notify-wechat.py "SEO 日报 $(date '+%-m月%-d日')" 2>/dev/null || true
+    head -25 "$DAILY_DIR/$TODAY.md" | ~/.claude/bin/notify-wechat.py "$TITLE" 2>/dev/null || true
 fi
 
 # 清理临时文件
