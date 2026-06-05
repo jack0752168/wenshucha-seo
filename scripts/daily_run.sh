@@ -70,15 +70,19 @@ cp /tmp/seo_daily_narrative.md "$DAILY_DIR/$TODAY.md"
 cp /tmp/seo_daily_narrative.md "$DAILY_DIR/latest.md"
 echo "  ✓ 日报已写到 $DAILY_DIR/$TODAY.md"
 
-# 推 iMessage(跟 wenshucha-monitor 同款通道)+ 微信备份
-TITLE="🌱 SEO 日报 $(date '+%-m月%-d日')"
-
-if [ -x ~/.claude/bin/notify-imessage.sh ]; then
-    ~/.claude/bin/notify-imessage.sh "$(cat $DAILY_DIR/$TODAY.md)" 2>/dev/null || true
+# 同时拷到 nginx 对外隐藏目录(给 Mac 本机 cron 拉 → 推 iMessage)
+# Lighthouse 直接推 iMessage 不可行(macOS 专属),只能用 Mac 中转
+RELAY_DIR=/www/wwwroot/wenshucha.com/_relay_r9k3m2v8x1q5w7n4
+if mkdir -p "$RELAY_DIR" 2>/dev/null; then
+    cp /tmp/seo_daily_narrative.md "$RELAY_DIR/daily.md" 2>/dev/null || true
+    echo "  ✓ 日报已拷到 nginx relay 目录(Mac 中转用)"
 fi
 
+# Lighthouse 上推 iMessage 不可行(/root/.claude/bin/ 不存在,osascript 是 macOS 专属)
+# iMessage 推送由 Mac 本机 cron 从 RELAY_DIR 拉(见上面 cp)
+# 仅尝试微信备份(如果 hermes 通道恰好可用)
 if [ -x ~/.claude/bin/notify-wechat.py ]; then
-    head -25 "$DAILY_DIR/$TODAY.md" | ~/.claude/bin/notify-wechat.py "$TITLE" 2>/dev/null || true
+    head -25 "$DAILY_DIR/$TODAY.md" | ~/.claude/bin/notify-wechat.py "🌱 SEO 日报 $(date '+%-m月%-d日')" 2>/dev/null || true
 fi
 
 # 清理临时文件

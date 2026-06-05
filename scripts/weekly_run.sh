@@ -36,17 +36,17 @@ echo "--- [2/3] 生成周报 markdown ---"
 echo "[$(date '+%F %T')] report saved to $REPORT"
 
 echo
-echo "--- [3/3] 推送周报(iMessage 主 · 微信备份)---"
-TITLE="📊 SEO 周报 $WEEKID"
-
-# 1) iMessage(主通道,跟 wenshucha-monitor 同款)
-if [ -x ~/.claude/bin/notify-imessage.sh ]; then
-    ~/.claude/bin/notify-imessage.sh "$(cat $REPORT)" 2>/dev/null || true
+echo "--- [3/3] 写周报到 nginx 中转目录 + 微信备份 ---"
+# 拷到 nginx 隐藏目录(给 Mac 本机 cron 拉 → 推 iMessage,周一 10:15)
+RELAY_DIR=/www/wwwroot/wenshucha.com/_relay_r9k3m2v8x1q5w7n4
+if mkdir -p "$RELAY_DIR" 2>/dev/null; then
+    cp "$REPORT" "$RELAY_DIR/weekly.md" 2>/dev/null || true
+    echo "  ✓ 周报已拷到 nginx relay 目录(Mac 中转用)"
 fi
 
-# 2) 微信(备份通道)
+# 微信备份(如果 hermes 通道恰好可用)
 if [ -x ~/.claude/bin/notify-wechat.py ]; then
-    head -30 "$REPORT" | ~/.claude/bin/notify-wechat.py "$TITLE" 2>/dev/null || true
+    head -30 "$REPORT" | ~/.claude/bin/notify-wechat.py "📊 SEO 周报 $WEEKID" 2>/dev/null || true
 fi
 
 echo
