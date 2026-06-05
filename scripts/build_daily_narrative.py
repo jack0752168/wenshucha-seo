@@ -133,6 +133,14 @@ def build(data: dict) -> str:
     L.append(f"*本周累计推送:* {week_pushes} URLs")
     L.append("")
 
+    # 插入 daily_optimizer 输出(如果存在)
+    opt_file = Path("/tmp/seo_daily_optimizer.md")
+    if opt_file.exists():
+        L.append("─" * 30)
+        L.append(opt_file.read_text())
+        L.append("─" * 30)
+        L.append("")
+
     # 进展评估(诚实)
     L.append("*有没有真进展?*")
     L.append("当前能看的指标 = 体系健康度 ✅ + 推送量 ✅(领先指标,证明 daemon 在跑)")

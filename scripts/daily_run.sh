@@ -48,11 +48,16 @@ else
 fi
 
 echo
-echo "--- [4/5] SSL 到期监控 ---"
+echo "--- [4/6] SSL 到期监控 ---"
 python3 scripts/ssl_monitor.py 2>&1 | tee /tmp/seo_daily_ssl.out
 
 echo
-echo "--- [5/5] 生成人话日报 + 推 Telegram ---"
+echo "--- [5/6] 主动优化动作(刷新 sitemap / 健康检查 / 统计页数变化)---"
+python3 scripts/daily_optimizer.py > /tmp/seo_daily_optimizer.md 2>&1
+tail -10 /tmp/seo_daily_optimizer.md
+
+echo
+echo "--- [6/6] 生成人话日报 ---"
 # 把这次跑的所有 raw 输出拼起来,喂给 narrative builder
 {
   echo "=== INDEXNOW ==="
