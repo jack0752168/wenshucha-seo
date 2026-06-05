@@ -36,13 +36,15 @@ echo "--- [2/3] 生成周报 markdown ---"
 echo "[$(date '+%F %T')] report saved to $REPORT"
 
 echo
-echo "--- [3/3] 推送周报(飞书 + 微信备份)---"
-# 1) 飞书(主通道,卡片消息,colorful)
-python3 scripts/notify_feishu.py "📊 wenshucha SEO 周报 $WEEKID" "$REPORT" || true
+echo "--- [3/3] 推送周报(Telegram 主 · 微信备份)---"
+# 1) Telegram(主通道,直接私聊给 Jack)
+if [ -f secrets/telegram_bot_token ] && [ -f secrets/telegram_chat_id ]; then
+    python3 scripts/notify_telegram.py "📊 SEO 周报 $WEEKID" "$REPORT" || true
+fi
 
 # 2) 微信(备份通道,Hermes notify-wechat)
 if [ -x ~/.claude/bin/notify-wechat.py ]; then
-    head -30 "$REPORT" | ~/.claude/bin/notify-wechat.py "【wenshucha SEO 周报 $WEEKID】" || true
+    head -30 "$REPORT" | ~/.claude/bin/notify-wechat.py "SEO 周报 $WEEKID" 2>/dev/null || true
 fi
 
 echo
