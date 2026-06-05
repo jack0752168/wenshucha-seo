@@ -74,11 +74,14 @@ def push_baidu(urls: list):
 
 def main():
     urls = []
+    # 百度推送只覆盖主站 wenshucha.com(以及它的 www 别名)
+    # 其他子域(sinoverdict / mcp / peilema)不在该 site 下,跳过
+    matched_hosts = ("wenshucha.com", "www.wenshucha.com")
     for site in CONFIG["sites"]:
-        if site["host"] == DOMAIN:
+        if site["host"] in matched_hosts:
             urls.extend(site["urls_to_push"])
     if not urls:
-        print("没有可推送的 URL")
+        print("config.yml 没有 wenshucha.com 主站的 URL")
         return 0
     return push_baidu(urls)
 
