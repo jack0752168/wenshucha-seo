@@ -41,32 +41,79 @@ sites:
       - https://mcp.wenshucha.com/
     check_ssl: true
 
-# 关键词地图(给 check_indexed 和 weekly report 用)
+  # ========== peilema · To C 劳动仲裁计算 9.9 元报告 ==========
+  - name: peilema-c
+    host: peilema.wenshucha.com
+    sitemap: https://peilema.wenshucha.com/sitemap.xml
+    urls_to_push:
+      - https://peilema.wenshucha.com/
+      - https://peilema.wenshucha.com/calc
+      - https://peilema.wenshucha.com/sample
+      - https://peilema.wenshucha.com/service
+      - https://peilema.wenshucha.com/xhs
+    check_ssl: true
+
+# 关键词地图(给 check_indexed / weekly report / 内容生产用)
+# 三个站三套目标,见 memory/project_three_sites_target_customer.md
 keywords:
-  cn:
-    high_intent:        # 高商业意图,目标排进 top 10
-      - "裁判文书API"
-      - "裁判文书数据"
-      - "全国裁判文书数据库"
-      - "类案检索API"
-      - "律师工作台"
-      - "案件胜算"
-      - "MCP裁判文书"
-    long_tail:          # 长尾,目标排进 top 20
-      - "1.5亿裁判文书"
-      - "裁判文书批量下载"
-      - "法律大数据API"
-      - "司法大数据"
-      - "Claude MCP 法律"
-      - "法律AI数据源"
-  en:
+
+  # --- wenshucha.com (To B · 大律所 + 地方政府,卖私有化离线 AI) ---
+  wenshucha_tob:
     high_intent:
-      - "Chinese case law API"
-      - "Chinese court judgments database"
-      - "MCP server legal"
-      - "China legal AI"
+      - "律所私有 AI 部署"
+      - "司法大数据本地化"
+      - "法律 AI 私有化"
+      - "政府司法 AI 解决方案"
+      - "裁判文书数据私有部署"
+      - "法院信息中心 AI"
+      - "数字法治政府方案"
     long_tail:
-      - "Chinese case law for legal AI"
-      - "MCP Chinese law"
-      - "China litigation database for law firms"
-      - "Claude MCP China law"
+      - "律所本地化大模型"
+      - "法院 AI 智能审判辅助"
+      - "司法机关数据中台"
+      - "法律 LLM 内网部署"
+      - "类案推送系统"
+      - "1.5亿裁判文书私有库"
+
+  # --- sinoverdict (To B 海外 · AI 法律大公司,卖数据 license) ---
+  sinoverdict_enterprise:
+    high_intent:
+      - "Chinese legal data licensing"
+      - "China case law database for AI vendors"
+      - "Chinese court judgments enterprise API"
+      - "Chinese legal corpus for LLM training"
+      - "bulk Chinese case law access"
+    long_tail:
+      - "Chinese legal data for AI vendors"
+      - "license Chinese case law to AI companies"
+      - "enterprise data partner Chinese law"
+      - "PRC court data for AI"
+      - "Chinese case law dataset enterprise"
+
+  # --- peilema (To C · 被裁员劳动者,卖 9.9 元仲裁报告) ---
+  peilema_c:
+    high_intent:           # 高搜索量 + 高商业意图
+      - "N+1 计算器"
+      - "裁员赔偿计算器"
+      - "劳动仲裁赔偿"
+      - "违法解雇赔偿标准"
+      - "2N 赔偿"
+      - "经济补偿金计算"
+      - "辞退赔偿标准"
+    emotional_long_tail:   # 高情绪用户场景词
+      - "被裁员了能拿多少赔偿"
+      - "公司违法解雇怎么算"
+      - "N+1 还是 2N"
+      - "公司不发工资怎么办"
+      - "申请劳动仲裁多久能拿到钱"
+      - "劳动仲裁需要请律师吗"
+      - "裁员赔偿不到位怎么办"
+      - "被辞退没签合同怎么办"
+    persona:               # 用户身份情境词
+      - "互联网裁员赔偿"
+      - "35 岁被优化赔偿"
+      - "孕期被辞退赔偿"
+      - "怀孕期间被裁员"
+      - "试用期被辞退"
+      - "工作 10 年被裁赔偿"
+      - "N+3 是什么意思"
