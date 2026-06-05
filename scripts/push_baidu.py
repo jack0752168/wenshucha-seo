@@ -29,13 +29,33 @@ if not SECRET.exists():
     sys.exit(0)
 
 TOKEN = SECRET.read_text().strip()
-DOMAIN = "wenshucha.com"  # 百度推送只支持主域
+# 百度推送 site 必须跟站长平台验证时填的一致;我们验证的是 www.wenshucha.com
+DOMAIN = "www.wenshucha.com"
+
+
+def normalize_for_baidu(url: str) -> str:
+    """百度 site=www.wenshucha.com 时推送 URL 也要带 www。
+    把 https://wenshucha.com → https://www.wenshucha.com,
+    把 https://mcp.wenshucha.com 这种其他子域过滤掉(它们不在该 site 下)
+    """
+    if url.startswith("https://wenshucha.com"):
+        return url.replace("https://wenshucha.com", "https://www.wenshucha.com", 1)
+    if url.startswith("https://www.wenshucha.com"):
+        return url
+    return None  # 其他子域,百度不会接受
 
 
 def push_baidu(urls: list):
     """https://ziyuan.baidu.com/linksubmit/index"""
     endpoint = f"http://data.zz.baidu.com/urls?site=https://{DOMAIN}&token={TOKEN}"
-    body = "\n".join(urls).encode("utf-8")
+    normalized = [u for u in (normalize_for_baidu(u) for u in urls) if u]
+    if not normalized:
+        print("没有 www.wenshucha.com 的 URL 可推送")
+        return 0
+    print(f"准备推送 {len(normalized)} 个 URL 到百度:")
+    for u in normalized:
+        print(f"  · {u}")
+    body = "\n".join(normalized).encode("utf-8")
     req = urllib.request.Request(
         endpoint,
         data=body,
