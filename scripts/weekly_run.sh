@@ -32,14 +32,17 @@ echo "--- [1/2] 收录量检查 ---"
 python3 scripts/check_indexed.py | tee -a "$REPORT"
 
 echo
-echo "--- [2/2] 生成 + 推送周报 ---"
-if [ -f scripts/generate_weekly_report.py ]; then
-    python3 scripts/generate_weekly_report.py "$REPORT"
-else
-    # fallback: 直接微信推 report 头部
-    if [ -x ~/.claude/bin/notify-wechat.py ]; then
-        head -30 "$REPORT" | ~/.claude/bin/notify-wechat.py "【wenshucha SEO 周报 $WEEKID】"
-    fi
+echo "--- [2/3] 生成周报 markdown ---"
+echo "[$(date '+%F %T')] report saved to $REPORT"
+
+echo
+echo "--- [3/3] 推送周报(飞书 + 微信备份)---"
+# 1) 飞书(主通道,卡片消息,colorful)
+python3 scripts/notify_feishu.py "📊 wenshucha SEO 周报 $WEEKID" "$REPORT" || true
+
+# 2) 微信(备份通道,Hermes notify-wechat)
+if [ -x ~/.claude/bin/notify-wechat.py ]; then
+    head -30 "$REPORT" | ~/.claude/bin/notify-wechat.py "【wenshucha SEO 周报 $WEEKID】" || true
 fi
 
 echo
