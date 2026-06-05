@@ -19,6 +19,11 @@ ROOT = Path(__file__).resolve().parent.parent
 TOKEN_FILE = ROOT / "secrets" / "telegram_bot_token"
 CHAT_FILE = ROOT / "secrets" / "telegram_chat_id"
 
+# Lighthouse 广州机被墙,无法直接连 api.telegram.org
+# 通过 sinoverdict.wenshucha.com/api/tg(Vercel 边缘节点)中转
+RELAY_URL = "https://sinoverdict.wenshucha.com/api/tg"
+RELAY_SECRET = "wenshucha-seo-tg-relay-7a3f9c2d1e5f7a8b"
+
 # Telegram 单条消息最长 4096 字符
 MAX_LEN = 4000
 
@@ -36,14 +41,17 @@ def send(title: str, body: str) -> int:
     if len(text) > MAX_LEN:
         text = text[:MAX_LEN] + "\n\n_…内容过长已截断,完整版见 Lighthouse `/opt/wenshucha-seo/reports/`_"
 
+    # 中转模式:POST 到 sinoverdict.wenshucha.com/api/tg(Vercel),后者再 POST 到 Telegram
+    # 这样 Lighthouse 广州机不需要直连 api.telegram.org(被墙)
     payload = {
+        "secret": RELAY_SECRET,
+        "token": token,
         "chat_id": chat_id,
         "text": text,
         "parse_mode": "Markdown",
-        "disable_web_page_preview": True,
     }
 
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    url = RELAY_URL
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
@@ -62,7 +70,7 @@ def send(title: str, body: str) -> int:
         body_err = e.read().decode("utf-8", errors="replace")[:300]
         print(f"✗ Telegram HTTP {e.code}: {body_err}")
         # Markdown 解析失败时回退成纯文本重试一次
-        if "can't parse" in body_err.lower() or "bad request" in body_err.lower():
+        if "can't parse" in body_err.lower() or "bad request" in body_err.lower() or e.code == 502:
             print("  → 回退纯文本重试")
             payload.pop("parse_mode", None)
             req2 = urllib.request.Request(
