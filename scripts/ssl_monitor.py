@@ -25,7 +25,7 @@ CRITICAL = CONFIG["global"].get("ssl_critical_days", 14)
 
 NOTIFY_WECHAT = Path.home() / ".claude/bin/notify-wechat.py"
 NOTIFY_IMESSAGE = Path.home() / ".claude/bin/notify-imessage.sh"
-NOTIFY_TELEGRAM = Path(__file__).resolve().parent / "notify_telegram.py"
+NOTIFY_FEISHU = Path(__file__).resolve().parent / "notify_feishu.py"
 
 
 def get_ssl_days_left(hostname: str, port: int = 443, timeout: int = 10):
@@ -49,11 +49,11 @@ def notify(msg: str, title: str = "wenshucha SEO · SSL 到期告警"):
     """
     sent = False
 
-    # 1) Telegram(主通道,直接私聊 @Xinpu_bot)
-    if NOTIFY_TELEGRAM.exists():
+    # 1) 飞书(主通道,国内直连)
+    if NOTIFY_FEISHU.exists():
         try:
             r = subprocess.run(
-                ["python3", str(NOTIFY_TELEGRAM), title],
+                ["python3", str(NOTIFY_FEISHU), title],
                 input=msg,
                 timeout=20,
                 capture_output=True,
@@ -62,7 +62,7 @@ def notify(msg: str, title: str = "wenshucha SEO · SSL 到期告警"):
             if r.returncode == 0:
                 sent = True
         except Exception as e:
-            print(f"Telegram 推送异常: {e}")
+            print(f"飞书推送异常: {e}")
 
     # 2) iMessage(备 1)
     if NOTIFY_IMESSAGE.exists() and os.access(NOTIFY_IMESSAGE, os.X_OK):

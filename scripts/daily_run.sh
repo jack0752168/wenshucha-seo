@@ -70,9 +70,9 @@ cp /tmp/seo_daily_narrative.md "$DAILY_DIR/$TODAY.md"
 cp /tmp/seo_daily_narrative.md "$DAILY_DIR/latest.md"
 echo "  ✓ 日报已写到 $DAILY_DIR/$TODAY.md"
 
-# 推 Telegram(主通道)
-if [ -f secrets/telegram_bot_token ] && [ -f secrets/telegram_chat_id ]; then
-    python3 scripts/notify_telegram.py "🌱 SEO 日报 $(date '+%-m月%-d日')" "$DAILY_DIR/$TODAY.md" || true
+# 推飞书(主通道,国内直连)
+if [ -f secrets/feishu_webhook ]; then
+    python3 scripts/notify_feishu.py "🌱 SEO 日报 $(date '+%-m月%-d日')" "$DAILY_DIR/$TODAY.md" || true
 fi
 
 # 微信备份(如果可用)
