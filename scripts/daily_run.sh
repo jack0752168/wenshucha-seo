@@ -32,6 +32,13 @@ if [ -d "$ROOT" ] && [ -w "$ROOT" ]; then
 fi
 
 echo
+echo "--- [0b] 同步 wenshucha-site(含 blog/ 新文章)到 nginx ---"
+# Claude 写完文章 push 后,最迟次日 09:00 自动上线,不需手动 OrcaTerm
+if [ -f deploy/sync-wenshucha-site.sh ]; then
+    bash deploy/sync-wenshucha-site.sh && echo "  ✓ wenshucha-site 已同步(含 blog)" || echo "  ⚠️ 同步失败"
+fi
+
+echo
 echo "--- [1/5] IndexNow → Bing/Yandex ---"
 python3 scripts/push_indexnow.py 2>&1 | tee /tmp/seo_daily_indexnow.out
 
