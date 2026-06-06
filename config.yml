@@ -15,6 +15,8 @@ sites:
     sitemap: https://wenshucha.com/sitemap.xml
     urls_to_push:
       - https://wenshucha.com/
+      - https://wenshucha.com/blog/
+      - https://wenshucha.com/blog/law-firm-private-ai-deployment-guide.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
