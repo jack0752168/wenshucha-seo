@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
-"""百度主动推送 stub
+"""百度普通收录 API 推送(每天 daily_run 自动调用)
 
-⚠️ 需要 Jack 先做的:
-  1. 进 https://ziyuan.baidu.com 注册账号 + 添加 wenshucha.com
-  2. 拿到「普通收录」推送 token
-  3. 把 token 填到 ~/wenshucha-seo/secrets/baidu_push_token(在 Lighthouse 上)
-     这个文件在 .gitignore 里,不会进 repo
-
-token 拿到后这个脚本会自动每天跑
+文书查面向国内市场,百度是主战场。
+token 配置在 config.yml global.baidu_push_token(优先)或 secrets/baidu_push_token(兜底)
 """
 import sys
 import urllib.request
@@ -22,66 +17,66 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = yaml.safe_load((ROOT / "config.yml").read_text())
-SECRET = ROOT / "secrets" / "baidu_push_token"
 
-if not SECRET.exists():
-    print("⏭️  跳过百度推送:secrets/baidu_push_token 不存在(等 Jack 注册百度站长平台后回填)")
+# token 优先从 config.yml 读,兜底 secrets 文件
+TOKEN = (CONFIG.get("global") or {}).get("baidu_push_token", "").strip()
+if not TOKEN:
+    SECRET = ROOT / "secrets" / "baidu_push_token"
+    if SECRET.exists():
+        TOKEN = SECRET.read_text().strip()
+
+if not TOKEN:
+    print("⏭️  跳过百度推送:config.yml 未设 baidu_push_token 且 secrets/baidu_push_token 不存在")
     sys.exit(0)
 
-TOKEN = SECRET.read_text().strip()
-# 百度推送 site 必须跟站长平台验证时填的一致;我们验证的是 www.wenshucha.com
+# 百度 site 必须与站长平台验证时填的一致
 DOMAIN = "www.wenshucha.com"
 
 
 def normalize_for_baidu(url: str) -> str:
     """百度 site=www.wenshucha.com 时推送 URL 也要带 www。
-    把 https://wenshucha.com → https://www.wenshucha.com,
-    把 https://mcp.wenshucha.com 这种其他子域过滤掉(它们不在该 site 下)
+    把 https://wenshucha.com → https://www.wenshucha.com
+    其他子域(sinoverdict/mcp/peilema)过滤掉
     """
     if url.startswith("https://wenshucha.com"):
         return url.replace("https://wenshucha.com", "https://www.wenshucha.com", 1)
     if url.startswith("https://www.wenshucha.com"):
         return url
-    return None  # 其他子域,百度不会接受
+    return None
 
 
 def push_baidu(urls: list):
-    """https://ziyuan.baidu.com/linksubmit/index"""
     endpoint = f"http://data.zz.baidu.com/urls?site=https://{DOMAIN}&token={TOKEN}"
     normalized = [u for u in (normalize_for_baidu(u) for u in urls) if u]
     if not normalized:
         print("没有 www.wenshucha.com 的 URL 可推送")
         return 0
-    print(f"准备推送 {len(normalized)} 个 URL 到百度:")
+    print(f"百度推送 {len(normalized)} 个 URL:")
     for u in normalized:
         print(f"  · {u}")
     body = "\n".join(normalized).encode("utf-8")
     req = urllib.request.Request(
-        endpoint,
-        data=body,
-        headers={"Content-Type": "text/plain"},
-        method="POST",
+        endpoint, data=body,
+        headers={"Content-Type": "text/plain"}, method="POST",
     )
     try:
         with urllib.request.urlopen(req, timeout=20) as resp:
-            print(f"百度推送: HTTP {resp.status}")
-            print(resp.read().decode("utf-8", errors="replace"))
+            result = resp.read().decode("utf-8", errors="replace")
+            print(f"✓ 百度推送: HTTP {resp.status} → {result}")
             return 0
     except urllib.error.HTTPError as e:
-        print(f"百度推送失败 HTTP {e.code}: {e.read().decode('utf-8', errors='replace')}")
+        print(f"✗ 百度推送失败 HTTP {e.code}: {e.read().decode('utf-8', errors='replace')}")
         return 1
 
 
 def main():
     urls = []
-    # 百度推送只覆盖主站 wenshucha.com(以及它的 www 别名)
-    # 其他子域(sinoverdict / mcp / peilema)不在该 site 下,跳过
     matched_hosts = ("wenshucha.com", "www.wenshucha.com")
     for site in CONFIG["sites"]:
         if site["host"] in matched_hosts:
             urls.extend(site["urls_to_push"])
     if not urls:
-        print("config.yml 没有 wenshucha.com 主站的 URL")
+        print("config.yml 没有 wenshucha.com 主站 URL")
         return 0
     return push_baidu(urls)
 

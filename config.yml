@@ -7,6 +7,9 @@ global:
   indexnow_key: "a8f3b9c2d1e5f7a8b9c0d1e2f3a4b5c6"
   ssl_warn_days: 30          # SSL < 30 天告警
   ssl_critical_days: 14      # SSL < 14 天紧急告警
+  # 百度普通收录推送 token(主战场是国内,百度优先)
+  # 来源: ziyuan.baidu.com → 普通收录 → API提交 → token
+  baidu_push_token: "0mLhyBqtuRt6o6fa"
 
 sites:
 
