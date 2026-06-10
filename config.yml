@@ -40,6 +40,10 @@ sites:
       - https://sinoverdict.wenshucha.com/#how
       - https://sinoverdict.wenshucha.com/#access
       - https://sinoverdict.wenshucha.com/#faq
+      - https://sinoverdict.wenshucha.com/blog/
+      - https://sinoverdict.wenshucha.com/blog/licensing-chinese-court-data-guide.html
+      - https://sinoverdict.wenshucha.com/blog/chinese-case-law-api-structure.html
+      - https://sinoverdict.wenshucha.com/blog/state-of-chinese-case-law-data-2026.html
     check_ssl: true
 
   - name: mcp-zh-dev

@@ -117,16 +117,29 @@ def build(data: dict) -> str:
 
     L.append("")
 
-    # 今天体系
+    # 海外 sinoverdict 的 IndexNow URL 数(从 indexnow 明细里拆出来)
+    overseas_urls = sum(
+        x["urls"] for x in data["indexnow"]
+        if "sinoverdict" in x["host"] and 200 <= x["code"] < 300
+    )
+
+    # 今天体系(分两个战场)
     L.append("*今天 daemon 跑了什么:*")
-    if indexnow_total_hosts:
-        L.append(f"• IndexNow 推 {data['indexnow_total_urls']} URLs 给 Bing/Yandex(`{data['indexnow_hosts_ok']}/{indexnow_total_hosts}` 站成功)")
+    domestic_urls = data["indexnow_total_urls"] - overseas_urls
+    L.append("🇨🇳 国内战场(百度为主):")
     if data["baidu_success"]:
         rem = f"(还剩 {data['baidu_remain']} 次配额)" if data["baidu_remain"] is not None else ""
         L.append(f"• 百度推送 {data['baidu_success']} URLs {rem}")
+    if domestic_urls > 0:
+        L.append(f"• IndexNow 推 {domestic_urls} URLs 给 Bing/Yandex(国内站)")
+    L.append("🌍 海外战场(Google/Bing 为主):")
+    if overseas_urls:
+        L.append(f"• sinoverdict 推 {overseas_urls} URLs 给 Bing/Yandex(海外不走百度)")
+    else:
+        L.append("• sinoverdict IndexNow 待推(确认 config.yml sinoverdict-en 有新 URL)")
     if data["ssl"]:
         min_ssl = min(data["ssl"], key=lambda s: s["days"])
-        L.append(f"• SSL 全绿(最近到期 `{min_ssl['host']}` 还有 {min_ssl['days']} 天 = {min_ssl['exp']})")
+        L.append(f"🔒 SSL 全绿(最近到期 `{min_ssl['host']}` 还有 {min_ssl['days']} 天 = {min_ssl['exp']})")
     L.append("")
 
     # 累计
@@ -141,23 +154,20 @@ def build(data: dict) -> str:
         L.append("─" * 30)
         L.append("")
 
-    # 进展评估(百度为主战场)
-    L.append("*有没有真进展?*")
-    L.append("文书查面向国内市场,主战场 = 百度。当前领先指标:")
-    L.append("✅ 百度每日推送量(体系在跑) · ✅ 百度展现量趋势 · ✅ 百度关键词排名")
+    # 进展评估(两个主战场并列)
+    L.append("*有没有真进展?两个主战场各看各的:*")
     L.append("")
-    L.append("滞后指标(真效果,30-90 天才出数字):")
+    L.append("🇨🇳 *国内(wenshucha.com → 百度):*")
+    L.append("1. 百度收录量 ↑ — site:www.wenshucha.com(目标:1个月内 >10 页)")
+    L.append("2. 百度关键词排名 ↑ — 律所 AI 部署/裁判文书数据库 从 20+ 往前爬(3个月内前10)")
+    L.append("3. 百度点击量 ↑ — ziyuan.baidu.com「流量与关键词」(目标每天 >20 点击)")
     L.append("")
-
-    # 看什么算进展
-    L.append("*百度进展看这三项(从快到慢):*")
-    L.append("1. 百度收录量 ↑ — 每周查 site:www.wenshucha.com(目标:1个月内 >10 页)")
-    L.append("2. 百度关键词排名 ↑ — 「裁判文书 API / 律所 AI 部署」从 20+ 往前爬(目标:3个月内前10)")
-    L.append("3. 百度自然点击量 ↑ — 百度搜索资源平台「流量与关键词」(目标:每天 >20 点击)")
-    L.append("4. 转化 — 律所/政府商务来电(180+ 天)")
+    L.append("🌍 *海外(sinoverdict → Google/Bing):*")
+    L.append("1. Google/Bing 收录量 ↑ — site:sinoverdict.wenshucha.com(目标:1个月内 >8 页)")
+    L.append("2. 英文词排名 ↑ — Chinese legal data licensing / case law for AI vendors")
+    L.append("3. AI 引用 — robots 已放行 GPTBot/ClaudeBot,被 ChatGPT/Claude 引用即破圈")
     L.append("")
-    L.append("*每周 1 次去查的地方:*")
-    L.append("https://ziyuan.baidu.com/keywords/index?site=https%3A%2F%2Fwww.wenshucha.com")
+    L.append("*每周去查:* 百度 ziyuan.baidu.com/keywords + Bing bing.com/webmasters(待验证)")
     L.append("")
     L.append("_自动生成 · 腾讯云 Lighthouse_")
 
