@@ -30,6 +30,7 @@ sites:
       - https://wenshucha.com/#types
       - https://wenshucha.com/#faq
       - https://wenshucha.com/#about
+      - https://www.wenshucha.com/data/labor/
     check_ssl: true
 
   - name: sinoverdict-en
