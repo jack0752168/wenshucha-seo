@@ -21,6 +21,16 @@ import statistics
 from pathlib import Path
 from collections import defaultdict, Counter
 
+try:
+    from pypinyin import lazy_pinyin
+except ImportError:
+    raise SystemExit("需要 pypinyin: pip3 install pypinyin")
+
+
+def slug_of(city: str) -> str:
+    """城市名 → 拼音 slug 做文件名/URL(中文文件名会让服务器 tar/cp 出错)"""
+    return "".join(lazy_pinyin(city)).lower()
+
 # 当事人 PII 脱敏:判决书摘录里可能含邮箱/手机号/身份证,展示前抹掉
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 _PHONE = re.compile(r"1[3-9]\d{9}")
@@ -133,7 +143,7 @@ def render_page(city, st, cases, idx):
     desc = (f"基于{st['n']}份{city}法院劳动争议获赔判决({st['year_min']}–{st['year_max']})的数据分析:"
             f"判赔金额中位数{yuan(st['comp_med'])}元,四分位区间{yuan(st['comp_p25'])}–{yuan(st['comp_p75'])}元。"
             f"按解除原因分类,含真实案例与裁判文书原文。样本为劳动者获支持的判决。")
-    slug = city
+    slug = slug_of(city)
 
     # 解除原因分布
     term_rows = "".join(
@@ -301,7 +311,7 @@ def render_index(pages):
     e = html.escape
     rows = ""
     for city, st in sorted(pages, key=lambda x: -x[1]["n"]):
-        rows += (f'<tr><td><a href="{e(city)}.html">{e(city)}劳动争议赔偿数据</a></td>'
+        rows += (f'<tr><td><a href="{slug_of(city)}.html">{e(city)}劳动争议赔偿数据</a></td>'
                  f'<td>{st["province"]}</td><td>{st["n"]}</td>'
                  f'<td>{yuan(st["comp_med"])}</td></tr>')
     title = "全国各城市劳动争议赔偿数据 | 文书查裁判数据"
@@ -355,7 +365,7 @@ def main():
         cases = top_cases(crows, idx)
         pages_meta.append((city, st))
         if not args.dry:
-            (OUT / f"{city}.html").write_text(render_page(city, st, cases, idx), encoding="utf-8")
+            (OUT / f"{slug_of(city)}.html").write_text(render_page(city, st, cases, idx), encoding="utf-8")
     if not args.dry:
         (OUT / "index.html").write_text(render_index(pages_meta), encoding="utf-8")
         print(f"✓ 生成 {len(qualified)} 个城市页 + index.html → {OUT}")
@@ -363,11 +373,11 @@ def main():
         for city, st in pages_meta[:20]:
             print(f"  {city}({st['province']}): {st['n']}份, 中位{yuan(st['comp_med'])}元")
 
-    # 输出 sitemap 片段
-    print("\n=== sitemap URL(贴进 wenshucha-site/sitemap.xml)===")
-    print(f"{BASE}/")
-    for city, _ in qualified:
-        print(f"{BASE}/{city}.html")
+    # 输出 sitemap 片段(写文件,供主流程插入 sitemap.xml)
+    sm_lines = [f"{BASE}/"] + [f"{BASE}/{slug_of(city)}.html" for city, _ in qualified]
+    if not args.dry:
+        (OUT / "_sitemap_urls.txt").write_text("\n".join(sm_lines), encoding="utf-8")
+    print(f"\n=== {len(sm_lines)} 条 sitemap URL 已写 {OUT}/_sitemap_urls.txt ===")
 
 
 if __name__ == "__main__":
