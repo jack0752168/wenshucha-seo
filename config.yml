@@ -23,6 +23,7 @@ sites:
       - https://wenshucha.com/blog/court-ai-procurement-checklist.html
       - https://wenshucha.com/blog/law-firm-ai-roi-calculation.html
       - https://wenshucha.com/blog/judicial-data-platform-construction.html
+      - https://wenshucha.com/blog/law-firm-on-prem-llm-gpu-guide.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -45,6 +46,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/licensing-chinese-court-data-guide.html
       - https://sinoverdict.wenshucha.com/blog/chinese-case-law-api-structure.html
       - https://sinoverdict.wenshucha.com/blog/state-of-chinese-case-law-data-2026.html
+      - https://sinoverdict.wenshucha.com/blog/why-western-platforms-china-coverage-not-built-for-ai.html
     check_ssl: true
 
   - name: mcp-zh-dev
