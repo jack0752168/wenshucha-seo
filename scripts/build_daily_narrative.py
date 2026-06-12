@@ -15,6 +15,11 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
+try:
+    import rankings  # 同目录,关键词排名跟踪
+except Exception:
+    rankings = None
+
 ROOT = Path(__file__).resolve().parent.parent
 STATE_FILE = ROOT / "state" / "daily_state.json"
 STATE_FILE.parent.mkdir(exist_ok=True, parents=True)
@@ -145,6 +150,14 @@ def build(data: dict) -> str:
     # 累计
     L.append(f"*本周累计推送:* {week_pushes} URLs")
     L.append("")
+
+    # 关键词排名趋势(对比昨天)
+    if rankings is not None:
+        try:
+            L.append(rankings.render_trend(vs_days=1))
+            L.append("")
+        except Exception:
+            pass
 
     # 插入 daily_optimizer 输出(如果存在)
     opt_file = Path("/tmp/seo_daily_optimizer.md")

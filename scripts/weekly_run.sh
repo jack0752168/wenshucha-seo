@@ -23,12 +23,19 @@ cat > "$REPORT" <<EOF
 # SEO 周报 · $WEEKID
 生成时间: $TS
 
-## 1. 收录量(site:domain query)
+## 1. 关键词排名趋势(本周 vs 上周)
 
 EOF
 
 echo
-echo "--- [1/2] 收录量检查 ---"
+echo "--- [1/3] 关键词排名趋势 ---"
+python3 scripts/rankings.py trend --vs 7 --label "本周 vs 上周" 2>/dev/null | tee -a "$REPORT" || echo "(暂无排名快照)" | tee -a "$REPORT"
+
+echo "" >> "$REPORT"
+echo "## 2. 收录量(site:domain query)" >> "$REPORT"
+echo "" >> "$REPORT"
+echo
+echo "--- [2/3] 收录量检查 ---"
 python3 scripts/check_indexed.py | tee -a "$REPORT"
 
 echo
