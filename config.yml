@@ -27,6 +27,7 @@ sites:
       - https://wenshucha.com/blog/law-firm-data-compliance-confidentiality.html
       - https://wenshucha.com/blog/court-similar-case-recommendation-system.html
       - https://wenshucha.com/blog/law-firm-ai-procurement-pitfalls.html
+      - https://wenshucha.com/blog/judgment-corpus-private-deployment-architecture.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -53,6 +54,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/license-vs-scrape-chinese-case-law.html
       - https://sinoverdict.wenshucha.com/blog/building-china-coverage-legal-ai-data-stack.html
       - https://sinoverdict.wenshucha.com/blog/enterprise-data-partnership-models-chinese-case-law.html
+      - https://sinoverdict.wenshucha.com/blog/prc-precedent-foreign-arbitral-awards-enforcement.html
     check_ssl: true
 
   - name: mcp-zh-dev
