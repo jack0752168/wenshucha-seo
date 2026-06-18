@@ -30,6 +30,7 @@ sites:
       - https://wenshucha.com/blog/judgment-corpus-private-deployment-architecture.html
       - https://wenshucha.com/blog/court-ai-trial-assistance-sentencing-document.html
       - https://wenshucha.com/blog/law-firm-llm-finetune-case-archive.html
+      - https://wenshucha.com/blog/legal-data-platform-comparison-2026.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -59,6 +60,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/prc-precedent-foreign-arbitral-awards-enforcement.html
       - https://sinoverdict.wenshucha.com/blog/china-antitrust-enforcement-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/chinese-ip-enforcement-case-law-dataset.html
+      - https://sinoverdict.wenshucha.com/blog/structuring-prc-court-data-for-ai.html
     check_ssl: true
 
   - name: mcp-zh-dev
