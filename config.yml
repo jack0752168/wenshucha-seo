@@ -32,6 +32,7 @@ sites:
       - https://wenshucha.com/blog/law-firm-llm-finetune-case-archive.html
       - https://wenshucha.com/blog/legal-data-platform-comparison-2026.html
       - https://wenshucha.com/blog/procuratorate-ai-case-pushing-indictment.html
+      - https://wenshucha.com/blog/judicial-data-platform-security-compliance.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -63,6 +64,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/chinese-ip-enforcement-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/structuring-prc-court-data-for-ai.html
       - https://sinoverdict.wenshucha.com/blog/english-native-chinese-legal-research.html
+      - https://sinoverdict.wenshucha.com/blog/chinese-legal-ai-data-market-map-2026.html
     check_ssl: true
 
   - name: mcp-zh-dev
