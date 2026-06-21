@@ -33,6 +33,7 @@ sites:
       - https://wenshucha.com/blog/legal-data-platform-comparison-2026.html
       - https://wenshucha.com/blog/procuratorate-ai-case-pushing-indictment.html
       - https://wenshucha.com/blog/judicial-data-platform-security-compliance.html
+      - https://wenshucha.com/blog/wenshucha-mcp-claude-desktop-setup.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -48,6 +49,7 @@ sites:
     sitemap: https://sinoverdict.wenshucha.com/sitemap.xml
     urls_to_push:
       - https://sinoverdict.wenshucha.com/
+      - https://sinoverdict.wenshucha.com/about.html
       - https://sinoverdict.wenshucha.com/#how
       - https://sinoverdict.wenshucha.com/#access
       - https://sinoverdict.wenshucha.com/#faq
@@ -65,6 +67,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/structuring-prc-court-data-for-ai.html
       - https://sinoverdict.wenshucha.com/blog/english-native-chinese-legal-research.html
       - https://sinoverdict.wenshucha.com/blog/chinese-legal-ai-data-market-map-2026.html
+      - https://sinoverdict.wenshucha.com/blog/cail2018-lecard-alternative-commercial-chinese-legal-dataset.html
     check_ssl: true
 
   - name: mcp-zh-dev
