@@ -35,6 +35,7 @@ sites:
       - https://wenshucha.com/blog/judicial-data-platform-security-compliance.html
       - https://wenshucha.com/blog/wenshucha-mcp-claude-desktop-setup.html
       - https://wenshucha.com/blog/similar-case-retrieval-semantic-vs-keyword.html
+      - https://wenshucha.com/blog/lawyer-workbench-case-win-rate.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -70,6 +71,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/chinese-legal-ai-data-market-map-2026.html
       - https://sinoverdict.wenshucha.com/blog/cail2018-lecard-alternative-commercial-chinese-legal-dataset.html
       - https://sinoverdict.wenshucha.com/blog/mcp-server-chinese-case-law.html
+      - https://sinoverdict.wenshucha.com/blog/chinese-legal-retrieval-pipeline-etl-indexing-citations.html
     check_ssl: true
 
   - name: mcp-zh-dev
