@@ -38,6 +38,7 @@ sites:
       - https://wenshucha.com/blog/lawyer-workbench-case-win-rate.html
       - https://wenshucha.com/blog/legal-ai-startup-data-foundation.html
       - https://wenshucha.com/blog/legal-empirical-research-data-access.html
+      - https://wenshucha.com/blog/judgment-api-integration-python-nodejs.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -76,6 +77,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/chinese-legal-retrieval-pipeline-etl-indexing-citations.html
       - https://sinoverdict.wenshucha.com/blog/english-language-api-chinese-court-judgments.html
       - https://sinoverdict.wenshucha.com/blog/western-legal-ai-vendors-chinese-court-data-mistakes.html
+      - https://sinoverdict.wenshucha.com/blog/china-data-compliance-enforcement-case-law-dataset.html
     check_ssl: true
 
   - name: mcp-zh-dev
