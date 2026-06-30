@@ -49,6 +49,7 @@ sites:
       - https://wenshucha.com/#types
       - https://wenshucha.com/#faq
       - https://wenshucha.com/#about
+      - https://www.wenshucha.com/data/
       - https://www.wenshucha.com/data/labor/
     check_ssl: true
 
@@ -98,7 +99,7 @@ sites:
     sitemap: https://peilema.wenshucha.com/sitemap.xml
     urls_to_push:
       - https://peilema.wenshucha.com/
-      - https://peilema.wenshucha.com/calc
+      - https://peilema.wenshucha.com/calculator
       - https://peilema.wenshucha.com/sample
       - https://peilema.wenshucha.com/service
       - https://peilema.wenshucha.com/xhs

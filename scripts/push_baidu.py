@@ -33,11 +33,14 @@ if not TOKEN:
 DOMAIN = "www.wenshucha.com"
 
 
-def normalize_for_baidu(url: str) -> str:
+def normalize_for_baidu(url: str):
     """百度 site=www.wenshucha.com 时推送 URL 也要带 www。
-    把 https://wenshucha.com → https://www.wenshucha.com
-    其他子域(sinoverdict/mcp/peilema)过滤掉
+    把 https://wenshucha.com → https://www.wenshucha.com;
+    去掉 #锚点(百度把 /#workbench 当首页,7个锚点白烧配额);其他子域过滤掉。
     """
+    url = url.split("#", 1)[0]  # 去锚点
+    if not url:
+        return None
     if url.startswith("https://wenshucha.com"):
         return url.replace("https://wenshucha.com", "https://www.wenshucha.com", 1)
     if url.startswith("https://www.wenshucha.com"):
@@ -47,7 +50,8 @@ def normalize_for_baidu(url: str) -> str:
 
 def push_baidu(urls: list):
     endpoint = f"http://data.zz.baidu.com/urls?site=https://{DOMAIN}&token={TOKEN}"
-    normalized = [u for u in (normalize_for_baidu(u) for u in urls) if u]
+    # 去锚点后去重(否则 /#a /#b 都塌成首页,白烧每日10条配额)
+    normalized = list(dict.fromkeys(u for u in (normalize_for_baidu(u) for u in urls) if u))
     if not normalized:
         print("没有 www.wenshucha.com 的 URL 可推送")
         return 0
