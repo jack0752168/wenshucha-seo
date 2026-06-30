@@ -55,6 +55,19 @@ def push_baidu(urls: list):
     if not normalized:
         print("没有 www.wenshucha.com 的 URL 可推送")
         return 0
+    # 百度新站每天配额 10 条,超量整批被拒(over quota)→ 主通道整年没推进去。
+    # 每天最多推 LIMIT 条:关键页每天必推,其余按天轮转(几天覆盖全部),sitemap 兜底自然收录。
+    LIMIT = 10
+    if len(normalized) > LIMIT:
+        import datetime
+        keep = {"https://www.wenshucha.com", "https://www.wenshucha.com/",
+                "https://www.wenshucha.com/data/", "https://www.wenshucha.com/data/labor/"}
+        prio = [u for u in normalized if u in keep]
+        rest = [u for u in normalized if u not in keep]
+        slots = max(0, LIMIT - len(prio))
+        start = (datetime.date.today().timetuple().tm_yday * slots) % len(rest) if rest else 0
+        normalized = prio + (rest + rest)[start:start + slots]
+        print(f"(配额上限 {LIMIT}:今日推 {len(normalized)} 条,关键页必推+其余按天轮转)")
     print(f"百度推送 {len(normalized)} 个 URL:")
     for u in normalized:
         print(f"  · {u}")
