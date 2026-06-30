@@ -93,38 +93,47 @@ def render_trend(vs_days=1, label=None) -> str:
     head = label if label else (latest["date"] + " · " + base_tag)
     L = ["*🎯 关键词排名*（" + head + "）"]
 
-    # 头条:在榜词总数(最直观的增长指标)
+    # 诚实铁律(2026-06 Jack 当面骂醒):展现 < RELIABLE 次的「排名」是噪声
+    # ——个位数样本 + 个性化(站长/少数访客自己点出来的),绝不当成绩报。
+    # 反面教材:曾把「裁判文书数据」展现2次=排名1.5 当「第1名」吹,真搜根本不在首页。
+    RELIABLE = 5
+
+    def is_noise_kw(kw):
+        # 自查 site: / 带 -广告 -推广 -site:baidu 操作符的词,不是真实意图词
+        return kw.startswith("site:") or "site:baidu" in kw
+
+    def fmt_rank(x):
+        return f"{x:.0f}" if abs(x - round(x)) < 0.05 else f"{x:.1f}"
+
+    # 头条:覆盖词数(诚实标注大部分是噪声)
     lt = latest.get("totals", {})
     if lt.get("baidu_keywords") is not None:
-        line = f"🏆 百度在榜词 {lt['baidu_keywords']} 个,累计点击 {lt.get('baidu_clicks', 0)}"
+        line = f"覆盖词 {lt['baidu_keywords']} 个(多数仅 1-2 次展现=噪声),累计点击 {lt.get('baidu_clicks', 0)}"
         bt = base.get("totals", {}) if base else {}
         if bt.get("baidu_keywords") is not None:
             dk = lt["baidu_keywords"] - bt["baidu_keywords"]
-            line += f"（词数 {'+' if dk >= 0 else ''}{dk} vs {base['date']}）"
+            line += f"（{'+' if dk >= 0 else ''}{dk} vs {base['date']}）"
         L.append(line)
 
+    # 只列「可信排名」= 展现≥RELIABLE 且非操作符词。这才是真实竞争位置。
     for engine, flag, name in [("baidu", "🇨🇳", "百度"), ("google", "🌍", "Google")]:
-        rows = sorted(latest.get(engine, []), key=lambda r: r["rank"])
-        if not rows:
-            continue
+        all_rows = latest.get(engine, [])
+        real_rows = [r for r in all_rows if not is_noise_kw(r["kw"])]
+        reliable = sorted([r for r in real_rows if r.get("impr", 0) >= RELIABLE],
+                          key=lambda r: r["rank"])
         bidx = _index(base, engine) if base else {}
-        L.append(f"{flag} {name}:")
-        for r in rows[:8]:
-            br = bidx.get(r["kw"])
-            _, tag = _arrow(r["rank"], br["rank"] if br else None)
-            impr = f" · 展现{r['impr']}" if r.get("impr") else ""
-            L.append(f"  • {r['kw']} → 第 {r['rank']} 名 `{tag}`{impr}")
-    # 汇总展现趋势
-    def total_impr(s):
-        return sum(x.get("impr", 0) for x in s.get("baidu", []) + s.get("google", []))
-    ti = total_impr(latest)
-    if base:
-        tb = total_impr(base)
-        dd = ti - tb
-        ds = f"+{dd}" if dd > 0 else str(dd)
-        L.append(f"📊 总展现 {ti}（{ds} vs {base['date']}）")
-    else:
-        L.append(f"📊 总展现 {ti}（基线）")
+        if reliable:
+            L.append(f"{flag} {name} 可信排名(展现≥{RELIABLE}):")
+            for r in reliable[:8]:
+                br = bidx.get(r["kw"])
+                _, tag = _arrow(r["rank"], br["rank"] if br else None)
+                L.append(f"  • {r['kw']} → 第 {fmt_rank(r['rank'])} 名 `{tag}` · 展现{r['impr']}")
+            best = fmt_rank(reliable[0]["rank"])
+            if float(reliable[0]["rank"]) > 10:
+                L.append(f"  ⚠️ 最好的可信排名也才第 {best} 名(第 {int(float(best)//10)+1} 页),还没真进首页")
+        elif real_rows:
+            L.append(f"{flag} {name}: {len(real_rows)} 个词全是 1-{RELIABLE-1} 次展现的噪声,"
+                     f"无可信排名——别被后台「第1名」骗,真搜不在首页。")
     return "\n".join(L)
 
 
