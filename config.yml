@@ -42,6 +42,7 @@ sites:
       - https://wenshucha.com/blog/xinchuang-domestic-stack-legal-ai-deployment.html
       - https://wenshucha.com/blog/legal-ai-hallucination-citation-verification.html
       - https://wenshucha.com/blog/legal-ai-tender-technical-specifications.html
+      - https://wenshucha.com/blog/legal-ai-acceptance-testing-evaluation.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -84,6 +85,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/china-data-compliance-enforcement-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-labor-employment-dispute-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-contract-dispute-case-law-dataset.html
+      - https://sinoverdict.wenshucha.com/blog/china-financial-lending-dispute-case-law-dataset.html
     check_ssl: true
 
   - name: mcp-zh-dev
