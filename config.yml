@@ -44,6 +44,7 @@ sites:
       - https://wenshucha.com/blog/legal-ai-tender-technical-specifications.html
       - https://wenshucha.com/blog/legal-ai-acceptance-testing-evaluation.html
       - https://wenshucha.com/blog/law-firm-rag-knowledge-base.html
+      - https://wenshucha.com/blog/legal-data-classification-grading.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -88,6 +89,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/china-contract-dispute-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-financial-lending-dispute-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-construction-dispute-case-law-dataset.html
+      - https://sinoverdict.wenshucha.com/blog/china-tort-liability-dispute-case-law-dataset.html
     check_ssl: true
 
   - name: mcp-zh-dev
