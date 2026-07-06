@@ -83,6 +83,71 @@
           "clicks": 0
         }
       ]
+    },
+    {
+      "date": "2026-07-06",
+      "totals": {
+        "baidu_keywords": 89,
+        "baidu_clicks": 9,
+        "period": "近30天"
+      },
+      "baidu": [
+        {
+          "kw": "裁判文书数据库",
+          "rank": 1.4,
+          "impr": 7,
+          "clicks": 2
+        },
+        {
+          "kw": "文书查",
+          "rank": 5.7,
+          "impr": 3,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书数据",
+          "rank": 1.5,
+          "impr": 2,
+          "clicks": 1
+        },
+        {
+          "kw": "国家裁判数据库",
+          "rank": 2,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "接入裁判文书网api",
+          "rank": 5,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "中国裁判文书网数据",
+          "rank": 2,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书 数据",
+          "rank": 1,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书网全量数据",
+          "rank": 2,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "中国裁判文书网 案号",
+          "rank": 44.8,
+          "impr": 12,
+          "clicks": 0
+        }
+      ],
+      "google": []
     }
   ]
 }
