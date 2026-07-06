@@ -32,11 +32,9 @@ echo "--- [1/3] 关键词排名趋势 ---"
 python3 scripts/rankings.py trend --vs 7 --label "本周 vs 上周" 2>/dev/null | tee -a "$REPORT" || echo "(暂无排名快照)" | tee -a "$REPORT"
 
 echo "" >> "$REPORT"
-echo "## 2. 收录量(site:domain query)" >> "$REPORT"
-echo "" >> "$REPORT"
+echo "> 收录量/Google 排名不在此抓取:本机是国内腾讯云服务器,连不上 Google(被墙)、百度也没有读取 API,site: 抓取必然失败。这类数据由 Mac 端浏览器读百度站长+GSC 后写入排名快照。" >> "$REPORT"
 echo
-echo "--- [2/3] 收录量检查 ---"
-python3 scripts/check_indexed.py | tee -a "$REPORT"
+echo "--- [2/3] (跳过 site: 抓取:国内服务器连不上Google/Baidu无读API,见周报说明)---"
 
 echo
 echo "--- [2/3] 生成周报 markdown ---"
