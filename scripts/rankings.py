@@ -74,11 +74,11 @@ def _arrow(latest_rank, base_rank):
     """排名越小越好。返回 (符号, 说明)"""
     if base_rank is None:
         return "🆕", "新进榜"
-    d = base_rank - latest_rank  # 正=名次前进
+    d = round(base_rank - latest_rank, 1)  # 正=名次前进
     if d > 0:
-        return "↑", f"↑{d}"
+        return "↑", f"↑{d:g}"
     if d < 0:
-        return "↓", f"↓{-d}"
+        return "↓", f"↓{-d:g}"
     return "→", "持平"
 
 
@@ -112,7 +112,7 @@ def render_trend(vs_days=1, label=None) -> str:
         bt = base.get("totals", {}) if base else {}
         if bt.get("baidu_keywords") is not None:
             dk = lt["baidu_keywords"] - bt["baidu_keywords"]
-            line += f"（{'+' if dk >= 0 else ''}{dk} vs {base['date']}）"
+            line += f"（词数 {'+' if dk >= 0 else ''}{dk} vs {base['date']}）"
         L.append(line)
 
     # 只列「可信排名」= 展现≥RELIABLE 且非操作符词。这才是真实竞争位置。
