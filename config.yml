@@ -50,6 +50,7 @@ sites:
       - https://wenshucha.com/blog/legal-ai-rag-vs-finetune-technical-route.html
       - https://wenshucha.com/blog/legal-ai-private-deployment-tco-three-year.html
       - https://wenshucha.com/blog/legal-ai-vendor-due-diligence.html
+      - https://wenshucha.com/blog/legal-ai-private-deployment-monitoring-alerting.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -100,6 +101,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/china-company-shareholder-dispute-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-administrative-litigation-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-real-estate-property-dispute-case-law-dataset.html
+      - https://sinoverdict.wenshucha.com/blog/china-insurance-dispute-case-law-dataset.html
     check_ssl: true
 
   - name: mcp-zh-dev
