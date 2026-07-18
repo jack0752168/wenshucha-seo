@@ -55,6 +55,7 @@ sites:
       - https://wenshucha.com/blog/legal-ai-private-deployment-disaster-recovery-ha.html
       - https://wenshucha.com/blog/legal-ai-open-source-base-model-selection.html
       - https://wenshucha.com/blog/legal-ai-vector-database-retrieval-engine-selection.html
+      - https://wenshucha.com/blog/legal-ai-multi-tenant-permission-isolation.html
       - https://wenshucha.com/#workbench
       - https://wenshucha.com/#api-pricing
       - https://wenshucha.com/#api
@@ -110,6 +111,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/china-customs-trade-dispute-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-securities-capital-markets-dispute-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-trade-secret-unfair-competition-case-law-dataset.html
+      - https://sinoverdict.wenshucha.com/blog/china-tax-dispute-case-law-dataset.html
     check_ssl: true
 
   - name: mcp-zh-dev
