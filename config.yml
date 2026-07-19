@@ -65,6 +65,7 @@ sites:
       - https://wenshucha.com/#about
       - https://www.wenshucha.com/data/
       - https://www.wenshucha.com/data/labor/
+      - https://wenshucha.com/blog/legal-ai-inference-performance-gpu-utilization.html
     check_ssl: true
 
   - name: sinoverdict-en
@@ -112,6 +113,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/china-securities-capital-markets-dispute-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-trade-secret-unfair-competition-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-tax-dispute-case-law-dataset.html
+      - https://sinoverdict.wenshucha.com/blog/china-environmental-public-interest-litigation-case-law-dataset.html
     check_ssl: true
 
   - name: mcp-zh-dev
