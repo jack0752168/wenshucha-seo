@@ -19,6 +19,7 @@ sites:
     urls_to_push:
       - https://wenshucha.com/
       - https://wenshucha.com/blog/
+      - https://wenshucha.com/blog/legal-ai-cutover-data-migration.html
       - https://wenshucha.com/blog/law-firm-private-ai-deployment-guide.html
       - https://wenshucha.com/blog/court-ai-procurement-checklist.html
       - https://wenshucha.com/blog/law-firm-ai-roi-calculation.html
