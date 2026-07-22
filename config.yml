@@ -9,7 +9,8 @@ global:
   ssl_critical_days: 14      # SSL < 14 天紧急告警
   # 百度普通收录推送 token(主战场是国内,百度优先)
   # 来源: ziyuan.baidu.com → 普通收录 → API提交 → token
-  baidu_push_token: "0mLhyBqtuRt6o6fa"
+  # baidu_push_token 已移出版本控制(曾在公开仓库泄露)→ secrets/baidu_push_token
+  baidu_push_token: ""
 
 sites:
 
