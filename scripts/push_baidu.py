@@ -60,8 +60,11 @@ def push_baidu(urls: list):
     LIMIT = 10
     if len(normalized) > LIMIT:
         import datetime
+        # 必推清单只放「最需要推」的:新上线页 + 首页。
+        # 老页(/data/ 等)百度已收录、自然爬取正常,占死配额是浪费,让它们进轮转。
         keep = {"https://www.wenshucha.com", "https://www.wenshucha.com/",
-                "https://www.wenshucha.com/data/", "https://www.wenshucha.com/data/labor/"}
+                "https://www.wenshucha.com/case-search/",
+                "https://www.wenshucha.com/legal-ai/"}
         prio = [u for u in normalized if u in keep]
         rest = [u for u in normalized if u not in keep]
         slots = max(0, LIMIT - len(prio))
