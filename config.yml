@@ -19,6 +19,7 @@ sites:
     urls_to_push:
       - https://wenshucha.com/
       - https://wenshucha.com/blog/
+      - https://wenshucha.com/blog/legal-ai-capacity-planning-scaling.html
       - https://wenshucha.com/blog/legal-ai-model-version-management-upgrade.html
       - https://wenshucha.com/blog/legal-ai-cutover-data-migration.html
       - https://wenshucha.com/blog/law-firm-private-ai-deployment-guide.html
@@ -118,6 +119,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/china-environmental-public-interest-litigation-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-product-liability-recall-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/china-medical-malpractice-dispute-case-law-dataset.html
+      - https://sinoverdict.wenshucha.com/blog/china-criminal-economic-crime-case-law-dataset.html
     check_ssl: true
 
   - name: mcp-zh-dev
