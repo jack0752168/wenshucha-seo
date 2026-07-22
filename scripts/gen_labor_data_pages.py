@@ -216,7 +216,7 @@ def render_page(city, st, cases, idx):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
-<meta name="keywords" content="{e(city)}劳动争议赔偿,{e(city)}劳动仲裁赔偿标准,{e(city)}违法解除赔偿金,{e(city)}劳动争议赔偿多少钱,裁判文书数据">
+<meta name="keywords" content="{e(city)}劳动争议赔偿,{e(city)}劳动仲裁赔偿标准,{e(city)}违法解除赔偿金,{e(city)}劳动争议赔偿多少钱,{e(city)}劳动争议判决数据">
 <link rel="canonical" href="{BASE}/{slug}.html">
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
