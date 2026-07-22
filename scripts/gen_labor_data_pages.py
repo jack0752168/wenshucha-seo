@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """程序化 SEO:用 80k 劳动争议判决数据批量生成「[城市]劳动争议赔偿数据」静态页
 
-每页都是真实数据聚合(样本数/金额分布/胜诉率/解除原因/真实案例),
+每页都是真实数据聚合(样本数/金额分布/支持程度/解除原因/真实案例),
+⚠️ 样本仅含获赔判决,禁止以「胜诉率」表述任何比例。
 不是薄门页 —— 别人没这数据抄不了。质量门:城市样本数 ≥ MIN_CASES 才生成。
 
 数据源: ~/peilema/apps/web/lib/tob-bundle.json (cols: doc_id case_no case_title
@@ -215,7 +216,7 @@ def render_page(city, st, cases, idx):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
-<meta name="keywords" content="{e(city)}劳动争议赔偿,{e(city)}劳动仲裁赔偿标准,{e(city)}违法解除赔偿金,{e(city)}劳动争议胜诉率,裁判文书数据">
+<meta name="keywords" content="{e(city)}劳动争议赔偿,{e(city)}劳动仲裁赔偿标准,{e(city)}违法解除赔偿金,{e(city)}劳动争议赔偿多少钱,裁判文书数据">
 <link rel="canonical" href="{BASE}/{slug}.html">
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(desc)}">
@@ -302,7 +303,7 @@ footer a{{color:#fff}}
   <div class="dis">数据来源:中国裁判文书网公开判决,经文书查结构化处理,样本为部分收录(且仅含劳动者获支持的判决)非全量,
   当事人个人信息已脱敏。本页为信息性数据分析,不构成法律意见或个案结果承诺,胜诉与否及金额因案而异,具体维权请咨询执业律师。</div>
 </main>
-<footer><div class="wrap">文书查 SinoVerdict · 1.5 亿裁判文书数据 · 商务 131-6872-7779 · <a href="mailto:chenjiaxin@wenshucha.com">chenjiaxin@wenshucha.com</a></div></footer>
+<footer><div class="wrap">文书查 SinoVerdict · 深圳星谱网络科技有限公司 · 1.5 亿裁判文书数据 · 商务 131-6872-7779 · <a href="mailto:chenjiaxin@wenshucha.com">chenjiaxin@wenshucha.com</a> · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2025437990号-2</a></div></footer>
 </body>
 </html>"""
 
@@ -315,7 +316,7 @@ def render_index(pages):
                  f'<td>{st["province"]}</td><td>{st["n"]}</td>'
                  f'<td>{yuan(st["comp_med"])}</td></tr>')
     title = "全国各城市劳动争议赔偿数据 | 文书查裁判数据"
-    desc = f"覆盖 {len(pages)} 个城市的劳动争议判决数据分析,赔偿金额、胜诉率、解除原因分布,数据来自中国裁判文书网。"
+    desc = f"覆盖 {len(pages)} 个城市的劳动争议判决数据分析:赔偿金额分布、解除原因构成、真实案例,数据来自中国裁判文书网公开生效判决。样本仅含已获赔付判决,不含败诉样本。"
     return f"""<!doctype html>
 <html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -333,9 +334,12 @@ a{{color:#0e1b2e}}
 </style></head><body>
 <header><div class="wrap"><a href="https://www.wenshucha.com/">文书查 SinoVerdict</a></div></header>
 <main class="wrap"><h1>全国各城市劳动争议赔偿数据</h1>
-<p style="color:#5a6677">基于中国裁判文书网公开判决的结构化分析,覆盖 {len(pages)} 个城市。点击查看各地赔偿金额、胜诉率、解除原因分布。</p>
+<p style="color:#5a6677">基于中国裁判文书网公开判决的结构化分析,覆盖 {len(pages)} 个城市。点击查看各地赔偿金额分布、解除原因构成与真实案例。<br/><span style="font-size:13px">样本仅含已获赔付的判决,不含败诉样本,任何比例均不代表胜诉率。</span></p>
 <table><tr><th>城市</th><th>省份</th><th>样本数</th><th>判赔中位(元)</th></tr>{rows}</table>
-</main></body></html>"""
+  <section class="links" style="margin:26px 0"><a href="https://www.wenshucha.com/data/labor-report/">全国劳动争议赔偿数据报告</a></section>
+</main>
+<footer style="background:#0e1b2e;color:#aab4c2;padding:24px 0;font-size:13px;margin-top:40px"><div class="wrap">文书查 SinoVerdict · 深圳星谱网络科技有限公司 · 商务 131-6872-7779 · <a href="mailto:chenjiaxin@wenshucha.com" style="color:#fff">chenjiaxin@wenshucha.com</a> · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:#fff">粤ICP备2025437990号-2</a></div></footer>
+</body></html>"""
 
 
 def main():
