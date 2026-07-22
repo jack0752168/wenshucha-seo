@@ -16,4 +16,10 @@ if [ -f "$SRC/secrets/baidu_push_token" ]; then
   rsync -az "$SRC/secrets/baidu_push_token" root@114.132.74.235:/opt/wenshucha-seo/secrets/
   ssh root@114.132.74.235 'chmod 600 /opt/wenshucha-seo/secrets/baidu_push_token'
 fi
+# 排名快照单向同步:Mac 抓(要浏览器登录百度后台) → 服务器读(09:00 生成日报)。
+# 只推这一个 state 文件;daily_state/optimizer_state 是服务器自己写的,推过去会覆盖。
+if [ -f "$SRC/state/rankings_history.json" ]; then
+  rsync -az "$SRC/state/rankings_history.json" root@114.132.74.235:/opt/wenshucha-seo/state/
+  echo "✓ 排名快照已同步"
+fi
 echo "✓ 已部署到腾讯云"
