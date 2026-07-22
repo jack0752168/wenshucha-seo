@@ -238,6 +238,15 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=7)
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--jsonl", action="store_true",
+                    help="单行紧凑 JSON(写 crawl_history.jsonl 用;多行会毁掉按行解析)")
     a = ap.parse_args()
     data = build(a.days)
-    print(json.dumps(data, ensure_ascii=False, indent=2) if a.json else render(data))
+    if a.jsonl:
+        # 历史档不存完整未抓清单(每天 80+ 条会把文件撑爆),只留计数
+        slim = {k: v for k, v in data.items() if k not in ("baidu_uncrawled", "top_paths")}
+        print(json.dumps(slim, ensure_ascii=False))
+    elif a.json:
+        print(json.dumps(data, ensure_ascii=False, indent=2))
+    else:
+        print(render(data))
