@@ -60,13 +60,16 @@ def push_baidu(urls: list):
     LIMIT = 10
     if len(normalized) > LIMIT:
         import datetime
-        # 必推清单只放「最需要推」的:新上线页 + 首页。
-        # 老页(/data/ 等)百度已收录、自然爬取正常,占死配额是浪费,让它们进轮转。
-        keep = {"https://www.wenshucha.com", "https://www.wenshucha.com/",
-                "https://www.wenshucha.com/case-search/",
+        # 必推清单只放「新上线、蜘蛛还没来过」的页。
+        # ⚠️ 首页绝不能进必推:2026-07-22 查 nginx 日志,百度蜘蛛 13 个月抓了 23113 次,
+        #    其中 22739 次(98.4%)全砸在首页,/blog/ 只抓 6 次、/data/ 抓 0 次。
+        #    首页早就被抓烂了,每天再推等于白扔一个配额,还继续把蜘蛛往首页引。
+        #    配额必须全给内页 —— 内页没被抓才是真瓶颈,不是首页不够新。
+        HOME = {"https://www.wenshucha.com", "https://www.wenshucha.com/"}
+        keep = {"https://www.wenshucha.com/case-search/",
                 "https://www.wenshucha.com/legal-ai/"}
         prio = [u for u in normalized if u in keep]
-        rest = [u for u in normalized if u not in keep]
+        rest = [u for u in normalized if u not in keep and u not in HOME]
         slots = max(0, LIMIT - len(prio))
         start = (datetime.date.today().timetuple().tm_yday * slots) % len(rest) if rest else 0
         normalized = prio + (rest + rest)[start:start + slots]

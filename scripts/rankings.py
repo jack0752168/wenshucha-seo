@@ -93,6 +93,17 @@ def render_trend(vs_days=1, label=None) -> str:
     head = label if label else (latest["date"] + " · " + base_tag)
     L = ["*🎯 关键词排名*（" + head + "）"]
 
+    # 数据新鲜度:百度没有排名读取 API,快照要靠浏览器登录后台抓,是半人工环节
+    # → 一旦断了,日报会拿着两周前的旧数据接着报,看起来像"今天的排名"。
+    # 用户只看这一项,过期必须自己喊出来,不能靠他去比对小字日期。
+    try:
+        stale_days = (datetime.now() - datetime.strptime(latest["date"], "%Y-%m-%d")).days
+        if stale_days >= 8:
+            L.append(f"⚠️ *这份排名是 {stale_days} 天前抓的,不是今天的* — 百度无排名 API,"
+                     f"快照要登录后台抓,该环节已断更。以下数字仅供参考。")
+    except Exception:
+        pass
+
     # 诚实铁律(2026-06 Jack 当面骂醒):展现 < RELIABLE 次的「排名」是噪声
     # ——个位数样本 + 个性化(站长/少数访客自己点出来的),绝不当成绩报。
     # 反面教材:曾把「裁判文书数据」展现2次=排名1.5 当「第1名」吹,真搜根本不在首页。
