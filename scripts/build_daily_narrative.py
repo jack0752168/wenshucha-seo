@@ -73,6 +73,19 @@ def parse_input(raw: str) -> dict:
     if rm:
         data["baidu_remain"] = int(rm.group(1))
 
+    # 抓取漏斗段(crawl_health 的 markdown 原样透传):
+    # 红/橙告警 = 疗效出问题,必须置顶;正常时只取那行汇总数字塞进状态行。
+    data["crawl_alerts"] = []
+    data["crawl_line"] = ""
+    seg = raw.split("=== CRAWL ===")
+    if len(seg) > 1:
+        for line in seg[1].strip().splitlines():
+            line = line.strip()
+            if line.startswith(("🔴", "🟠")):
+                data["crawl_alerts"].append(line)
+            elif line.startswith("百度抓"):
+                data["crawl_line"] = line
+
     return data
 
 
@@ -101,6 +114,12 @@ def build(data: dict) -> str:
     L.append(f"🌱 *SEO 日报 · {today}*")
     L.append("")
 
+    # ★ 疗效告警置顶:抓取漏斗断了(蜘蛛不进内页/推送零转化)比排名重要,
+    #   因为漏斗断着的时候排名数字毫无意义 —— 2026-07-22 的教训。
+    if data.get("crawl_alerts"):
+        L.extend(data["crawl_alerts"])
+        L.append("")
+
     # ★ 主体 = 关键词 + 排名涨跌(Jack 只看这个,其余全砍)
     if rankings is not None:
         try:
@@ -117,7 +136,10 @@ def build(data: dict) -> str:
         L.append(f"⚠️ *SSL 告警:* {hosts} 即将到期,该续证书")
     else:
         bd = f"百度推送 {data['baidu_success']}" if data["baidu_success"] else "⚠️ 百度推送 0(查配额)"
-        L.append(f"_体系正常 · {bd} · IndexNow {data['indexnow_total_urls']} · SSL 全绿_")
+        crawl = f" · {data['crawl_line']}" if data.get("crawl_line") else ""
+        # 「体系正常」只在疗效也正常时才许说 —— 管道通了但没疗效,不叫正常
+        head = "体系正常" if not data.get("crawl_alerts") else "管道在跑,疗效见顶部红字"
+        L.append(f"_{head} · {bd} · IndexNow {data['indexnow_total_urls']} · SSL 全绿{crawl}_")
 
     return "\n".join(L)
 

@@ -19,6 +19,9 @@ sites:
     sitemap: https://wenshucha.com/sitemap.xml
     urls_to_push:
       - https://wenshucha.com/
+      # 产品落地页 = 赚钱页,永远排推送队列最前(队列按此处顺序取)
+      - https://wenshucha.com/case-search/
+      - https://wenshucha.com/legal-ai/
       - https://wenshucha.com/blog/
       - https://wenshucha.com/blog/legal-ai-capacity-planning-scaling.html
       - https://wenshucha.com/blog/legal-ai-model-version-management-upgrade.html

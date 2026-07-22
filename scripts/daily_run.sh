@@ -59,12 +59,20 @@ echo "--- [4/6] SSL 到期监控 ---"
 python3 scripts/ssl_monitor.py 2>&1 | tee /tmp/seo_daily_ssl.out
 
 echo
-echo "--- [5/6] 主动优化动作(刷新 sitemap / 健康检查 / 统计页数变化)---"
+echo "--- [5/7] 主动优化动作(刷新 sitemap / 健康检查 / 统计页数变化)---"
 python3 scripts/daily_optimizer.py > /tmp/seo_daily_optimizer.md 2>&1
 tail -10 /tmp/seo_daily_optimizer.md
 
 echo
-echo "--- [6/6] 生成人话日报 ---"
+echo "--- [6/7] 抓取漏斗体检(nginx 一手数据:蜘蛛来没来/推送有没有用)---"
+# 2026-07-22 教训:以前只报「我跑了没」,从不报「有没有用」,内页 13 个月没被抓都没发现。
+# 这一步是整个日报里唯一的疗效仪表,永远不许删。
+python3 scripts/crawl_health.py 2>&1 | tee /tmp/seo_daily_crawl.out
+# 漏斗历史留档(weekly 算周环比用)
+python3 scripts/crawl_health.py --json >> state/crawl_history.jsonl 2>/dev/null || true
+
+echo
+echo "--- [7/7] 生成人话日报 ---"
 # 把这次跑的所有 raw 输出拼起来,喂给 narrative builder
 {
   echo "=== INDEXNOW ==="
@@ -73,6 +81,8 @@ echo "--- [6/6] 生成人话日报 ---"
   cat /tmp/seo_daily_baidu.out 2>/dev/null
   echo "=== SSL ==="
   cat /tmp/seo_daily_ssl.out 2>/dev/null
+  echo "=== CRAWL ==="
+  cat /tmp/seo_daily_crawl.out 2>/dev/null
 } | python3 scripts/build_daily_narrative.py > /tmp/seo_daily_narrative.md
 
 DAILY_DIR="$ROOT/reports/daily"
@@ -98,7 +108,7 @@ if [ -x ~/.claude/bin/notify-wechat.py ]; then
 fi
 
 # 清理临时文件
-rm -f /tmp/seo_daily_indexnow.out /tmp/seo_daily_baidu.out /tmp/seo_daily_ssl.out /tmp/seo_daily_narrative.md
+rm -f /tmp/seo_daily_indexnow.out /tmp/seo_daily_baidu.out /tmp/seo_daily_ssl.out /tmp/seo_daily_crawl.out /tmp/seo_daily_narrative.md
 
 echo
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] done"

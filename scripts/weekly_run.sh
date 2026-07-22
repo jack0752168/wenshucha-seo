@@ -32,6 +32,44 @@ echo "--- [1/3] 关键词排名趋势 ---"
 python3 scripts/rankings.py trend --vs 7 --label "本周 vs 上周" 2>/dev/null | tee -a "$REPORT" || echo "(暂无排名快照)" | tee -a "$REPORT"
 
 echo "" >> "$REPORT"
+echo "## 2. 抓取漏斗周趋势(nginx 一手数据)" >> "$REPORT"
+echo "" >> "$REPORT"
+# 用 daily_run 每天留的 crawl_history.jsonl 算周环比:内页占比/百度覆盖/推送转化
+python3 - >> "$REPORT" 2>/dev/null <<'PYEOF'
+import json
+from pathlib import Path
+hist = Path("state/crawl_history.jsonl")
+rows = []
+if hist.exists():
+    for line in hist.read_text().splitlines():
+        try:
+            d = json.loads(line)
+            if d.get("ok"):
+                rows.append(d)
+        except Exception:
+            pass
+# 同一天多条只留最后一条
+by_day = {}
+for d in rows:
+    by_day[d.get("date", "?")] = d
+rows = [by_day[k] for k in sorted(by_day)][-14:]
+if not rows:
+    print("(漏斗历史尚未积累,daily_run 每天写一条,下周起有周环比)")
+else:
+    print("| 日期 | 百度抓取 | 首页占比 | 百度覆盖 | 推送转化 |")
+    print("|---|---|---|---|---|")
+    for d in rows[-7:]:
+        cov = f"{d['sitemap_declared']-d['baidu_uncrawled_n']}/{d['sitemap_declared']}"
+        c = d.get("push_conversion")
+        conv = f"{c['crawled']}/{c['pushed']}" if c else "—"
+        print(f"| {d['date']} | {d['baidu_hits']} | {d['home_share']:.0%} | {cov} | {conv} |")
+    a, b = rows[0], rows[-1]
+    print()
+    print(f"- 首页占比 {a['home_share']:.0%} → {b['home_share']:.0%}"
+          f"(越低越好,>85% 说明内页还是进不去)")
+    print(f"- 百度未抓页 {a['baidu_uncrawled_n']} → {b['baidu_uncrawled_n']}(目标每周递减)")
+PYEOF
+echo "" >> "$REPORT"
 echo "> 收录量/Google 排名不在此抓取:本机是国内腾讯云服务器,连不上 Google(被墙)、百度也没有读取 API,site: 抓取必然失败。这类数据由 Mac 端浏览器读百度站长+GSC 后写入排名快照。" >> "$REPORT"
 echo
 echo "--- [2/3] (跳过 site: 抓取:国内服务器连不上Google/Baidu无读API,见周报说明)---"
