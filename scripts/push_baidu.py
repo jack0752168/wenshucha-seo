@@ -159,8 +159,15 @@ def push(urls: list) -> int:
         with urllib.request.urlopen(req, timeout=20) as resp:
             body = resp.read().decode("utf-8", errors="replace")
             print(f"✓ 百度推送: HTTP {resp.status} → {body}")
+            # 百度原样返回 success / remain / not_same_site / not_valid,
+            # 以前只取 success 就丢掉了,导致「推送到底健不健康」事后无从复核
+            # (2026-07-24:被推的 URL 域名和站长属性对不上会静默落进 not_same_site)
             try:
-                success = int(json.loads(body).get("success", 0))
+                api = json.loads(body)
+            except Exception:
+                api = {}
+            try:
+                success = int(api.get("success", 0))
             except Exception:
                 success = 0
             STATE_DIR.mkdir(exist_ok=True)
@@ -170,6 +177,9 @@ def push(urls: list) -> int:
                     f.write(json.dumps({
                         "ts": datetime.now().isoformat(timespec="seconds"),
                         "urls": urls[:success] if success <= len(urls) else urls,
+                        "api": {k: api.get(k) for k in
+                                ("success", "remain", "not_same_site", "not_valid")
+                                if api.get(k) is not None},
                     }, ensure_ascii=False) + "\n")
             return 0
     except urllib.error.HTTPError as e:

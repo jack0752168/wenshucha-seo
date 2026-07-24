@@ -25,6 +25,8 @@ sites:
       - https://wenshucha.com/buyers-guide/
       - https://wenshucha.com/data/labor-report/
       - https://wenshucha.com/blog/
+      # 新文一律写 www(规范主域;push_baidu.normalize_for_baidu 也会兜底转换)
+      - https://www.wenshucha.com/blog/legal-ai-offline-corpus-update-delivery.html
       - https://wenshucha.com/blog/legal-ai-capacity-planning-scaling.html
       - https://wenshucha.com/blog/legal-ai-model-version-management-upgrade.html
       - https://wenshucha.com/blog/legal-ai-cutover-data-migration.html
@@ -85,6 +87,7 @@ sites:
       - https://sinoverdict.wenshucha.com/#how
       - https://sinoverdict.wenshucha.com/#access
       - https://sinoverdict.wenshucha.com/#faq
+      - https://sinoverdict.wenshucha.com/app/
       - https://sinoverdict.wenshucha.com/blog/
       - https://sinoverdict.wenshucha.com/blog/licensing-chinese-court-data-guide.html
       - https://sinoverdict.wenshucha.com/blog/chinese-case-law-api-structure.html
