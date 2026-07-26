@@ -26,6 +26,7 @@ sites:
       - https://wenshucha.com/data/labor-report/
       - https://wenshucha.com/blog/
       # 新文一律写 www(规范主域;push_baidu.normalize_for_baidu 也会兜底转换)
+      - https://www.wenshucha.com/blog/government-legal-ai-procurement-budget-process.html
       - https://www.wenshucha.com/blog/legal-ai-offline-corpus-update-delivery.html
       - https://wenshucha.com/blog/legal-ai-capacity-planning-scaling.html
       - https://wenshucha.com/blog/legal-ai-model-version-management-upgrade.html
