@@ -6,7 +6,7 @@
 
 执行的动作分三类:
   🥇 真有用 = 直接影响收录/排名(IndexNow 推送、百度推送)
-  🥈 边际有用 = 提升搜索引擎信号(sitemap lastmod 刷新、内容统计)
+  🥈 边际有用 = 提升搜索引擎信号(内容统计、sitemap 体检)
   🥉 防御性 = 防止破损影响 SEO(健康检查、链路 200 验证)
 
 输出 markdown 写到 /tmp/seo_daily_optimizer.md,由 narrative builder 嵌入日报
@@ -60,25 +60,41 @@ def count_sitemap_urls(host, timeout=10):
         return None
 
 
-def refresh_sitemap_lastmod(path):
-    """把 /www/wwwroot 上 sitemap.xml 的 lastmod 改成 today,告诉爬虫该重抓"""
+def audit_sitemap_lastmod(path):
+    """体检 sitemap 的 lastmod 是否诚实(**只读不改**)。
+
+    2026-07-27 修:这个函数原本每天把全部 lastmod 批量改写成 today,
+    理由写的是「告诉爬虫该重抓」。实测代价远大于收益:
+      · 线上 sitemap 91 条 lastmod 全是当天,git 里真实的逐页日期(2026-06-10 / 07-22 ...)
+        被覆盖 → 「今天哪一页真的变了」这个信号被抹平。
+      · Google/Bing 的公开口径是:lastmod 一旦被判定为不可信就整体忽略。
+        「全站每天都改过」正是最典型的不可信形态,等于自己把 sitemap 的时间信号作废。
+      · nginx 日志实证:bingbot 近 7 天抓了 74 个不同内页、GPTBot 每周读 12 次 sitemap.xml
+        —— 这条通道是本站唯一在正常工作的收录通道,伪造 lastmod 恰恰是在污染它。
+    现在改为只体检并回报,真实日期由 wenshucha-site 仓库里的 sitemap.xml 决定。
+    返回 (总条数, 标记为今天的条数, 问题列表)。
+    """
     p = Path(path)
     if not p.exists():
-        return 0
+        return 0, 0, []
     today = datetime.now().strftime("%Y-%m-%d")
     try:
         content = p.read_text()
-        new_content = re.sub(
-            r"<lastmod>\d{4}-\d{2}-\d{2}</lastmod>",
-            f"<lastmod>{today}</lastmod>",
-            content,
-        )
-        n_lastmod = content.count("<lastmod>")
-        if new_content != content:
-            p.write_text(new_content)
-        return n_lastmod
+        dates = re.findall(r"<lastmod>(\d{4}-\d{2}-\d{2})</lastmod>", content)
+        total = len(dates)
+        n_today = sum(1 for d in dates if d == today)
+        issues = []
+        if total and n_today / total > 0.9 and total > 5:
+            issues.append(
+                f"{n_today}/{total} 条 lastmod 都是今天 —— 疑似被批量改写,"
+                f"搜索引擎会判定 lastmod 不可信并整体忽略"
+            )
+        future = [d for d in dates if d > today]
+        if future:
+            issues.append(f"{len(future)} 条 lastmod 是未来日期")
+        return total, n_today, issues
     except Exception:
-        return 0
+        return 0, 0, []
 
 
 def main():
@@ -93,8 +109,8 @@ def main():
         "peilema.wenshucha.com",
     ]
 
-    # ========== 动作 1:刷新主站 sitemap lastmod 🥈 ==========
-    sitemap_lastmod_updated = refresh_sitemap_lastmod(
+    # ========== 动作 1:体检主站 sitemap lastmod 是否诚实 🥉(2026-07-27 起只读不改)==========
+    lastmod_total, lastmod_today, lastmod_issues = audit_sitemap_lastmod(
         "/www/wwwroot/wenshucha.com/sitemap.xml"
     )
 
@@ -129,11 +145,8 @@ def main():
     state["last_run"] = datetime.now().isoformat()
     c = state.setdefault("counters", {})
     c["total_runs"] = c.get("total_runs", 0) + 1
-    c["total_sitemap_refreshes"] = c.get("total_sitemap_refreshes", 0) + (
-        1 if sitemap_lastmod_updated else 0
-    )
     c["total_health_checks"] = c.get("total_health_checks", 0) + len(hosts) * len(paths)
-    c["lifetime_issues_found"] = c.get("lifetime_issues_found", 0) + len(health_issues)
+    c["lifetime_issues_found"] = c.get("lifetime_issues_found", 0) + len(health_issues) + len(lastmod_issues)
     save_state(state)
 
     # ========== 输出 markdown ==========
@@ -141,9 +154,13 @@ def main():
     L.append("*🔧 今日主动优化动作(自动执行):*")
     L.append("")
 
-    L.append(
-        f"🥈 刷新主站 sitemap lastmod → `{today}`({sitemap_lastmod_updated} 条 URL,告诉爬虫该重抓)"
-    )
+    if lastmod_total:
+        L.append(
+            f"🥉 主站 sitemap lastmod 体检:{lastmod_total} 条,其中标为今天的 {lastmod_today} 条"
+            f"({'正常' if not lastmod_issues else '异常'})"
+        )
+        for msg in lastmod_issues:
+            L.append(f"   ⚠️ {msg}")
 
     L.append(
         f"🥉 健康检查 {len(hosts)}×{len(paths)} = {len(hosts)*len(paths)} 个关键 URL,"
@@ -171,13 +188,13 @@ def main():
     L.append("")
     L.append("*🏃 优化器累计运维:*")
     L.append(f"• 累计运行:{c['total_runs']} 次")
-    L.append(f"• 累计 sitemap 刷新:{c['total_sitemap_refreshes']} 次")
     L.append(f"• 累计健康检查:{c['total_health_checks']} 个 URL")
     L.append(f"• 累计发现/修复过的问题:{c['lifetime_issues_found']}")
     L.append("")
     L.append("*💡 这些动作真的有用吗?诚实告诉你:*")
     L.append("• 🥇 推送 URL(IndexNow + 百度)= 直接影响收录速度 — 真有用")
-    L.append("• 🥈 sitemap lastmod 刷新 = 让爬虫提高重抓频率 — 边际有用")
+    L.append("• 🥉 sitemap lastmod 体检 = 只读不改;2026-07-27 前这里每天把全站 lastmod 改成当天,"
+              "抹掉了「今天哪页真变了」的信号,已停 — 现在只报异常")
     L.append("• 🥉 健康检查 = 防止站挂了影响 SEO — 防御性,没问题=没价值,有问题=救命")
     L.append("")
     L.append("✅ 已在自动做的「真优化」(不需要 Jack 给任何凭证):")

@@ -75,7 +75,7 @@
 
 | # | 标题 | 核心关键词 |
 |---|---|---|
-| 31 | The 130M Judgments Problem: How We Structure PRC Court Data for AI |
+| 31 | The 160M Judgments Problem: How We Structure PRC Court Data for AI |
 | 32 | Why English-Native Chinese Legal Research Was Impossible Until Now |
 | 33 | The State of Chinese Legal AI Data: 2026 Market Map |
 | 34 | What Western Legal AI Vendors Get Wrong About Chinese Court Data |
