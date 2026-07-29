@@ -28,13 +28,16 @@ import argparse
 import gzip
 import json
 import re
+import socket
 import sys
 from collections import Counter, defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PUSH_LOG = ROOT / "state" / "push_log.jsonl"     # push_baidu.py 每天成功后追加
+IP_CACHE = ROOT / "state" / "bot_ip_cache.json"  # ip → 反查主机名(FCrDNS 结果缓存)
 LOG_CANDIDATES = [
     "/www/wwwlogs/wenshucha.com.log",
     "/var/log/nginx/wenshucha.com.log",
@@ -55,6 +58,71 @@ BOTS = {
 }
 # nginx combined: ip - - [time] "METHOD path proto" status size "ref" "ua"
 LINE = re.compile(r'^(\S+) \S+ \S+ \[([^\]]+)\] "(\S+) (\S+)[^"]*" (\d{3}) ')
+
+# ── UA 不算数,IP 才算数(2026-07-29 加) ────────────────────────────────
+# 为什么:User-Agent 谁都能伪造。我们自己每天用 `curl -A Baiduspider` 验页面是否
+# 对百度可见,这些自测请求会被按 UA 统计成"百度抓了内页",把「百度覆盖 x/N」
+# 和「推送转化」一起刷成假绿灯(2026-07-29 实锤:近 7 天所谓 12 个被百度抓过的
+# 内页,全部来自本机 VPN 出口 202.68.183.224 的自测 curl;真百度只抓了 / )。
+# 判定方法 = 各家官方推荐的 FCrDNS:反查 IP 得主机名 → 主机名后缀须属该引擎 →
+# 再正查主机名确认解析回同一 IP。三步都过才算真蜘蛛。
+BOT_RDNS_SUFFIX = {
+    "百度": (".crawl.baidu.com", ".baidu.com", ".baidu.jp"),
+    "Google": (".googlebot.com", ".google.com"),
+    "Bing": (".search.msn.com",),
+    "360": (".360.cn", ".so.com", ".qihoo.net"),
+    "搜狗": (".sogou.com",),
+}
+# rDNS 查不到时的兜底(仅百度:国内 DNS 抖动概率高,别因为一次解析失败就误报
+# 「百度一次都没来」)。这几段是日志里已被 FCrDNS 确认过的百度自有段。
+BAIDU_FALLBACK_PREFIX = ("220.181.", "116.179.", "111.206.", "180.76.",
+                         "123.125.71.", "180.101.24", "220.196.160.", "59.83.208.")
+
+
+def load_ip_cache():
+    try:
+        return json.loads(IP_CACHE.read_text())
+    except Exception:
+        return {}
+
+
+def save_ip_cache(cache):
+    try:
+        IP_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        IP_CACHE.write_text(json.dumps(cache, ensure_ascii=False, indent=0))
+    except Exception:
+        pass
+
+
+def rdns_host(ip, cache):
+    """FCrDNS 的前两步(反查 + 正查确认),结果永久缓存。返回主机名或 ''。"""
+    if ip in cache:
+        return cache[ip]
+    socket.setdefaulttimeout(3)   # 13 个月日志里有上千个爬虫 IP,不设上限会把日报拖死
+    host = ""
+    try:
+        h = socket.gethostbyaddr(ip)[0]
+        # 正查确认:防止别人把自己的 rDNS 设成 xxx.baidu.com
+        try:
+            _, _, ips = socket.gethostbyname_ex(h)
+            host = h if ip in ips else ""
+        except Exception:
+            host = h            # 正查失败不算作弊证据,接受反查结果
+    except socket.herror:
+        host = ""               # 无 PTR 记录 = 不是任何官方蜘蛛
+    except Exception:
+        host = "?"              # DNS 抖动/超时,不下结论,走兜底
+    cache[ip] = host
+    return host
+
+
+def is_real_bot(ip, bot, cache):
+    host = rdns_host(ip, cache)
+    if host == "?":             # 解析不了 → 只有百度走网段兜底,其余按不可信处理
+        return bot == "百度" and ip.startswith(BAIDU_FALLBACK_PREFIX)
+    if not host:
+        return False
+    return host.lower().endswith(BOT_RDNS_SUFFIX.get(bot, ()))
 
 
 def find_log():
@@ -96,30 +164,54 @@ def scan(log: Path, days: int):
     ever_any = set()                    # 任一蜘蛛全历史抓过
     baidu_ts = defaultdict(list)        # 百度单独记时间:Google 抓过≠百度抓过,混算会把盲区藏起来
     sitemap_fetch_all = 0
+    cache = load_ip_cache()
+    spoof = Counter()                   # 被剔除的伪装请求(近 N 天),按「bot@ip」计
     opener = gzip.open if log.suffix == ".gz" else open
+
+    # 第一遍:只挑出爬虫行(13 个月日志 56 万行里约 10 万行),顺手收集待验 IP
+    rows = []
     with opener(log, "rt", errors="ignore") as f:
         for line in f:
             m = LINE.match(line)
             if not m:
                 continue
-            _ip, ts_s, _meth, path, status = m.groups()
             bot = next((n for n, rx in BOTS.items() if rx.search(line)), None)
             if not bot:
                 continue
-            clean = norm_path(path)
-            ever_any.add(clean)
-            ts = parse_ts(ts_s)
-            if bot == "百度" and ts:
-                baidu_ts[clean].append(ts)
-            if "sitemap" in clean.lower():
-                sitemap_fetch_all += 1
-            if ts and ts < cutoff:
-                continue
-            s = stats[bot]
-            s["hits"] += 1
-            s["paths"][clean] += 1
-            s["status"][status] += 1
-    return stats, ever_any, baidu_ts, sitemap_fetch_all
+            ip, ts_s, _meth, path, status = m.groups()
+            rows.append((ip, bot, parse_ts(ts_s), norm_path(path), status))
+
+    # 反查并发做:全量日志里有近 2000 个爬虫 IP,串行 rDNS 会把日报拖到一小时以上
+    todo = sorted({ip for ip, _b, _t, _p, _s in rows} - set(cache))[:400]
+    # 每次最多解析 400 个新 IP:调用方(push_baidu/kw_registry)给的 subprocess 超时是
+    # 120 秒,缓存丢了的那次全量解析会超时 → 宁可分几天补齐,不要让整条链断掉。
+    if todo:
+        with ThreadPoolExecutor(max_workers=32) as ex:
+            for ip, host in zip(todo, ex.map(lambda i: rdns_host(i, {}), todo)):
+                cache[ip] = host
+
+    verdict = {}                        # (ip,bot) → 真假,单次运行内只判一次
+    for ip, bot, ts, clean, status in rows:
+        key = (ip, bot)
+        if key not in verdict:
+            verdict[key] = is_real_bot(ip, bot, cache)
+        if not verdict[key]:            # UA 伪装(含我们自己的自测 curl)→ 一律不算抓取
+            if not ts or ts >= cutoff:
+                spoof[f"{bot}@{ip}"] += 1
+            continue
+        ever_any.add(clean)
+        if bot == "百度" and ts:
+            baidu_ts[clean].append(ts)
+        if "sitemap" in clean.lower():
+            sitemap_fetch_all += 1
+        if ts and ts < cutoff:
+            continue
+        s = stats[bot]
+        s["hits"] += 1
+        s["paths"][clean] += 1
+        s["status"][status] += 1
+    save_ip_cache(cache)
+    return stats, ever_any, baidu_ts, sitemap_fetch_all, spoof
 
 
 def push_conversion(baidu_ts: dict, days: int = 7):
@@ -160,7 +252,7 @@ def build(days: int):
     if not log:
         return {"ok": False, "reason": "找不到 nginx 日志(本机可能不是站点服务器)"}
 
-    stats, ever_any, baidu_ts, sitemap_fetch = scan(log, days)
+    stats, ever_any, baidu_ts, sitemap_fetch, spoof = scan(log, days)
     declared = sitemap_urls()
     baidu_ever = set(baidu_ts)
     baidu_uncrawled = sorted(declared - baidu_ever) if declared else []
@@ -214,6 +306,8 @@ def build(days: int):
         "sitemap_fetch_all_time": sitemap_fetch,
         "push_conversion": conv,
         "other_bots": {k: v["hits"] for k, v in stats.items() if k != "百度"},
+        "spoofed_hits": sum(spoof.values()),
+        "spoofed_top": spoof.most_common(5),
         "alerts": alerts,
     }
 
@@ -230,6 +324,10 @@ def render(d):
     if c:
         lag = f",中位 {c['median_lag_days']} 天" if c["median_lag_days"] is not None else ""
         line += f" · 推送转化 {c['crawled']}/{c['pushed']}{lag}"
+    if d.get("spoofed_hits"):
+        # 这句必须挂在同一行:日报只透传以「百度抓」开头的那一行,另起一行会被丢掉,
+        # 而「数字只算真蜘蛛」正是这份数据可信的前提,不能在日报里消失。
+        line += f" · 已剔除 UA 伪装 {d['spoofed_hits']} 次(含本机自测 curl)"
     L.append(line)
     return "\n".join(L)
 
