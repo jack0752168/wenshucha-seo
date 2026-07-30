@@ -123,6 +123,8 @@ sites:
     urls_to_push:
       - https://sinoverdict.wenshucha.com/
       - https://sinoverdict.wenshucha.com/about.html
+      - https://sinoverdict.wenshucha.com/llms.txt
+      - https://sinoverdict.wenshucha.com/llms-full.txt
       - https://sinoverdict.wenshucha.com/#how
       - https://sinoverdict.wenshucha.com/#access
       - https://sinoverdict.wenshucha.com/#faq
