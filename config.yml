@@ -134,6 +134,7 @@ sites:
     urls_to_push:
       - https://sinoverdict.wenshucha.com/
       - https://sinoverdict.wenshucha.com/about.html
+      - https://sinoverdict.wenshucha.com/blog/chinese-court-data-licensing-cost-terms.html
       - https://sinoverdict.wenshucha.com/blog/crawl-chinese-court-judgments-llm-training-robots-txt.html
       - https://sinoverdict.wenshucha.com/llms.txt
       - https://sinoverdict.wenshucha.com/llms-full.txt
