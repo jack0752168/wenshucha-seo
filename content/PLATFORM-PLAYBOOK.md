@@ -77,6 +77,15 @@
 
 ## 四、发布链路（2026-07-22 实测确认）
 
+### 发布节奏守门（2026-08-14 纠偏）
+
+- 新号每天最多 **3 篇**，只做裁判文书检索／法律 AI 的产品邻近高意图词；没有合格词宁可少发。
+- 两篇之间至少 3 小时。每日自动任务只运行一次时，第 1 篇立即发布，第 2、3 篇只有在能验证
+  百家号「定时发布」状态时才排到后续黄金时段；否则存草稿，禁止同一轮连发。
+- 停止「每天多发 1 篇撞配额墙」。过审只说明平台没拦，不代表搜索分发，更不代表获客。
+- 从 3 篇扩到 4 篇必须同时满足：最近 7 天至少一半新文在 48 小时内获得可验证百度展现或
+  自然阅读 ≥20，信用分无下降、未通过为 0；每周最多调整一次。
+
 ### ✅ 百家号：可全自动到【发布】（2026-07-22 实测跑通一整篇）
 
 **关键突破：封面不必上传。** 「选择封面」点开是**页内弹框**，三个标签页：
@@ -133,7 +142,125 @@ AI封图         ← ✅ 有「根据全文智能生成封面」,纯页内,自�
    `cheetah-zoom-appear-active` 且 `opacity<1` = 进入动画还在跑;等 `opacity==='1'`
    且元素 rect 两次读数稳定,再点。别在动画中途点(会点空,或反而关掉弹框)。
 
-**已三次复现的稳定规律**(07-29 / 07-30 / 08-03):封面框的图片图标 = 「选择封面」文字**上方 32px**(截图像素)。
+**⚠️ 2026-08-04 新坑(耗了 3 个回合):弹框永远 opacity:0,不是点空,是分页在后台被节流。**
+判据:`document.visibilityState === 'hidden'`(claude-in-chrome 驱动时分页常不在前台)。
+此时 rc-motion 的入场动画靠 rAF 推进,后台分页 rAF 被暂停 → 弹框 DOM 挂上了、rect 正常、
+`AI封图` 文本也在,但 class 卡在 `cheetah-zoom-appear-active`、`opacity` 恒为 `0`,截图全空。
+**⛔ 别重点封面框**(会把弹框关掉)。**破法 = 手动补派发一次 animationend 让 rc-motion 落定:**
+```js
+document.querySelector('.cheetah-modal')
+  .dispatchEvent(new AnimationEvent('animationend',{bubbles:true}))
+```
+派发完 `opacity` 立刻变 `1`,截图能看见,后续「AI封图」标签 / 生成 / 确定全部照常一次通过。
+→ 于是 08-03 那条「真判据是等 opacity==='1'」要补一句:**等不到就是被节流了,派发事件,别干等**。
+
+**✅ 2026-08-05 通用破法(比派发事件更根本,今后首选,进编辑器就先打):**
+08-04 的「派发 animationend」这次**不管用**——弹框卡在更早一级的 `cheetah-zoom-appear-prepare`
+(不是 `-active`),补派发 animationstart / animationend 都不推进,`opacity` 恒为 `0`。
+硬确诊:`await new Promise(r=>requestAnimationFrame(r))` **直接 45 秒 CDP 超时**,即渲染帧完全不推进。
+**破法 = 一进编辑器就把 rAF 打补丁成 setTimeout**,rc-motion 的 prepare→active 就能自己跑完:
+```js
+window.requestAnimationFrame = cb => setTimeout(() => cb(performance.now()), 16)
+window.cancelAnimationFrame = id => clearTimeout(id)
+```
+打完补丁后弹框自行 `opacity → 1`,「AI封图」/ 生成 / 确定全部一次通过。
+**顺序建议**:navigate 之后立刻打补丁,别等卡住了再救——省 2-3 个回合。
+
+**⚠️ 2026-08-06 三条新坑(和坐标/点击有关,比动画那批更根本):**
+1. **`computer` 工具的坐标 = CSS/viewport 空间,不是截图像素空间。** 本次窗口 1400×844 截图 / 1200×723 viewport,
+   系数 1.1667。**做法:一律用 JS `getBoundingClientRect()` 拿到的值直接喂给 `computer`,不要乘系数、也不要从截图上量。**
+   (旧手册第 5 步那句「坐标要换算」指的是反过来:把截图上量到的像素换回 CSS 才能用。)
+2. **标题区:`left_click` 落进去了,`type` 却什么都不写入。** 坐标经 rect 核对无误、`activeElement` 却是外层 `edit-mode`。
+   **破法 = 用 JS 建光标再打字:**
+   ```js
+   const t=document.querySelector('[contenteditable]');t.focus();
+   const r=document.createRange();r.selectNodeContents(t);r.collapse(true);
+   const s=getSelection();s.removeAllRanges();s.addRange(r);
+   ```
+   验 `document.activeElement===t` 为 true 后再 `computer type`,一次通过。正文(iframe)不受影响,照常点+打。
+3. **封面弹框内的一切按钮,物理 `left_click` 100% 落空**(AI封图标签连点两次、间隔 5s,DOM 文本纹丝不动)。
+   **破法 = JS 派发完整事件序列**,React 的委托监听才认:
+   ```js
+   for(const e of ['pointerdown','mousedown','pointerup','mouseup','click'])
+     el.dispatchEvent(new MouseEvent(e,{bubbles:true,cancelable:true,composed:true,clientX:cx,clientY:cy,view:window}))
+   ```
+   「AI封图」标签 / 「根据全文智能生成封面」/「确定 (N)」/ 页面底部「发布」全用此法,**四处全部一次通过**。
+   注意标签要取 `.cheetah-tabs-tab`(外层)而非 `-tab-btn`。
+4. **存草稿不再改写 URL** —— URL 恒为 `edit?type=news`,拿不到 article_id(旧手册第 4 步已失效)。
+   **改法:发布后开 `/builder/rc/content`,首行即本篇,`a[href*="s?id="]` 里的 19 位数字就是 article_id。**
+   顺带这一步还能直接读到「已发布 / 审核中」状态,比停在编辑页猜要准。
+5. 弹框仍卡 `zoom-appear-active` + `opacity:0`(`visibilityState=hidden`)。**08-05 的 rAF 补丁在 navigate 后立刻打了,
+   仍不足以单独解开;补派发一次 `animationend`(08-04 破法)后 `opacity` 立刻变 1。→ 两招都要留着,先打补丁,不行再派发。**
+
+**🔴 2026-08-07 最严重的一条:`computer type` 会静默丢弃全部 ASCII 字符和全部换行符。**
+不是「首字丢失」,是**所有非 CJK 字符被吞**,且一个字的报错都没有:
+- 标题打 `AI合同审查靠谱吗？…` → 落地 `合同审查靠谱吗？…`,「AI」凭空消失。
+- 正文灌 1300 字 → `AI接过去`变`接过去`、`交给AI反而`变`交给反而`、`第3.2条`的数字也没了,
+  **56 个换行全丢,整篇挤成 1 个 `<p>`**。历史手册记的「标题区点了 type 不写入」多半就是这个的表现。
+**✅ 破法(08-07 全程使用,标题+正文各一次通过,今后首选):改用 `execCommand`,别用 `computer type`。**
+```js
+// 标题(主文档)
+const t=document.querySelector('[contenteditable]'); t.focus();
+const r=document.createRange(); r.selectNodeContents(t); r.collapse(true);
+const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+document.execCommand('insertText', false, '标题文字');   // ← Latin 字符能进来了
+// 正文(iframe[0]),分段灌
+const f=document.querySelectorAll('iframe')[0], w=f.contentWindow, d=f.contentDocument;
+w.focus(); d.body.focus();
+let rr=d.createRange(); rr.selectNodeContents(d.body); rr.collapse(false);
+const ss=w.getSelection(); ss.removeAllRanges(); ss.addRange(rr);
+TEXT.split('\n').forEach((p,i)=>{ if(i) d.execCommand('insertParagraph');
+                                  d.execCommand('insertText', false, p); });
+```
+灌完验 `d.body.innerText.length` 和 `d.querySelectorAll('p').length` 与源文一致(08-07 实测 56/56 段、`AI` 保留 38 处)。
+清理写错的字用 Range 精确选中 + `execCommand('delete')`,别用退格键。
+
+**⚠️ 2026-08-07 另三条:**
+1. **正文点不中时,键盘事件会回落到标题区。** 在 iframe 坐标点击后打的探针「探针AI测试」**跑进了标题**,
+   正文 iframe 一个字没有。→ **打完探针必须同时读标题和 iframe 两处**,只查 iframe 会误判成「输入丢失」而重打,
+   越重打标题越脏(最后标题成了 `AI探针测试合同审查靠谱吗？…`)。
+2. **底栏「字数」在 execCommand 灌文期间恒为 0,直到封面「确定」后才跳到真实值。** 这是第三次踩,
+   **字数 0 永远不能当输入失败的判据**,真判据只有 `iframe[0].contentDocument.body.innerText` 的长度和段数。
+3. **存草稿本次又会改写 URL 了**(`?article_id=…`),与 08-06 记的「已失效」相反。→ **两条路都留着**:
+   先看 URL,没有再去 `/builder/rc/content` 首行取。
+4. 弹框仍卡 `zoom-appear-active`+`opacity:0`;navigate 后立刻打 rAF 补丁**不足以单独解开**,
+   补派发一次 `animationend` 立刻变 1。与 08-06 一致 → **这套组合拳(补丁 + 派发)可当固定动作。**
+
+**🔴 2026-08-10 最贵的一条:标题区是 Lexical,`execCommand` 已经生效了,但 `innerText` 当场读回是旧值。**
+`document.execCommand('insertText',...)` 返回 true、文字其实已经进去了,可紧接着读
+`titleEl.innerText` 拿到的还是 `"\n"`(len 1)——照此判「没写进去」再打一遍,标题就变成**两遍**
+(本次实测落地 47 字 = 35 字标题 + 12 字重复)。
+**判据改法**:插入后 `await` 一下再读,或直接读 `innerHTML`(能看到 `<span data-lexical-text>` 里的真值)。
+**写错了怎么删**(别用退格):
+```js
+const s=getSelection(); for(let i=0;i<N;i++) s.modify('extend','backward','character');
+document.execCommand('delete');
+```
+**另一条**:标题第一次 `execCommand` 之前需要一次**真实 `left_click`** 让 Lexical 自己建选区——
+纯 JS `focus()`+Range 那次没进去(`activeElement` 是对的也没用)。点一次之后 `execCommand` 就一次通过。
+正文 iframe 不受影响,08-07 那套(w.focus + d.body.focus + Range + 逐段 insertText/insertParagraph)
+本次 53/53 段、ASCII 全保留,一次通过。
+**其余照旧**:①「字数 0」第四次出现仍是假信号,旁边的「已保存」才是真信号;②弹框仍卡
+`zoom-appear-active`+`opacity:0`,**rAF 补丁 + 补派发 `animationend` 组合拳**照常解开;
+③封面框图片图标 = 「选择封面」文字上方 **25px(CSS 空间)** 命中 `-icon`;
+④存草稿本次**不改写 URL**(与 08-06 同、与 08-07 反)→ article_id 去 `/builder/rc/content` 首行取。
+
+**✅ 2026-08-11 全程零返工的固定动作(照这个顺序跑,本次 10 步一次通过):**
+navigate → 立刻打 rAF 补丁 → 标题**先一次真实 `left_click`** 再 `execCommand('insertText')` →
+插入后 `await` 800ms 再读 `innerHTML` 验(避开 08-10 的 Lexical 读回旧值坑) → 正文 iframe[0] 走
+`w.focus + d.body.focus + Range + 逐段 insertText/insertParagraph`(本次 51/51 段、ASCII 全保留) →
+存草稿(**不改写 URL**,与 08-10 同) → 「选择封面」文字**上方 25px**(CSS 空间)命中 `-icon`,JS 派发五连点击 →
+弹框卡 `zoom-appear-active`+`opacity:0`,**补派发 `animationend`** 立刻变 1 → AI封图 / 生成 / 确定全用五连派发 →
+底栏「发布」同法。
+
+**🆕 本次唯一新坑:点「发布」那一次 `javascript_tool` 的返回会被工具层拦成
+`[BLOCKED: Cookie/query string data]`,读不到任何回执。** 别据此判「没点到」而重点一次——
+判据看 **tab 的 URL 是否已跳到 `/builder/rc/clue?...&from=news&firstPublish=...`**,跳了就是发布成功。
+最终一律以 `/builder/rc/content` 首行的「已发布」+ article_id 为准。
+另:「字数 0」第五次出现,仍是假信号。
+
+**已四次复现的稳定规律**(07-29 / 07-30 / 08-03 / 08-04 / 08-07 共五次):封面框的图片图标 = 「选择封面」文字**上方 32px**(截图像素)。
+08-07 换算到 CSS 空间实测:文字 rect 上方 25px 处 `elementFromPoint` 即命中 `…-icon` 元素,直接 JS 派发五连点击即开框。
 **平台行为**:用了 AI封图后,平台会自动勾上创作声明「采用AI生成内容」——保留即可,合规。
 
 ### ⚠️ 知乎：SPA 难驱动
@@ -173,3 +300,57 @@ AI封图         ← ✅ 有「根据全文智能生成封面」,纯页内,自�
 - **禁引用第三方数据时篡改**（143M=裁判文书网累计公开量、10.979M=最高法年度公开量，这些不是我们的数）。
 - **不编造案号、金额、定罪率。**
 - 竞品对比不做贬低式表格，改「选型该问的 12 个问题」。
+
+---
+
+## 📌 白杨SEO 百家号方法论（2026-08-12 从知识星球原帖调取，此前只留了标题）
+
+来源：星球「白杨SEO玩赚流量」topic 412412455488248（2022-12-27）+ 181541215585452（2023-02-11）
+
+### ⛔ 先破一个幻想：百家号没有快排
+
+白杨原话：「百家号没有快排！如果单靠刷点击排名也上不去。**百家号排名，主要是看文章标题匹配。
+文章优质，被百度收录了，然后排名就会不错。**」
+
+→ 这条与我们 2026-08-12 的乾净真搜实测完全吻合：进百度首页的 5 条全是标题精确匹配搜索词的长尾，
+大词一条没进。**选词和标题匹配是唯一杠杆，没有捷径。**
+
+### ★ 卡位排名（我们此前完全不知道的东西）★
+
+「百家号卡位排名」= 关键词在百度移动端/PC端的百家号**大卡位**。
+
+- 某个关键词**只有一家**百家号排名卡位时 → 占大位置，**可以显示绑定电话、绑定网址等菜单栏目**
+- 2-3 家时 → 聚合展现，每个关键词只出一个百家号卡位
+- PC 端大卡位：最后发布的几篇会以 **3 篇超大位置**展现
+- 注：一般手机端已卡位的词，才能在 PC 端大卡位展现
+
+→ **这是平台给的官方引流位**，不是违规夹带。我们此前一直在纠结「养号期不能放联系方式」，
+卡位是合规拿到电话+网址曝光的正路。
+
+### 卡位优化三条（白杨原文）
+
+1. **账号命名**：`（地域词）+ 行业词 +（修饰词）+ 品牌词/公司名`，不宜过长，包含关键词。
+   ⚠️ **我们现在叫「文书查」——纯品牌词，零行业词，不符合这个公式。**
+   按公式应为「裁判文书检索 文书查」这类。改名前需确认百家号改名冷却期与历史影响。
+2. **内容优质原创**提升账号整体权重。
+3. **企业百家号蓝V认证** —— 白杨：「对于进行过百家号蓝V认证的，**百度会给予卡位和排名**」
+   「有蓝V认证的企业号在百度会有**优先推荐引流**，一般企业做过蓝V认证之后，多发几条作品，
+   踩中相关关键词，搜索排名自然排名上升。」
+   ⚠️ **我们没做蓝V。这是目前最大的一个空缺。** 蓝V认证收费，需 Jack 批准后才能动。
+
+### 文章排名六条（白杨原文精简）
+
+1. 标题加相关关键词（行业词、产品词）
+2. 内容必须与标题关键词匹配，**文不对题＝低质，百度不收录不给排名**
+3. 坚持原创优质、**稳定持续输出**
+4. 通俗易懂，不堆砌
+5. **内容垂直度要高**——平台按内容打标签再推给同标签用户，垂直度高才有展现和权重
+6. 蓝V企业号有优先推荐引流
+
+### ⏰ 发文黄金时间（我们踩错了）
+
+白杨原文：「较晚较早发布都会容易错过流量高峰期……黄金时间一般是
+**早上7—8点，11—13点，15—16点，19点—20点**。要结合自己的内容领域去选择时间节点。
+例如：**知识型干货性内容最好是早上和下午**，娱乐或生活分享就中午或晚上。」
+
+→ 我们是**知识型干货**，应走早上和下午。分发任务时间已据此调整。

@@ -14,7 +14,7 @@
 每天检查五件事(超标 → 日报置顶红字):
   1. 百度抓取集中度:首页占比 > 85% = 蜘蛛进不了内页
   2. 百度覆盖率:sitemap 声明的 URL 里,百度从来没抓过的比例
-  3. sitemap 本身有没有被蜘蛛读过(robots 指错时这里第一个发现)
+  3. 百度自己有没有读 robots/sitemap(不能拿 Google/Bing 的抓取冒充百度)
   4. 蜘蛛吃到的 404 比例(死链烧抓取预算)
   5. 推送→抓取转化:昨天/近7天推给百度的 URL,到底有没有被抓
      (转化率是判断「推送这条通道值不值得占配额」的唯一标准)
@@ -30,6 +30,8 @@ import json
 import re
 import socket
 import sys
+import urllib.error
+import urllib.request
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
@@ -163,7 +165,8 @@ def scan(log: Path, days: int):
     stats = {n: {"hits": 0, "paths": Counter(), "status": Counter()} for n in BOTS}
     ever_any = set()                    # 任一蜘蛛全历史抓过
     baidu_ts = defaultdict(list)        # 百度单独记时间:Google 抓过≠百度抓过,混算会把盲区藏起来
-    sitemap_fetch_all = 0
+    discovery_all = {n: Counter() for n in BOTS}    # 各蜘蛛全历史 robots/sitemap 读取
+    discovery_window = {n: Counter() for n in BOTS} # 各蜘蛛近 N 天 robots/sitemap 读取
     cache = load_ip_cache()
     spoof = Counter()                   # 被剔除的伪装请求(近 N 天),按「bot@ip」计
     opener = gzip.open if log.suffix == ".gz" else open
@@ -202,16 +205,47 @@ def scan(log: Path, days: int):
         ever_any.add(clean)
         if bot == "百度" and ts:
             baidu_ts[clean].append(ts)
+        resource = None
         if "sitemap" in clean.lower():
-            sitemap_fetch_all += 1
+            resource = "sitemap"
+        elif clean.lower() == "/robots.txt":
+            resource = "robots"
+        if resource:
+            discovery_all[bot][resource] += 1
         if ts and ts < cutoff:
             continue
         s = stats[bot]
         s["hits"] += 1
         s["paths"][clean] += 1
         s["status"][status] += 1
+        s.setdefault("path_status", Counter())[(clean, status)] += 1
+        if resource:
+            discovery_window[bot][resource] += 1
     save_ip_cache(cache)
-    return stats, ever_any, baidu_ts, sitemap_fetch_all, spoof
+    return stats, ever_any, baidu_ts, discovery_all, discovery_window, spoof
+
+
+def canonical_probe():
+    """每天主动验唯一首页；不跟跳转，否则 /index.html 回 200 或循环都会被藏起来。"""
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, *args, **kwargs):
+            return None
+
+    opener = urllib.request.build_opener(NoRedirect)
+
+    def one(url):
+        req = urllib.request.Request(url, method="GET", headers={"User-Agent": "wenshucha-seo-canonical-check"})
+        try:
+            with opener.open(req, timeout=15) as resp:
+                return resp.status, resp.headers.get("Location", "")
+        except urllib.error.HTTPError as exc:
+            return exc.code, exc.headers.get("Location", "")
+        except Exception as exc:
+            return 0, str(exc)
+
+    root = one("https://www.wenshucha.com/")
+    index = one("https://www.wenshucha.com/index.html")
+    return {"root_status": root[0], "index_status": index[0], "index_location": index[1]}
 
 
 def push_conversion(baidu_ts: dict, days: int = 7):
@@ -252,12 +286,13 @@ def build(days: int):
     if not log:
         return {"ok": False, "reason": "找不到 nginx 日志(本机可能不是站点服务器)"}
 
-    stats, ever_any, baidu_ts, sitemap_fetch, spoof = scan(log, days)
+    stats, ever_any, baidu_ts, discovery_all, discovery_window, spoof = scan(log, days)
     declared = sitemap_urls()
     baidu_ever = set(baidu_ts)
     baidu_uncrawled = sorted(declared - baidu_ever) if declared else []
     any_uncrawled = sorted(declared - ever_any) if declared else []
     conv = push_conversion(baidu_ts)
+    canonical = canonical_probe()
 
     bd = stats["百度"]
     home_hits = bd["paths"].get("/", 0) + bd["paths"].get("/index.html", 0)
@@ -266,6 +301,15 @@ def build(days: int):
     r404 = bd["status"].get("404", 0) / tot_st
 
     alerts = []
+    if canonical["root_status"] != 200:
+        alerts.append(
+            f"🔴 **唯一首页探针失败**:根首页应为 200,实际 {canonical['root_status']} — 立即检查重写循环/站点故障"
+        )
+    if canonical["index_status"] != 301 or canonical["index_location"] != "https://www.wenshucha.com/":
+        alerts.append(
+            f"🔴 **重复首页未合并**:/index.html 应 301 到 /,实际 "
+            f"{canonical['index_status']} → {canonical['index_location'] or '无 Location'}"
+        )
     if bd["hits"] == 0:
         alerts.append(f"🔴 近 {days} 天**百度蜘蛛一次都没来** — 站点可能被降权或不可达")
     else:
@@ -280,8 +324,10 @@ def build(days: int):
                 f"({len(baidu_uncrawled)/len(declared):.0%},阈值 {BAIDU_UNCRAWLED_MAX:.0%})"
                 f" — 这些页在百度眼里不存在"
             )
-        if sitemap_fetch == 0:
-            alerts.append("🔴 **sitemap.xml 从来没被蜘蛛读过** — 先查 robots.txt 的 Sitemap 是否吃 301")
+        if discovery_all["百度"]["sitemap"] == 0:
+            alerts.append("🔴 **百度从未读取 sitemap.xml** — 其他蜘蛛读取不算百度发现,检查站点信任/robots/后端提交")
+        if discovery_all["百度"]["robots"] == 0:
+            alerts.append("🟠 **百度从未读取 robots.txt** — 内页发现主要依赖首页内链与主动推送")
         if r404 > SPIDER_404_MAX:
             alerts.append(f"🟠 蜘蛛吃到 {r404:.0%} 的 404(阈值 {SPIDER_404_MAX:.0%})— 死链在烧预算")
     if conv and conv["pushed"] >= 5 and conv["rate"] < 0.2:
@@ -303,7 +349,15 @@ def build(days: int):
         "baidu_uncrawled_n": len(baidu_uncrawled),
         "baidu_uncrawled": baidu_uncrawled,      # 完整清单:push_baidu 用它排优先队列
         "any_uncrawled_n": len(any_uncrawled),
-        "sitemap_fetch_all_time": sitemap_fetch,
+        "baidu_sitemap_fetch_all_time": discovery_all["百度"]["sitemap"],
+        "baidu_robots_fetch_all_time": discovery_all["百度"]["robots"],
+        "baidu_sitemap_fetch_window": discovery_window["百度"]["sitemap"],
+        "baidu_robots_fetch_window": discovery_window["百度"]["robots"],
+        # 兼容旧历史字段,但告警永远只看百度自己的计数。
+        "sitemap_fetch_all_time": sum(v["sitemap"] for v in discovery_all.values()),
+        "discovery_fetch_all_time": {k: dict(v) for k, v in discovery_all.items()},
+        "discovery_fetch_window": {k: dict(v) for k, v in discovery_window.items()},
+        "canonical_probe": canonical,
         "push_conversion": conv,
         "other_bots": {k: v["hits"] for k, v in stats.items() if k != "百度"},
         "spoofed_hits": sum(spoof.values()),

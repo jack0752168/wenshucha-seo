@@ -10,7 +10,7 @@ config.yml 里的 baidu_push_token 仅作历史兜底,应保持为空。
   2. 首页永不推:nginx 日志实证百度 13 个月抓 23113 次、98.4% 全在首页,
      再推是白扔配额还把蜘蛛往首页引
   3. 优先队列 = 闭环:先推「百度从来没抓过的页」(crawl_health 从 nginx 日志算),
-     抓过了自动出队;都抓过了才轮转保鲜 —— 不再人肉维护"必推名单"
+     但 14 天内推过的自动冷却,先覆盖没推过的页;抓过了自动出队
   4. 推前验活:每条先 GET 线上,非 200 不占配额并写 state/push_broken.json
      (曾把 /calc 这种 404 天天推给百度)
   5. 当天已推成功就跳过(幂等,防手动重跑浪费)
@@ -22,7 +22,7 @@ import subprocess
 import sys
 import urllib.request
 import urllib.error
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from pathlib import Path
 
 try:
@@ -46,6 +46,7 @@ if not TOKEN:
 
 DOMAIN = "www.wenshucha.com"
 LIMIT = 10
+PUSH_COOLDOWN_DAYS = 14
 HOME = {"https://www.wenshucha.com", "https://www.wenshucha.com/"}
 
 
@@ -94,6 +95,46 @@ def alive(url: str) -> bool:
         return False
 
 
+def last_push_times() -> dict:
+    """读取成功推送台账。URL 最近一次推送时间用于冷却轮转,避免天天重推同 10 页。"""
+    latest = {}
+    if not PUSH_LOG.exists():
+        return latest
+    for line in PUSH_LOG.read_text(encoding="utf-8", errors="ignore").splitlines():
+        try:
+            row = json.loads(line)
+            ts = datetime.fromisoformat(row["ts"])
+        except Exception:
+            continue
+        for raw in row.get("urls", []):
+            u = normalize_for_baidu(raw)
+            if u and (u not in latest or ts > latest[u]):
+                latest[u] = ts
+    return latest
+
+
+def rotate_by_push_history(urls: list, latest: dict) -> list:
+    """未推过 → 已过冷却期(最久未推优先) → 冷却中的最旧记录。
+
+    同组保留 config/sitemap 的原始顺序,所以业务优先级不会丢;只有已经消耗过
+    配额的 URL 才会向后让位。103 个未抓页因此约 11 天能全部覆盖一轮。
+    """
+    now = datetime.now()
+    cutoff = now - timedelta(days=PUSH_COOLDOWN_DAYS)
+    indexed = list(enumerate(urls))
+
+    def key(item):
+        i, u = item
+        ts = latest.get(u)
+        if ts is None:
+            return (0, datetime.min, i)
+        if ts < cutoff:
+            return (1, ts, i)
+        return (2, ts, i)
+
+    return [u for _i, u in sorted(indexed, key=key)]
+
+
 def select(urls: list) -> list:
     normalized = list(dict.fromkeys(u for u in (normalize_for_baidu(u) for u in urls) if u))
     normalized = [u for u in normalized if u not in HOME]
@@ -120,13 +161,23 @@ def select(urls: list) -> list:
         never, done = [], normalized
         print("(拿不到 nginx 抓取数据,退回纯轮转)")
 
-    # 未抓的按 config 顺序(即业务优先级)排;轮转段按天错开起点
+    # 不能用 never[:10]:在百度不抓取时会把同一批 10 页重复推一辈子。
+    # 先按成功推送历史冷却轮转,让每日 10 条真正覆盖完整 sitemap。
+    latest = last_push_times()
+    never = rotate_by_push_history(never, latest)
+    done = rotate_by_push_history(done, latest)
+    cooling = sum(
+        1 for u in never
+        if u in latest and latest[u] >= datetime.now() - timedelta(days=PUSH_COOLDOWN_DAYS)
+    )
+    if never:
+        print(f"(推送轮转:冷却 {PUSH_COOLDOWN_DAYS} 天,未抓队列中 {cooling} 条近期已推将后排)")
+
     slots = LIMIT
     picked = never[:slots]
     rest_slots = slots - len(picked)
     if rest_slots > 0 and done:
-        start = (date.today().timetuple().tm_yday * rest_slots) % len(done)
-        picked += (done + done)[start:start + rest_slots]
+        picked += done[:rest_slots]
 
     # 验活:死的剔掉、记账,用候补顶上
     broken, out, pool = [], [], never[slots:] + done
@@ -173,10 +224,15 @@ def push(urls: list) -> int:
             STATE_DIR.mkdir(exist_ok=True)
             PUSH_STATE.write_text(json.dumps({"date": str(date.today()), "success": success}))
             if success > 0:
+                # 百度可能同时返回 success 与逐条拒绝清单。不能简单记录
+                # urls[:success]，否则被拒 URL 会误入 14 天冷却，真正成功页反而
+                # 没有台账。先剔除明确拒绝项，再按 success 数截取。
+                rejected = set(api.get("not_same_site") or []) | set(api.get("not_valid") or [])
+                accepted = [u for u in urls if u not in rejected][:success]
                 with PUSH_LOG.open("a") as f:
                     f.write(json.dumps({
                         "ts": datetime.now().isoformat(timespec="seconds"),
-                        "urls": urls[:success] if success <= len(urls) else urls,
+                        "urls": accepted,
                         "api": {k: api.get(k) for k in
                                 ("success", "remain", "not_same_site", "not_valid")
                                 if api.get(k) is not None},
