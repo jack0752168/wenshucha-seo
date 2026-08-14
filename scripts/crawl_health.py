@@ -11,13 +11,14 @@
   推送 → 抓取 → 收录 → 展现 → 点击
   本脚本管前两级(nginx 日志);后三级靠 Mac 浏览器抓百度后台(rankings.py)。
 
-每天检查五件事(超标 → 日报置顶红字):
+每天检查六件事(超标 → 日报置顶红字):
   1. 百度抓取集中度:首页占比 > 85% = 蜘蛛进不了内页
   2. 百度覆盖率:sitemap 声明的 URL 里,百度从来没抓过的比例
   3. 百度自己有没有读 robots/sitemap(不能拿 Google/Bing 的抓取冒充百度)
   4. 蜘蛛吃到的 404 比例(死链烧抓取预算)
   5. 推送→抓取转化:昨天/近7天推给百度的 URL,到底有没有被抓
      (转化率是判断「推送这条通道值不值得占配额」的唯一标准)
+  6. 已收录的 MCP 子站契约:核心产品回链/ICP/私钥路径是否回归
 
 用法:
   python3 crawl_health.py              # markdown(日报用)
@@ -248,6 +249,45 @@ def canonical_probe():
     return {"root_status": root[0], "index_status": index[0], "index_location": index[1]}
 
 
+def mcp_contract_probe():
+    """唯一已被百度收录的子站不能再把流量送进死链，也不能暴露私钥台账。"""
+    def get(url, read_body=False):
+        req = urllib.request.Request(url, headers={"User-Agent": "wenshucha-seo-contract-check"})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                body = resp.read(200_000).decode("utf-8", errors="ignore") if read_body else ""
+                return resp.status, body
+        except urllib.error.HTTPError as exc:
+            return exc.code, ""
+        except Exception as exc:
+            return 0, str(exc)
+
+    status, html = get("https://mcp.wenshucha.com/", read_body=True)
+    private_status, _ = get("https://mcp.wenshucha.com/trial-keys-private.md")
+    issues = []
+    if status != 200:
+        issues.append(f"首页 HTTP {status}")
+    else:
+        required = {
+            "智能检索回链": "https://www.wenshucha.com/case-search/",
+            "AI 助手回链": "https://www.wenshucha.com/legal-ai/",
+            "完整备案号": "粤ICP备2025437990号-2",
+        }
+        for label, needle in required.items():
+            if needle not in html:
+                issues.append(f"缺{label}")
+        if "paileme.wenshucha.com" in html or "peilema.wenshucha.com" in html:
+            issues.append("仍含赔了吗死链")
+    if private_status != 404:
+        issues.append(f"私钥路径应 404,实际 {private_status}")
+    return {
+        "home_status": status,
+        "private_status": private_status,
+        "issues": issues,
+        "ok": not issues,
+    }
+
+
 def push_conversion(baidu_ts: dict, days: int = 7):
     """近 N 天推送的 URL,推送后到底被百度抓了没 —— 推送通道的疗效。"""
     if not PUSH_LOG.exists():
@@ -293,6 +333,7 @@ def build(days: int):
     any_uncrawled = sorted(declared - ever_any) if declared else []
     conv = push_conversion(baidu_ts)
     canonical = canonical_probe()
+    mcp_contract = mcp_contract_probe()
 
     bd = stats["百度"]
     home_hits = bd["paths"].get("/", 0) + bd["paths"].get("/index.html", 0)
@@ -310,6 +351,8 @@ def build(days: int):
             f"🔴 **重复首页未合并**:/index.html 应 301 到 /,实际 "
             f"{canonical['index_status']} → {canonical['index_location'] or '无 Location'}"
         )
+    if not mcp_contract["ok"]:
+        alerts.append("🔴 **MCP 已收录入口回归**:" + "；".join(mcp_contract["issues"]))
     if bd["hits"] == 0:
         alerts.append(f"🔴 近 {days} 天**百度蜘蛛一次都没来** — 站点可能被降权或不可达")
     else:
@@ -358,6 +401,7 @@ def build(days: int):
         "discovery_fetch_all_time": {k: dict(v) for k, v in discovery_all.items()},
         "discovery_fetch_window": {k: dict(v) for k, v in discovery_window.items()},
         "canonical_probe": canonical,
+        "mcp_contract_probe": mcp_contract,
         "push_conversion": conv,
         "other_bots": {k: v["hits"] for k, v in stats.items() if k != "百度"},
         "spoofed_hits": sum(spoof.values()),
