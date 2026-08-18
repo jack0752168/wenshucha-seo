@@ -72,9 +72,16 @@ python3 scripts/crawl_health.py 2>&1 | tee /tmp/seo_daily_crawl.out
 python3 scripts/crawl_health.py --jsonl >> state/crawl_history.jsonl 2>/dev/null || true
 
 echo
-echo "--- [7/7] 生成人话日报 ---"
+echo "--- [7/8] 访问量与来源(Jack 2026-08-18 定案:日报头条就是这个)---"
+# 口径见 traffic_report.py 顶部注释。裸日志会虚高 300 倍,别退回去数行数。
+python3 scripts/traffic_report.py --daily 2>&1 | tee /tmp/seo_daily_traffic.out
+
+echo
+echo "--- [8/8] 生成人话日报 ---"
 # 把这次跑的所有 raw 输出拼起来,喂给 narrative builder
 {
+  echo "=== TRAFFIC ==="
+  cat /tmp/seo_daily_traffic.out 2>/dev/null
   echo "=== INDEXNOW ==="
   cat /tmp/seo_daily_indexnow.out 2>/dev/null
   echo "=== BAIDU ==="
@@ -108,7 +115,7 @@ if [ -x ~/.claude/bin/notify-wechat.py ]; then
 fi
 
 # 清理临时文件
-rm -f /tmp/seo_daily_indexnow.out /tmp/seo_daily_baidu.out /tmp/seo_daily_ssl.out /tmp/seo_daily_crawl.out /tmp/seo_daily_narrative.md
+rm -f /tmp/seo_daily_traffic.out /tmp/seo_daily_indexnow.out /tmp/seo_daily_baidu.out /tmp/seo_daily_ssl.out /tmp/seo_daily_crawl.out /tmp/seo_daily_narrative.md
 
 echo
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] done"

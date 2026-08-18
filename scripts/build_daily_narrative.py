@@ -47,7 +47,14 @@ def parse_input(raw: str) -> dict:
         "ssl_alerts": [],
         "baidu_success": 0,
         "baidu_remain": None,
+        "traffic": [],
     }
+
+    # === TRAFFIC ===:traffic_report.py --daily 的原样输出,整段搬进日报头条。
+    # 不重新解析成结构体,是因为口径和措辞都定在那个脚本里,在这儿二次加工只会漂移。
+    m = re.search(r"=== TRAFFIC ===\n(.*?)(?==== [A-Z]+ ===|\Z)", raw, re.S)
+    if m:
+        data["traffic"] = [l for l in m.group(1).strip().splitlines() if l.strip()]
 
     # IndexNow:✓ wenshucha.com pushed 8 urls HTTP 200
     for m in re.finditer(r"[✓✗]\s+(\S+\.\S+)\s+pushed\s+(\d+)\s+urls\s+HTTP\s+(\d+)", raw):
@@ -113,6 +120,13 @@ def build(data: dict) -> str:
     L = []
     L.append(f"🌱 *SEO 日报 · {today}*")
     L.append("")
+
+    # ★ 头条 = 访问量与来源(2026-08-18 Jack 定案:「以后每天的日报就给这个」)。
+    #   放在最前面是因为它是唯一直接回答「有没有人来」的东西;
+    #   推送量、抓取数那些都是过程指标,过程再漂亮没人来也是零。
+    if data.get("traffic"):
+        L.extend(data["traffic"])
+        L.append("")
 
     # ★ 疗效告警置顶:抓取漏斗断了(蜘蛛不进内页/推送零转化)比排名重要,
     #   因为漏斗断着的时候排名数字毫无意义 —— 2026-07-22 的教训。

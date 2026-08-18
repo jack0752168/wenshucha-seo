@@ -1,6 +1,6 @@
 <!--
 平台: 知乎（文章区，养号期不进回答区）
-状态: ⏳ 待 Jack 手动贴（知乎 SPA 驱动不了，见 PLATFORM-PLAYBOOK 第四节实测结论）
+状态: ✅ 已发布 2026-08-18（积压清库）URL: https://zhuanlan.zhihu.com/p/2072997167141335724（线上 p=27）
 标题: 用 AI 辅助写起诉书，实际能用到什么程度？
 同话题百家号版: baijiahao-ai-indictment-drafting-reliability.md
 角度差异: 百家号版是"流程指引"（能接三段活 + 按住四处 + 六步工作流 + 清单）；
