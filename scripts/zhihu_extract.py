@@ -130,6 +130,14 @@ def parse(path: Path):
     return {"title": title, "body": body}
 
 
+# 只写给我们自己看的运维词 —— 出现在正文里就是穿帮,见 lint() 第 ③ 条
+OPS_NOTE_RE = re.compile(
+    r"⏳|✅\s*(已|08-|09-|1[0-2]-)|runner|PUBLISH-LOG|wsc_query\.py|"
+    r"未入库|已入库|两头落空|重灌重发|本轮跳过|待复核|投递(成功|失败|中)|"
+    r"纯度体检(脚本|已)|草稿箱"
+)
+
+
 def lint(body):
     """发布前硬校验 —— 命中就 exit 3,绝不带病发布
 
@@ -137,9 +145,15 @@ def lint(body):
        href 只剩第一个关键词,后半段变成裸文字垃圾。深链必须原样复制
        wsc_query.py 输出的那一行(urlencode 过,空格是 +)。
     ② 残留 markdown 记号:paste 注入是纯文本,** 会原样显示出来。
+    ③ 运维注记混进正文:2026-08-21 实测,.md 文件尾部那行
+       「⏳ 08-21 两次投递…至 10:37 仍未入库」被当成正文抽了出来,
+       lint 照样 exit 0,差点连这句一起发到知乎上。凡是只写给我们自己看的
+       状态/排期/runner 字眼,一律不许进正文。
     """
     errs = []
     for i, b in enumerate(body):
+        if OPS_NOTE_RE.search(b):
+            errs.append(f"[{i}] 运维注记混进正文,只写给我们自己看的话不许发: {b[:60]}")
         for m in re.finditer(r"https?://\S*", b):
             # \S* 本身不会跨空格,所以要看 URL 后面紧跟的是不是「空格+非中文标点」
             tail = b[m.end():m.end() + 2]
@@ -150,9 +164,69 @@ def lint(body):
     return errs
 
 
+def product_gate(body):
+    """产品演示硬闸门 —— 2026-08-18 Jack 三次强调:「一定要体现我们的数据跟类案检索，
+    要不然跟普通 AI 回答没区别」。冲量的时候最容易掉的就是这条,所以做成 exit 4,绕不过去。
+
+    批量的正确切法是分两层:
+      · **案由基线可复用**(二审占比/判决书:裁定书/地域分布)—— 同案由答多题时不必重跑,
+        而且横向对比表本身就是资产
+      · **每题的收窄链和案号必须当场跑** —— 这是"把产品操作一遍"的实质,不能复用
+
+    所以闸门只查后者:有没有真的逐层收窄、有没有新鲜案号、有没有可点深链。
+    """
+    txt = "\n".join(body)
+    errs = []
+
+    # ① 逐层收窄:至少 3 个带千分位的大数(把筛选面板一项项按下去的证据)
+    nums = re.findall(r"\b\d{1,3}(?:,\d{3})+\b", txt)
+    if len(nums) < 3:
+        errs.append(f"只有 {len(nums)} 个带千分位的数 —— 没有逐层收窄的痕迹,"
+                    f"这就是「普通 AI 回答」。必须写清每加一个筛选项还剩多少条")
+
+    # ② 筛选项名字:证明是在操作产品,不是在背法条
+    filters = [w for w in ("案由", "案件类型", "近三年", "近三", "隐藏公告",
+                           "审理程序", "地域", "省份", "聚合") if w in txt]
+    if len(filters) < 3:
+        errs.append(f"只提到 {len(filters)} 个筛选项{filters} —— 至少 3 个,"
+                    f"否则看不出是在用类案检索")
+
+    # ③ 真实案号:(2024)闽0505民初41号 这种
+    cases = re.findall(r"[（(]\s*20\d{2}\s*[)）]\s*[\u4e00-\u9fa5]{0,3}\d{2,4}[\u4e00-\u9fa5]{1,4}\d+\s*号", txt)
+    if not cases:
+        errs.append("没有一个真实案号 —— 案号是「数据是真的」最硬的证据,必须带")
+
+    # ④ 可点深链
+    if "tob.wenshucha.com/cases?" not in txt:
+        errs.append("没有深链 —— 读者没法自己复现,产品演示不闭环")
+
+    # ⑤ 数据边界(唯一不轮换的结构):不许把分布说成胜诉率
+    # 边界声明:2026-08-19 放宽 —— 原来只认「不是胜诉率/上界/给不出」几个词,
+    # 把一篇真写了边界段的稿子误判成没写。改成「命中 ≥2 个边界语汇」,
+    # 既不误伤,也拦得住真的没写的。
+    BOUND = ("不是胜诉率", "不是支持率", "上界", "做不到", "给不出", "数据边界",
+             "不完全等于", "查不到不等于", "分母", "不是法律意见", "只有已公开",
+             "公开率", "不等于现实", "观察不是统计")
+    hit = [w for w in BOUND if w in txt]
+    if len(hit) < 2:
+        errs.append(f"边界声明不足(只命中 {hit}) —— 每篇必须说清这些数不能证明什么,"
+                    f"这是我们和「张口就来」的唯一区别")
+
+    return errs, {"nums": len(nums), "filters": filters, "cases": len(cases)}
+
+
 if __name__ == "__main__":
     r = parse(Path(sys.argv[1]))
     errs = lint(r["body"])
+    if "--no-gate" not in sys.argv:
+        gerrs, stat = product_gate(r["body"])
+        if gerrs:
+            print("❌ 产品演示闸门不通过(exit 4),这篇跟普通 AI 回答没区别:", file=sys.stderr)
+            for e in gerrs:
+                print("   · " + e, file=sys.stderr)
+            print(f"   实测: 大数 {stat['nums']} 个 / 筛选项 {stat['filters']} / 案号 {stat['cases']} 个",
+                  file=sys.stderr)
+            sys.exit(4)
     if errs:
         print("❌ 发布前校验不通过,禁止注入:", file=sys.stderr)
         for e in errs:

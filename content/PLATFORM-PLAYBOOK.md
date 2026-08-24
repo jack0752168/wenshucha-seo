@@ -166,6 +166,21 @@ Draft 的 model 有内容 ≠ 服务端有内容，中间还隔着一次自动�
 1 篇与当日百家号同话题、1 篇积压清库，把有限配额用在最该占的话题上。
 （阈值是本次单日观测，是否恰好为 2、是否随等级/创作分变化，需再观测几天确认。）
 
+**🔄 2026-08-18 19:35 复测修正阈值：当日公开天花板实测是 5 篇，不是 2 篇。**
+同日 19:35 用创作中心**双向**核对（比早些时候只看一侧更硬）：
+- `/creator/manage/creation/article` 已发布列表，今日只有 5 条（11 小时前 ×3、8 小时前 ×2），
+  id = 2072946830464250638 / 2072947819858622112 / 2072948844942443328 /
+  2072995757611921868 / 2072997167141335724，其余全是 08-14 的。
+- `/creator/manage/creation/draft?type=article` 草稿箱(9)、文章草稿 9 条，
+  id 与当日 11:40 之后提交的 9 篇**一一对应**，且摘要显示**正文完整在库**。
+→ 所以 14:50 那次记的「约 2 篇」是**观测时点太早**造成的低估（当时后面 3 篇还没落地）。
+  **当日公开配额按 5 篇用**，但仍远低于百家号的 10 篇。
+→ **排程含义不变且更明确**：知乎每天只排 2 篇（1 篇同话题 + 1 篇积压清库）仍是对的，
+  因为 5 是天花板不是目标，贴着天花板发＝把后面的稿子推进草稿箱白写。
+→ **判定当日还能不能发，别数 PUBLISH-LOG，直接读创作中心两个页面**：
+  已发布列表今日条数 ≥5 就停手，写好的稿留到次日。
+
+
 **好消息**：卡住的稿子完整躺在草稿箱，`[data-block]` 数与提交时一致，重发不用重灌正文。
 
 ### 🚨 2026-08-18 修正：三条旧结论被推翻
@@ -392,6 +407,51 @@ AI封图         ← ✅ 有「根据全文智能生成封面」,纯页内,自�
 但第 3 步的正文区 y 值随标题行数变(07-29 是 349、07-30 两行标题时是 388),仍必须探针确认。
 **字数：** 起稿直接按 3500 字目标写。写到 4800 再回头砍要多花三轮,且容易砍出逻辑断口。
 
+**🔴 2026-08-21 封面链路两处大改(旧步骤 5-8 已部分作废,先读这段再照旧文走):**
+
+**A. 根因新形态:tab 不可见 → 弹框动画永不启动 → 卡死在 opacity 0。**
+点开「选择封面」后 `.cheetah-modal` 已存在、尺寸已是 980×671(展开态),但 class 停在
+`cheetah-zoom-appear-prepare`、`opacity` **恒为 0 达 17 秒不变**,且「AI封面」等标签文本
+**根本不在 DOM 里**(内容未渲染)。旧手册教的「等 opacity==='1'」在这种情况下会等到天荒地老。
+**判据**:`document.visibilityState === 'hidden'`。Chrome 对隐藏 tab 节流 rAF,
+CSS 进入动画**不是在跑而是压根没开始**。关掉其他 tab 让它变前台**不一定管用**
+(2026-08-21 实测关掉后 visibilityState 仍是 hidden —— 整个 Chrome 窗口在后台)。
+**破法(实测一次通过):**
+```js
+const m=document.querySelector('.cheetah-modal');
+m.classList.remove('cheetah-zoom-appear-prepare','cheetah-zoom-appear');
+m.classList.add('cheetah-zoom-appear-active');
+m.style.opacity='1';
+document.querySelectorAll('.cheetah-modal-mask').forEach(x=>{x.style.opacity='1';
+  x.classList.remove('cheetah-fade-appear-prepare','cheetah-fade-appear');});
+```
+强制推进后弹框内容立刻渲染。**后续每开一个新弹框/新面板都要再推一次**,通用写法:
+```js
+document.querySelectorAll('[class*="-appear-prepare"],[class*="-enter-prepare"]').forEach(x=>{
+  x.className=x.className.replace(/-appear-prepare|-enter-prepare/g,'-appear-active'); x.style.opacity='1';});
+```
+**⚠️ 代价:强制改 class 后截图里弹框是空的**(合成层没绘制),但 DOM 完全是活的。
+所以这条路上**一切判据只能读 DOM,截图彻底失效**;点击也要用 JS `click()` 或派发
+pointerdown/mousedown/pointerup/mouseup/click 五连,不能用坐标点。
+
+**B. 标签叫「AI封面」不叫「AI封图」,且生成流程已改版。**
+旧手册的 `includes('AI封图')` 永远返 false —— 平台文案是「**AI封面**」。
+「根据全文智能生成封面」那个单链接**已不存在**,现在是三段式:
+```
+点「AI封面」标签
+ → 点「从正文总结」(自动填好「封面描述」长文本 + 「封面文字」≤15字,2026-08-21 实测填得很切题)
+ → 点「生成」
+ → 等待,文案依次是「整理封面信息中...」→「生成封面中...」→ 出现「重新生成」即完成(实测约 20-25 秒)
+ → ⚠️ **不再默认选中第 1 张!** 必须自己点一张候选
+ → 点「确定 (1)」
+```
+⚠️ **等待循环的判据别写漏**:文案是「生成封面**中**...」,只 `includes('生成中')` 匹配不上,
+会误判成已完成而提前退出(08-21 踩过)。正则用 `/整理封面信息中|生成封面中|生成中/`。
+⚠️ **「选中了没有」的判据**:候选容器 class 从 `wrap selectBorder autoSize` 变成
+`wrap **selected** selectBorder autoSize`,同时标签页文字变「AI封面**(1)**」、封面预览区 img 数 0→1。
+`selectBorder` 只是可选边框样式类,**光看它会误判成已选中**。
+生成图的辨认法:modal 内 `img` 宽度 >200px 的才是候选大图(336×252),70×52 的是「热门模板」缩略图。
+
 **⚠️ 2026-08-03 两条硬判据(都栽过,别再踩):**
 1. **正文在 iframe 里,`document.body` 读不到。** 探针打进去了、截图明明看得见,但
    `document.body.innerText.includes('探针')` 返回 false、底栏「字数」也还显示 0
@@ -427,6 +487,125 @@ window.cancelAnimationFrame = id => clearTimeout(id)
 ```
 打完补丁后弹框自行 `opacity → 1`,「AI封图」/ 生成 / 确定全部一次通过。
 **顺序建议**:navigate 之后立刻打补丁,别等卡住了再救——省 2-3 个回合。
+
+**⚠️ 2026-08-20 新坑：AI 封图卡「图片生成中…」不动，根因是轮询 URL 变 undefined（破法＝刷新页）：**
+
+点完「根据全文智能生成封面」后 UI 卡在「图片生成中…」**超 125 秒不动**。排查顺序与结论：
+1. 弹框展开本身正常（派发 animationend 后 196×134 → 980×671，opacity=1），rAF 补丁已打；
+2. 覆盖 `visibilityState` → visible 解除后台节流：**无效**；
+3. **开网络追踪后 15 秒内零请求** ⇒ 轮询根本没在跑；
+4. 请求列表里抓到真因：`https://baijiahao.baidu.com/builder/rc/undefined`（GET 200）
+   —— **前端没拿到生成任务 id，轮询打到 undefined，永远等不到结果。不是生成慢、不是节流。**
+
+⛔ **关弹框重开无效**：重开后状态仍是「图片生成中」，且「根据全文智能生成封面」按钮 rect 为 0×0 不可点。
+
+✅ **破法＝存草稿 → 整页刷新**（`/builder/rc/edit?type=news&article_id=<id>`）。
+重载后僵死状态清空，重走一遍封面流程：20 秒内 4 张候选全出图、「确定 (1)」一次通过。
+⏱ **判据先后顺序（别硬等）**：生成超 **40 秒** 就开网络追踪看有没有轮询；零请求或看到 `/rc/undefined` → **直接刷页**，别再等、也别反复重开弹框。
+
+**✅ 同日顺带验证（可当稳定手法用）**：在正文 iframe 里直接 `p.remove()` 删段落，
+**会被 ueditor 持久化**——存草稿 + 重载后段数/字数与删后一致（本例 34段/2051字 → 33段/1956字）。
+可以放心用它做发布前的字数微调（例如把 >2000 压回引擎偏好的 1500-2000 区间）。
+
+**⚠️ 字数校准更正**：编辑器底栏「字数」与「去掉空白后的纯正文字符数」**完全一致**（实测 2051 对 2051、
+1956 对 1956）。之前从日志反推出的「编辑器比本地算法少 6%」不成立，**别再按比例换算**，
+写稿时直接拿纯字符数当编辑器字数用。
+
+
+**🔴 2026-08-21 封面链路大改版（旧第 5-8 步部分失效，法律类选题请直接跳到「破法」）：**
+
+百家号把封面弹框换了新版：
+- 标签「AI封图」→ **「AI封面」**；
+- 面板从「根据全文智能生成封面」一个链接，换成 **热门模板 + 封面描述 + 封面文字 + 生成**，
+  另有居中大按钮 **「AI一键生成封面」**——它是个 `div`，**文字是背景图、`innerText` 为空**，
+  文本选择器一律找不到，只能靠 rect 定位（本次 `524,304,192,44`，中心 620,326）。
+
+**🔴 AI 封面对法律类选题会直接失败，且 UI 不报错、只是永远转圈。**
+真判据是查生成任务：
+```js
+await (await fetch('/writebrain/aicover_v2/generate/query?task_id=<id>',{credentials:'include'})).json()
+// {"errno":0,"data":{"status":3,"images":[],"fail_reason":"text_audit"},...}
+```
+本篇两次全败：第一次描述写「法院天平与合同文件」，第二次换成完全中性的
+「安静的办公桌面，一叠文件与一支笔」、封面文字清空，**仍是 `text_audit`**
+⇒ **触发审核的不是你填的描述，是标题/正文本身**（含「违约金」「法院」这类词）。
+**别再改描述重试，改不出来。**
+
+**✅ 破法＝走「免费正版图库」标签页**（SKILL 只禁「正文/本地上传」，图库是页内允许的，
+手册旧说「法律类关键词常无结果」——那是因为搜的是法律词，**搜中性物件词就有结果**）：
+```js
+const m=document.querySelector('.cheetah-modal');
+window.__fire([...m.querySelectorAll('.cheetah-tabs-tab')].find(e=>e.innerText.trim()==='免费正版图库'));
+// 搜索框：native value setter + input 事件 + 派发 Enter keydown/keyup
+// 搜「合同」出 30 张；图片 rect 例 452,180,160,240 → 选择圈在右上角（x+140, y+18）
+// elementFromPoint(592,198) 拿到圈再派发五连事件 → 按钮变「确定 (1)」+ 右侧预览换图
+```
+判据：`[...m.querySelectorAll('button')]` 里出现 **`确定 (1)`**，且右侧预览 img 的 src 换成
+带 `wm_1,k_cGljX2JqaHdhdGVyLmpwZw==` 水印参数的那张。点可见的那个「确定」即完成，一次通过。
+⏱ 法律类选题今后**直接走图库，别在 AI 封面上耗回合**（本次白耗 4 轮 ≈ 60 秒等待 ×2）。
+
+**🔴 同日复验：点击/轮询完全不动的真因仍是 `document.visibilityState === 'hidden'`。**
+fire 事件派发到「AI一键生成封面」，12 秒内**零网络请求**；覆盖 visibilityState 后**同一次 fire
+立刻打出 `/writebrain/aicover_v2/generate`**。→ **进编辑器的第一动作应该是 rAF 补丁 + 解 hidden 一起打：**
+```js
+window.requestAnimationFrame = cb => setTimeout(() => cb(performance.now()), 16);
+window.cancelAnimationFrame = id => clearTimeout(id);
+Object.defineProperty(document,'visibilityState',{get:()=>'visible',configurable:true});
+Object.defineProperty(document,'hidden',{get:()=>false,configurable:true});
+document.dispatchEvent(new Event('visibilitychange'));
+```
+
+**✅ 存草稿会改写 URL（08-06 那条「不再改写」本次不成立）**：存完 URL 就是
+`edit?type=news&article_id=1874086204811118254`，不必再去 `/rc/content` 首行捞 id。
+
+**⚠️ PUBLISH-LOG 行首格式是硬约束（今天差点又漏记）：百家号行必须写成 `YYYY-MM-DD | 百家号 | ...`，
+不带时间**——SKILL 的计数命令是 `grep -c "^$(date +%Y-%m-%d) | 百家号"`，grep 里 `|` 是字面量，
+写成 `2026-08-21 07:26 | 百家号` 会**一条都数不到**，下一轮就会把已发的当没发、多发一篇。
+时间要记就记在行内（`| 07:26 发布 |`），别放行首。知乎行带时间不受影响（它不参与这个计数）。
+
+**⚠️ 2026-08-18 两条新坑（标题吞字母 + 正文点不进，都有现成破法，建议直接当默认流程）：**
+
+1. **标题区用 `computer type` 打字会静默吞掉 ASCII 字母。** 打「律师用AI会不会泄露客户信息？…」
+   进去变成「律师用会不会…」（29字→27字），AI 两个字母凭空消失，没有任何报错。
+   **正文 iframe 里同样的字符全部保留**（AI×8 / wenshucha.com / 1.6亿一个没丢），所以这是标题区独有的。
+   **破法 = 用 execCommand 写标题，别用 type：**
+   ```js
+   const t=document.querySelector('[contenteditable=true]');t.focus();
+   const r=document.createRange();r.selectNodeContents(t);      // ⚠️ 不要 collapse
+   const s=getSelection();s.removeAllRanges();s.addRange(r);
+   document.execCommand('insertText',false,标题);                // 直接替换整个选区
+   ```
+   ⚠️ 配套坑：`execCommand('delete')` 在标题区**无效**（选中全文 delete 不删，紧接着的
+   insertText 会插到开头，造成标题重复成两份）。**别先 delete 再 insert，一步 insertText 替换选区。**
+
+2. **正文区 `left_click` 可能完全打不进去**（点 iframe 内 y=345 后 type，字全跑进标题栏）。
+   与其反复探针试坐标，**直接在 iframe 内用 execCommand 逐段灌**，一次成，且不吞 ASCII：
+   ```js
+   const f=document.getElementById('ueditor_0'), doc=f.contentDocument, win=f.contentWindow;
+   doc.body.innerHTML='<p><br></p>'; doc.body.focus();
+   const r=doc.createRange(); r.selectNodeContents(doc.body);
+   const s=win.getSelection(); s.removeAllRanges(); s.addRange(r);
+   doc.execCommand('insertText',false,P[0]);
+   for(let i=1;i<P.length;i++){ doc.execCommand('insertParagraph'); doc.execCommand('insertText',false,P[i]); }
+   ```
+   实测 29/29 段一次通过，自动生成带 `data-diagnose-id` 的 `<p>`。
+   **验收查 `doc.body.querySelectorAll('p').length` 和 `doc.body.innerText` 长度，别看底栏字数。**
+   → 这条比旧手册第 3 步「点正文区+两字探针+截图确认」更稳更快，**建议以后首选**。
+
+**✅ 2026-08-19 封面弹框第三级破法（前两招都失效时用这个，实测一次解开）:**
+本次弹框卡在 `cheetah-zoom-appear-start`（**比 08-05 的 -prepare、08-04 的 -active 更早一级**），
+且 navigate 后立刻打了 rAF 补丁仍 `opacity:0`，补派发 animationstart+animationend 也不推进。
+**破法 = 直接把入场动画的 class 全摘掉并硬设 opacity：**
+```js
+const m=document.querySelector('.cheetah-modal');
+m.classList.remove('cheetah-zoom-appear','cheetah-zoom-appear-start',
+                   'cheetah-zoom-appear-prepare','cheetah-zoom-appear-active');
+m.style.opacity='1'; m.style.transform='none';
+const wrap=m.closest('.cheetah-modal-wrap'); if(wrap) wrap.style.opacity='1';
+```
+摘完 `opacity` 立刻为 1、弹框 980×671，后续「AI封图」→「根据全文智能生成封面」→「确定(1)」全部一次通过。
+→ **顺序固定为：① 进编辑器先打 rAF 补丁 → ② 卡住就派发 animationend → ③ 还卡就摘 class 硬设 opacity。**
+别在 ② 上反复试，直接上 ③ 省两个回合。
 
 **⚠️ 2026-08-06 三条新坑(和坐标/点击有关,比动画那批更根本):**
 1. **`computer` 工具的坐标 = CSS/viewport 空间,不是截图像素空间。** 本次窗口 1400×844 截图 / 1200×723 viewport,
@@ -524,6 +703,96 @@ navigate → 立刻打 rAF 补丁 → 标题**先一次真实 `left_click`** 再
 **已四次复现的稳定规律**(07-29 / 07-30 / 08-03 / 08-04 / 08-07 共五次):封面框的图片图标 = 「选择封面」文字**上方 32px**(截图像素)。
 08-07 换算到 CSS 空间实测:文字 rect 上方 25px 处 `elementFromPoint` 即命中 `…-icon` 元素,直接 JS 派发五连点击即开框。
 **平台行为**:用了 AI封图后,平台会自动勾上创作声明「采用AI生成内容」——保留即可,合规。
+
+**⚠️ 2026-08-18（16:2x 复核）知乎「当日约 2 篇硬墙」再次证实，队列理论第二次被否**
+14:5x 那次发现 9 篇卡草稿箱之后，**过了约 1.5 小时再查创作中心：已发布仍是 9 条、草稿箱仍是 9 条，一条都没自行落地**。
+→ 「进队列、晚点会自己发出去」彻底不成立。当日超过约 2 篇之后写的稿子是白写，必须次日手动重发。
+→ **排程执行口径：知乎每天只排 2 篇（1 篇同话题 + 1 篇积压），当日额度用完就不要再写知乎版**，
+   把回合省给百家号。判断额度有没有用完，看 /creator/manage/creation/article 的「共 N 条内容」有没有涨。
+
+**⚠️ 2026-08-18（第7篇）新坑：用 DOM `p.remove()` 改正文，底栏「字数」不会重算。**
+灌完全文字数显示 2001（想压进 1500-2000 格），于是换短末段并 remove 掉重复的旧 `<p>`，
+iframe innerText 从 2073 降到 2057、段数 36 正确，**但底栏字数纹丝不动仍显示 2001**；
+补插一个字符再 `execCommand('delete')` 触发 input 事件也没让它重算。
+→ 「字数」计数器不可信这条又添一种新形态（此前是「恒为 0」，这次是「改了不更新」）。
+   **真判据仍只有 `iframe[0].contentDocument.body.innerText` 的长度和 `p` 段数。**
+⚠️ 配套：想替换某一段时，`selectNodeContents(p)` + `insertText` **不会替换该段，而是新起一段**
+   （本次一下变成 37 段）。要替换整段，只能 insertText 后再把旧段 `remove()`，然后逐条验段数与首尾。
+
+
+**🔴🔴 2026-08-21 推翻 08-06 第 1 条：`computer` 的坐标是【截图像素空间】，不是 CSS/viewport 空间。**
+旧手册写「一律用 `getBoundingClientRect()` 的值直接喂给 computer，不要乘系数」——**这条是错的，照它做点击会静默落空**。
+本轮实测（截图 1560×784 / viewport 1492×750，k = 1560/1492 = 1.0456）：
+- 直接喂 rect 值点 (500,290) → `document.activeElement` 是 **body**，没进编辑器；
+- 同一个点乘 k 变 (320,344) → `activeElement` 立刻是编辑器，一次进去。
+**固定写法：**
+```js
+const k = 1560 / window.innerWidth;   // 1560 = 最近一次截图的宽度，每轮现读
+const shot = [Math.round(vpX * k), Math.round(vpY * k)];   // 喂给 computer 的才是这个
+```
+（08-06 那条之所以「看起来成立」，多半是当时窗口 k 接近 1；k 越偏离 1，落空越明显。）
+
+**🔴 落空之后最严重的连锁后果：整篇正文会被一个字符替换掉，而且三个指标里两个会骗你。**
+真实点击没落进编辑器时，选区仍停在 paste 前用 JS 设的「全选」状态，接着那一次真实打字就把全文换成了那一个字符。
+当时的读数是：**fiber 的 `memoizedProps.editorState` 仍报 43 blocks（渲染快照，滞后）**、
+**底栏字数仍显示 2998（假高）**、**只有 DOM `[data-block="true"]` 报的 1 是真的**。
+→ **新纪律两条：**
+① 真实打字前必须验 `activeElement` 在编辑器内 **且** `getSelection().isCollapsed === true`，一条不成立就别打；
+② 判模型状态优先看 **DOM `[data-block]` 计数**；fiber 的 editorState 只在刚 paste 完那一刻可信。
+
+**✅ 知乎（文章区/回答区通用）注入六步，本轮第三次才跑通，照此固化：**
+```
+① 按 k 换算坐标真实点击编辑器 → 验 activeElement 在编辑器内
+② 真实 cmd+a → 真实 Delete → 验 DOM blocks==1 且 innerText 去空白后 length==0
+   （跳过这步直接 paste = 追加不是替换，实测 1 + 43 → 85 blocks 整篇重复，这是第二次踩）
+③ JS focus + selectNodeContents + 派发 selectionchange + ClipboardEvent 注入 BODY.slice(0,-1)
+④ 验 DOM blocks == 源段数
+⑤ 滚到末段、按 k 换算真实点击 → 验 activeElement + isCollapsed → cmd+Right → 真实打回最后一个字符
+⑥ 与源文逐段 diff，要求 diffCount == 0
+```
+
+**⚠️ 文章区开着「Markdown 语法输入中」**：行首 `1. ` 会被解析成有序列表。注入前先把 `^(\d)\.\s+` 替换成 `$1、`。
+注入后验 `.public-DraftStyleDefault-orderedListItem` 计数为 0。**旧积压稿凡有数字编号行首的都要先做这个替换。**
+
+**⚠️ 文章区「发布」按钮初始 `disabled=true` 不是缺话题/封面，是草稿还在保存中**，等约 12 秒自行 enable
+（同时底栏字数从假 0 跳到真值）。别去点「添加话题」凑条件。
+
+**⚠️ 文章区「发布中...」同样会卡住不动（>60 秒），成功判据是 `/api/v4/members/{token}/articles`**
+里出现该 id、账号文章数 +1。**不要盯按钮文案，也不要重复点。**
+
+**⚠️ `members/{token}/answers` 与 `questions/{qid}/answers` 在【问题页上下文】会返 `10003 请求参数异常`，
+换到 `/people/{token}/answers` 上下文同一请求立刻正常。** 这不是风控，是上下文相关的接口行为
+——08-20 记的那次「限流苗头」至少有一部分是同一现象。**判发布成败一律在个人主页上下文调 API。**
+
+**⚠️ 扫止损线关键词必须看上下文**：本轮 `innerText` 里三处「失败」全部来自正文（"这种失败不报错"…），
+百家号侧「未通过」则是筛选 tab 名。**只数命中次数会天天误报。**
+
+
+### 🔴 2026-08-21 · 百家号正文注入链路大改（推翻本手册两条旧结论）
+
+**旧结论一「正文在 iframe 内，JS 够不着，只能点正文区 + type + 截图确认落点」——已作废。**
+`document.getElementById('ueditor_0').contentDocument` 现在可以直接访问（同源），
+于是正文可以走：清空 → 逐段 `d.execCommand('insertText')` + `insertParagraph` → 读回
+`[...d.body.querySelectorAll('p')]` 与源文**逐段 diff**。40 段 2002 字实测 diffCount=0、零返工，
+**全程不需要截图**。这一条在本轮救了命：CDP 截图中途断连（"Claude in Chrome is not connected"），
+若还依赖「打两字探针+截图确认」的老链路，整轮会卡死。
+
+**旧结论二「字数计数器是防抖的，探针刚打完显示 0 属正常」——不完整，会害死人。**
+真相是：JS 注入后 **DOM 满、UEditor 自身 model 也满**（`getContent()` 2714 字符），
+但**外层 React 壳完全不知情**，所以底栏「字数」恒为 0。后果不只是显示问题——
+**「AI一键生成封面」会据此报「标题或正文内容过短，多输入一些内容吧~」而拒绝生成**，
+等多久都没用（本轮等了 20 秒＋重试才发现根因）。
+
+**破法（一句话）**：
+```js
+const ed = window.UE_V2.instants.ueditorInstant0;   // 不是 window.UE，是 UE_V2
+ed.fireEvent('contentchange');                       // 字数 0 → 2252，AI 封面立刻可用
+```
+注入完正文后**必须**补这一句，再去点封面/发布。顺带：`window.UE`、`UE.instants` 都不存在，
+实例挂在 `window.UE_V2.instants.ueditorInstant0`；`getEditorContent()` 这个全局返回 undefined，别用它判空。
+
+**封面**：AI 生成一次给 2 张，**必须逐张看文案错别字再选**。本轮左图把
+「查不到不等于是假的」渲染成「查不到不等**到**于假的」，选了会把错别字印在封面上；右图正确。
 
 ### ⚠️ 知乎：SPA 难驱动
 页面长期不进 document_idle，截图工具超时，程序点击不落到 React handler。
@@ -741,11 +1010,213 @@ q2=已过仲裁时效 → 1,157,256
 
 同一案由连答会让数据高度雷同，读者和平台都看得出来。目前已建立可横向对比的三组基线：
 
-| 案由 | 二审占比 | 判决书:裁定书 | 地域 top3 |
-|---|---|---|---|
-| 民间借贷 | 8.2% | 8 : 1 | 浙江 / 广东 / 河南 |
-| 婚约财产纠纷（彩礼） | 12.2% | 1.5 : 1 | 河南 / 山东 / 甘肃 |
-| 劳动争议 | 33–35% | —— | 广东 / … |
+| 案由 | 二审占比 | 判决书:裁定书 | 调解书占比 | 地域 top3 | 纯度 |
+|---|---|---|---|---|---|
+| **刑事**（取保候审口径） | **6.7%** 最低 | 4.8 : 1 | ~0 | 广东/河南/浙江 | — |
+| 民间借贷 | 8.1% | **11.3 : 1** 最高 | 0.8% | 浙江/广东/河南 | 99.7% |
+| 婚约财产（彩礼） | 12.2% | **1.5 : 1** 最低 | 2.1% | 河南/山东/甘肃 | 90.8% |
+| 劳动争议（工伤口径） | **39.7%** 最高 | 9.0 : 1 | **0.15%** | 北京/广东/辽宁 | 78.8% |
+
+**这张表就是内容资产**，每答一个新案由加一行，横向对比是别人给不出的（他们只有法条，没有分布）。
+用法举例：答工伤时说「二审 39.7%，是民间借贷的五倍，你得按打两轮做预算」——
+单看 39.7% 没感觉，横着比才有杀伤力。
+
+⚠️ 纯度那一列必须一起报。78.8% 的批次只能说「劳动争议类的上界」，不能说「工伤案有多少件」。
 
 **这张表本身就是内容资产**：每答一个新案由就多一行，横向对比是别人给不出的东西
 （他们只有法条，没有分布）。下一篇优先补空格：劳动争议的判决书:裁定书、交通事故、房屋买卖合同。
+
+### 📌 2026-08-18 17:25 补测：知乎当日公开阈值这次是 5，不是 2
+
+同日 14:50 记的「当日公开约 2 篇」偏低。17:25 复查 `/creator/manage/creation/article`：
+今日实际公开 **5 篇**（3 篇「发布于 9 小时前」≈08:2x，2 篇「发布于 6 小时前」≈11:2x），
+草稿箱 **9 篇**全部卡住，且 11:25 之后再无一篇转正。
+
+→ 结论方向不变（**存在当日硬墙、撞墙后提交是白写**），但**阈值不是固定 2**，
+本次观测落在 5。所以排程上不要写死篇数，改成**行为判据**：
+**开 `/creator/manage/creation/article`，若「草稿箱(N)」的 N 在涨而今日「发布于」条数不涨 → 已撞墙，
+当轮直接跳过知乎，别写稿也别重点发布**（同日重点实测无效）。
+
+**📌 2026-08-18 18:2x 第三次复核知乎当日墙：确认「撞墙后不会自行转正」**
+`/creator/manage/creation/article`：今日公开仍是 **5 篇**（3 篇「10 小时前」≈08:2x、2 篇「7 小时前」≈11:2x），
+**草稿箱仍是 9 条，一条未动**。距 11:25 最后一次转正已过 7 小时。
+→ 14:50 记的「队列会自行落地」第三次被否，可以当定论了。**当日阈值本次仍是 5**（与 17:25 观测一致，非固定 2）。
+→ 排程口径不变：**撞墙后当轮直接跳过知乎，把回合全给百家号**，不写稿也不重试发布。
+
+**🆕 2026-08-20 两条新坑（标题区换引擎 + 后台标签页点击失效，都有破法）：**
+
+1. **百家号标题区已换成 Lexical 编辑器**，不再是旧的裸 contenteditable。
+   DOM 现在长这样：`<p dir="auto"><span data-lexical-text="true">标题</span></p>`。
+   ✅ **旧破法（execCommand insertText 替换选区）仍然有效，一次通过，不用改。**
+   ⛔ **但验收方法必须改**：写完立刻读 `t.innerText` 会返回 `"\n"`（Lexical 还没 re-render），
+      **会把成功误判成失败**，然后你就会去重写标题、写成两份。
+   ✅ **正确验收 = 读镜像 textarea**：
+   ```js
+   document.querySelector('textarea[class*="-simulator"]').value   // 精确等于标题
+   ```
+   （本次实测：simulator 读到 24 字精确匹配，而同一时刻 innerText 还是 "\n"。）
+
+2. **tab 在后台时（`document.visibilityState==='hidden'`），物理 `left_click` 对封面框完全无效**
+   —— 不是点偏，是 modal 根本不挂载（点完 `document.querySelector('.cheetah-modal')` 返 null）。
+   坐标是用 `getBoundingClientRect()` 现算的、`elementFromPoint` 也确认命中了图标 div，照样没反应。
+   ✅ **破法：后台标签页下一律直接用 JS 派发五连事件序列，别浪费一个回合先试物理点击。**
+   ```js
+   for(const ev of ['pointerdown','mousedown','pointerup','mouseup','click'])
+     el.dispatchEvent(new MouseEvent(ev,{bubbles:true,cancelable:true,composed:true,clientX:cx,clientY:cy,view:window}))
+   ```
+   → 这条把 08-06 那条「封面弹框**内**的按钮物理点击 100% 落空」的射程**扩大到封面框本身**：
+     后台分页下，编辑页上的一切点击都该走 JS 派发。
+
+3. **封面弹框节流第四次复现**（`cheetah-zoom-appear-active` + `opacity:0`，rect 仅 196×134）。
+   08-19 记的省步走法**再次一次成功，现正式固化为默认流程**：
+   **① navigate 后立刻打 rAF 补丁 → ②【跳过】派发 animationend → ③ 直接摘 class + 硬设 opacity。**
+   摘完立刻 980×671、opacity=1，后续 AI封图 → 智能生成 → 确定(N) 全部一次通过。别再在 ② 上试。
+
+**⚠️ 2026-08-20 发文前置检查（新增，因本日踩到）：正文要放深链前，先确认检索后端活着。**
+`curl -s -m20 -o /dev/null -w "%{http_code}" "https://www.wenshucha.com/wscx/search?q=借款&size=1"`
+返 502 / 或 `wsc_query.py` 裸查返 0 ⇒ **ES 不可达**（多半是 mini 192.168.31.241 掉出局域网，
+见记忆 `reference_wscx_tunnel_outage_stale_listener`，只能物理上机唤醒）。
+此时：**照发文（测量不阻塞发文），但① 全篇不许引任何数据库数字 ② 删掉导流深链** ——
+把读者导去一个搜出来是空的页面，比不导更伤。⚠️ `wscx2/health` 返 200 是**假绿**，健康检查不碰 ES。
+
+### 🚨 2026-08-20 止损线①的假阳性：别用 innerText 关键词扫「未通过」
+
+本轮开工体检时用 `document.body.innerText.includes('未通过')` 扫止损线，**命中了**，
+差点按「有文章未通过审核 → 当天停发」把整天停掉。
+
+真相：`/builder/rc/content` 的**筛选标签栏本身就是**「全部 / 已发布 / 待发布 / **未通过** / 已撤回 / 草稿」，
+这六个字永远在 DOM 里。同理「限流」「违规」这类词也可能来自帮助入口或规则中心链接。
+
+**正确判据（唯一）**：点「未通过」标签（URL 变成 `collection=rejected`），读列表的「共 N 篇」。
+本轮实测 `共0篇` ＝ 无未通过文章，止损线未触发。
+
+```js
+// 切到 rejected 后
+document.body.innerText.match(/共\d+篇/)[0]   // '共0篇' = 干净
+```
+
+⚠️ 这条比看起来重要：**止损线是「停发一整天」的开关，假阳性的代价是当天产能归零**，
+和 2026-08-17 那次「测量阻塞发文」的断更是同一类事故——**体检本身把主线掐了**。
+凡是会导致停发的判据，一律要求「能点进去看到计数」，不接受关键词命中。
+
+### 🔒 2026-08-20（11:30 轮）选词封口线：含「类案检索」四字的词整体废弃
+
+本轮乾净真搜连毙 5 词，其中两个死于同一个结构，可以立规律了：
+
+**规律一：凡搜索词里含「类案检索」四个字，一律被最高法《关于统一法律适用加强类案检索的
+指导意见》的各级法院/检察院转载页占死。** 实测「执行案件怎么做类案检索」首页 6 条官方
+（人民法院案例库帮助页、鄂伦春法院带「官方」标记、海门区检察院、开鲁县法院、鸡西中院、最高检），
+加上我们自己 2 条已在首页 ⇒ **官方压顶＋自我竞争双杀**。
+→ 挖检索场景词时**避开这四个字**，改用不带它的具体动作描述。
+
+**规律二：我们自己已占首页 ≥2 条的语义簇＝写满，别再加篇。**
+「类案检索报告要不要写不利判决」首页我们独占 4 条（2天前不利判决篇／3天前筛选篇／
+7-22 报告篇／7天前仲裁篇）。类案检索报告线确认封口。
+⚠️ 但**只占 1 条且答的是不同子问题时不算自我竞争** —— 本轮选中的「最近的判决为什么检索不到」
+首页有我们 3 天前那篇（答检索式写法），本篇答时间分布与上网机制，判可做；
+48h 后若阅读偏低，优先归因于此并把阈值收严到「自家在首页即毙」。
+
+**规律三（复核 8/19 阈值，本轮再中一次）：顶部百度 AI 直答框/百科摘要把流程答完＝空位为零。**
+「尽职调查怎么查企业的诉讼风险」顶部一整块百科来源 AI 摘要已答完全流程，
+再加百度百科＋百度知道＋法行宝 ⇒ 百度自家 ≥4 条，命中 8/19 立的毙词阈值。**该阈值确认可用。**
+
+**规律四：主结果 8 条无一在答本问题 ＝ 意图劫持，不是空位。**
+「对方律师提交的判例怎么反驳」首页 8 条全在讲「法庭辩论话术怎么怼」，相关搜索全是
+找律师/律师事务所/律师起诉流程。与 8/19 毙的「不同数据库检索结果不一样」同型死法。
+⚠️ 与之相反的**可做**形态：主结果确实在答这件事、只是**视角是当事人**（本轮选中的词就是这种）——
+那是真空位，因为办案人视角没人写。**「没人答」和「答了但视角不对」要分开判，前者毙后者做。**
+
+## 🔴 回填阅读量的致命坑（2026-08-21 13:4x 实测发现）
+
+**把 `pageSize` 调大以求一次读完，会让作品管理列表的六个统计数字全部渲染成 0。**
+
+复现：`/builder/rc/content?pageSize=50` 读到的 08-18 那批全是 `0/0/0/0/0/0`；
+同一批文章用默认 `pageSize=10` 逐页读，是 `8/14/1/2...`，**与 metrics.jsonl 里早先存的值完全一致**。
+即大分页只渲染占位、不加载统计数据，**外观上完全看不出异常**。
+
+后果：如果照着大分页的结果回填，会把整批文章写成 0 阅读，被引擎当成真实观测，
+直接得出「内容没人看」的错误结论——和 2026-08-14 那次「回填跑早了」是同一种事故的不同成因。
+
+**纪律：回填一律用默认 `pageSize=10` 逐页翻（currentPage=1,2,3...），不许图快改 pageSize。**
+读完先拿一批已回填过的旧文对账，对得上才继续填新的。
+
+## 正文改单句：innerHTML 替换会失效，必须整段 textContent 重设（2026-08-21）
+
+UEditor 里 `p.innerHTML.replace(old,new)` 经常 `replaced=0`——文字在 innerHTML 里被标签和
+零宽字符拆散，匹配不到。改法：
+```js
+const p=[...ed.document.querySelectorAll('p')].find(p=>p.innerText.includes('锚点句'));
+p.textContent = 整段新文本;
+ed.fireEvent('contentchange');
+```
+改完必须重跑逐段 diff 确认回到 diffCount=0。
+
+## 选词：除「法条型答案」外，另有两类必毙词型（2026-08-21 连毙 5 词归纳）
+
+1. **近期有新闻事件的概念** —— 「判决书上网哪些信息会被隐去」被「法官姓名隐去」事件劫持，
+   光明网/南方都市报/上观/南方+/最高法官网把整个 SERP 吃干净。凡是行业里最近吵过的概念，
+   官媒的报道会长期压制所有长尾内容，直接换词。
+2. **动词用「统计 / 分析」** —— 百度会把它理解成「计算」，把专业检索意图劫持成当事人算钱意图。
+   「判决书里的赔偿金额怎么统计」返回的全是「赔偿金怎么算」的律图/律临/法行宝。
+   要表达数据分析的意思，改用「怎么筛」「怎么核」「怎么读」这类动作词。
+
+---
+
+## 2026-08-24 百家号编辑器：两条实测更正（省时间，优先照这条走）
+
+**⚠️「正文在 iframe 内，JS 够不着，只能靠截图判落点」——部分作废。**
+实测 `document.querySelector('iframe').contentDocument` **同源可直读**
+（body `contenteditable=true`，class `view news-editor-pc`）。
+⇒ 探针落点、逐段长度 diff、字数核验**全部可以用 JS 精确判**，
+不必再依赖会骗人的「字数」计数器和会返回缓存旧帧的截图。
+本轮据此做到 **34/34 段长度与源文逐段全等**后才点发布。
+
+推荐核验片段：
+```js
+const d=document.querySelector('iframe').contentDocument;
+const ps=d.body.innerText.split('\n').map(s=>s.trim()).filter(Boolean);
+JSON.stringify({n:ps.length, lens:ps.map(p=>p.length)})   // 拿去和源文逐段比
+```
+
+**⚠️ 标题区：execCommand 会双写，且 selectNodeContents+delete 完全无效。**
+`insertText` 之后再 `dispatchEvent(InputEvent)` 会让标题变成两遍；
+`execCommand('delete')` 对这个 React 受控标题**连删三次纹丝不动**（反而累积到三遍）。
+**唯一有效清空法＝真实键盘 cmd+a → Delete**（立刻回到 placeholder），然后**真实 type**，一次到位。
+
+**⚠️ 探针残字：**「探针」两字用 cmd+a+Delete 清不干净，会残一个「针」被推到全文末尾。
+处置＝**shift+Right 选中再 Delete**（单按 `Delete` 是退格，删不掉光标后面的字）。
+
+**⚠️ hidden-tab（`document.hidden===true`）：**
+截图会**长时间返回旧缓存帧**（点完发布看到的还是一分钟前的画面）；
+伪造 `visibilityState/hidden=visible` **无效**。
+但：**图库搜索必须用真实键盘 Enter 才会发请求**——合成 KeyboardEvent / 点搜索图标全部返回 0 结果，
+换真实 click+type+Enter 后立刻返回 20 张图。
+另：**模态框开着若干秒后截图会自行恢复实时**，所以遇 hidden-tab 先用 JS 读 DOM 顶住，隔一会儿再截图。
+
+**⚠️ 封面是必填**：不设封面点发布只会弹「请添加封面」，不会提交。
+AI 封面失败时的合规兜底＝**「免费正版图库」搜通用词选图**（本轮搜「办公」），
+**不要碰被禁的「正文/本地上传」**。
+判 AI 封面真失败的硬判据＝modal 内 fresh img 恒 0 张 + tab 无「AI封面(N)」计数 + 「生成失败」toast；
+若 DOM 里其实已有图且 tab 变成 (1)，那是**假失败**，重开弹框即见图。
+
+## 🎯 渠道归因（2026-08-24 建，Jack：「百度统计每天二三十访客，想知道从哪来」）
+
+**为什么之前分不出来**：百家号正文**不允许放任何链接**，读者只能手打域名，
+到站时 **referer 为空**，跟直接访问、书签、微信内打开完全混在一起。光看 referer 永远无解。
+
+**三条通道，各用各的认法：**
+
+| 渠道 | 能放链接？ | 认法 | 正文里写什么 |
+|---|---|---|---|
+| 知乎 | ✅ | 深链自带 `utm_source=zhihu`（`wsc_query.py` 已自动加） | 直接贴 `tob.wenshucha.com/cases?...&utm_source=zhihu` |
+| **百家号** | ❌ | **专属短链** `/bjh` → 302 到 `/?utm_source=baijiahao` | 文末写「打开 wenshucha.com/bjh」 |
+| 微信公众号 | 部分 | 短链 `/wx` | 同上 |
+
+短链在 nginx `html_wenshucha.com.conf` 里，三条 `location =` 规则，不占页面不占部署。
+
+**两个必须一起改的地方**（少一个就白设）：
+1. 像素原来只记 `location.pathname`，302 之后的 utm 参数**记不到**。已改成 `pathname+search`。
+2. `wsc_query.py` 输出的深链现在自动带 `utm_source`/`utm_medium`，**别再手工删**。
+
+**看数**：百度统计「来源分析 → 全部来源」直接分渠道；我们自己的像素日志里
+`p=` 参数带 utm，`traffic_report.py` 会拆出来。两套交叉验证。

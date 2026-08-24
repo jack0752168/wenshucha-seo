@@ -216,6 +216,24 @@ def render_daily(d):
         L.append(f"*📊 昨日访问:* 像素暂无昨日数据"
                  + (f"(已累计 {n} 天)" if n else "(像素 08-18 才上线)"))
 
+    # ①.5 渠道归因(2026-08-24 起):百家号没法放链接、无 referer,只能靠 /bjh 短链认。
+    #     像素的 p= 参数现在带完整 query,utm 就在里面。
+    ch = {}
+    for path, n in px["paths"]:
+        import urllib.parse as U
+        if "utm_source=" in path:
+            src = U.parse_qs(path.split("?", 1)[-1]).get("utm_source", ["?"])[0]
+            ch[src] = ch.get(src, 0) + n
+        elif path in ("/bjh", "/zh", "/wx"):
+            ch[{"/bjh": "baijiahao", "/zh": "zhihu", "/wx": "weixin"}[path]] = \
+                ch.get({"/bjh": "baijiahao", "/zh": "zhihu", "/wx": "weixin"}[path], 0) + n
+    if ch:
+        名 = {"baijiahao": "百家号", "zhihu": "知乎", "weixin": "公众号"}
+        L.append("*🏷 渠道归因(带标记的):* "
+                 + "、".join(f"{名.get(k, k)} {v}" for k, v in sorted(ch.items(), key=lambda x: -x[1])))
+    else:
+        L.append("_🏷 渠道归因:暂无带标记的访问(短链 /bjh /zh 2026-08-24 才上，需要新发的内容带上才会有数)_")
+
     # ② 访问来源(referer 口径,可回溯)
     day_src = rf["daily"].get(y) or {}
     if day_src:

@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+"""类案检索取数器 —— 把我们自己的产品当场操作一遍,导出可直接写进回答的真实数据
+
+为什么要这个(2026-08-17 Jack 定案):
+  「就像我们用自己的产品一样,每一个按键都导入对应的参数,然后导出不同对应的这个数据,再来回答。」
+  → 知乎每一篇回答都必须带真实检索数据。靠手写 curl 不可靠也不可复现,
+    做成一条命令,保证每篇都有,且参数与结果一一对应、可回溯。
+
+用法:
+  python3 wsc_query.py --q "未签书面劳动合同 二倍工资" --cause 劳动争议 \
+      --province 广东 --narrow 未续签 超过一年
+  python3 wsc_query.py --q "..." --cause "..." --json    # 机器可读
+
+输出三块(直接可粘进回答):
+  ① 筛选面板逐项操作 + 每一步剩余条数(演示「收窄能力」)
+  ② 聚合分布(审理程序/法院层级/文书类型/地域/年份/高频法院)
+  ③ 真实案例(案号+法院,可回中国裁判文书网核对)
+
+🚨 红线(2026-08-18 差点踩):
+  q2(在结果中搜索)对正文是 match 分词 OR,不是 match_phrase。
+  实测同一基准 1,350,049 下: q2=予以支持 → 1,186,303 / q2=不予支持 → 1,157,143,几乎相同。
+  **所以 q2 只能用于「加一个词还剩多少条」的收窄演示,绝不能解释成「多少案子这么判」。**
+  本脚本在输出里会自动打上这条警告,防止下游误用。
+"""
+import argparse, json, sys, urllib.parse, urllib.request
+
+BASE = "http://127.0.0.1:3201"
+TIMEOUT = 40
+
+
+def call(path, params):
+    qs = urllib.parse.urlencode({k: v for k, v in params.items() if v not in (None, "", [])})
+    try:
+        with urllib.request.urlopen(f"{BASE}{path}?{qs}", timeout=TIMEOUT) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except Exception as e:
+        print(f"❌ ES 不通 ({e}) —— 按纪律本轮跳过,绝不凭印象编数据", file=sys.stderr)
+        sys.exit(2)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--q", required=True, help="主检索词")
+    ap.add_argument("--cause", default="", help="案由,如 劳动争议")
+    ap.add_argument("--caseType", default="民事")
+    ap.add_argument("--province", default="", help="省份,如 广东")
+    ap.add_argument("--procedure", default="", help="审理程序,如 二审")
+    ap.add_argument("--court", default="", help="法院,如 深圳")
+    ap.add_argument("--lastYears", default="", help="近N年")
+    ap.add_argument("--narrow", nargs="*", default=[], help="在结果中依次追加的词(只做收窄演示)")
+    ap.add_argument("--cases", type=int, default=4, help="取几条真实案例")
+    ap.add_argument("--json", action="store_true")
+    a = ap.parse_args()
+
+    if not call("/health", {}).get("ok"):
+        print("❌ es-search2 未就绪", file=sys.stderr); sys.exit(2)
+
+    # ① 逐层收窄:每加一个筛选项记一次剩余条数
+    steps, p = [], {"q": a.q, "size": 1}
+    steps.append(("只把案情丢进搜索框", dict(p), call("/search", p)["total"]))
+    for label, key, val in [("案由", "cause", a.cause), ("案件类型", "caseType", a.caseType),
+                            ("审理程序", "procedure", a.procedure), ("地域", "province", a.province),
+                            ("法院", "court", a.court), ("近N年", "lastYears", a.lastYears)]:
+        if val:
+            p[key] = val
+            steps.append((f"+ {label} = {val}", dict(p), call("/search", p)["total"]))
+    p["excludeAnnouncement"] = "1"
+    steps.append(("+ 隐藏公告 = 开", dict(p), call("/search", p)["total"]))
+    for w in a.narrow:
+        p["q2"] = w
+        steps.append((f"+ 在结果中搜「{w}」", dict(p), call("/search", p)["total"]))
+
+    # ② 聚合分布(用不含 q2 的参数,避免 OR 噪声污染分布)
+    agg_p = {k: v for k, v in p.items() if k not in ("size", "q2")}
+    aggs = call("/agg2", agg_p).get("aggs", {})
+
+    # ②.5 案由纯度体检(2026-08-18 新增,起因见下)
+    #     🚨 cause 是**全文分词 OR 匹配,不是精确标签**。实测只传
+    #        cause=机动车交通事故责任纠纷 会返回 2350 万条,里面混着侵害商标权/
+    #        信用卡/著作权/抚养费——因为"纠纷"这个词到处都是。
+    #     ✅ 精确口径只能从 cause **聚合**里取(聚合 key 是精确案由名)。
+    #     案由越长、越由通用词拼成,污染越重。实测纯度:
+    #        民间借贷 99.6% / 劳动争议 76% / 婚约财产纠纷 44% / 机动车交通事故责任纠纷 50%
+    purity = None
+    if a.cause:
+        rows = aggs.get("cause") or []
+        exact = next((r["count"] for r in rows if str(r.get("key")) == a.cause), None)
+        shown = sum(r["count"] for r in rows) or None
+        # 分母必须是**最后一层筛选后**的总数(不含 q2),不是刚加完 cause 那一步
+        filt = next((t for lbl, _, t in reversed(steps) if "在结果中搜" not in lbl), None)
+        if exact is not None and filt:
+            purity = {"filter_total": filt, "exact": exact, "pct": exact / filt * 100,
+                      "neighbors": [(str(r["key"]), r["count"]) for r in rows[:8]
+                                    if str(r.get("key")) != a.cause]}
+
+    # ③ 真实案例
+    cases = []
+    for c in (call("/search", dict(p, size=a.cases)).get("cases") or [])[:a.cases]:
+        cases.append({"cause": str(c.get("cause") or ""), "case_no": c.get("case_no") or "", "court": c.get("court") or "",
+                      "title": __import__("re").sub("<[^>]+>", "", c.get("case_title") or "")[:44]})
+
+    if a.json:
+        print(json.dumps({"steps": [{"label": s[0], "params": s[1], "total": s[2]} for s in steps],
+                          "aggs": aggs, "cases": cases}, ensure_ascii=False, indent=2)); return
+
+    print("=" * 62)
+    print("① 筛选面板逐项操作（把产品当场跑一遍）")
+    print("=" * 62)
+    for label, _, tot in steps:
+        print(f"  {label:<28} {tot:>14,}")
+
+    print("\n" + "=" * 62)
+    print("② 聚合分布（term 聚合，可直接引用）")
+    print("=" * 62)
+    for dim in ("procedure", "courtLevel", "docType", "province", "recent", "court"):
+        rows = aggs.get(dim) or []
+        if not rows: continue
+        print(f"\n  --- {dim} ---")
+        for r in rows[:6]:
+            print(f"    {str(r.get('key'))[:22]:<24} {r.get('count'):>12,}")
+
+    if purity:
+        print("\n" + "=" * 62)
+        print("②.5 案由纯度体检 🚨 引用数字前必看")
+        print("=" * 62)
+        print(f"  cause 过滤器给出        {purity['filter_total']:>14,}")
+        print(f"  其中真正标着「{a.cause}」  {purity['exact']:>14,}"
+              f"   纯度 {purity['pct']:.0f}%")
+        if purity["pct"] < 85:
+            print("  ⚠️  纯度低于 85% —— **不要把过滤器那个数说成「这类案子有多少件」**。")
+            print("     要么改用上面的精确数,要么在回答里如实写出这一批的案由构成。")
+        print("  同批里的相邻案由(这些不是噪音,是真的会跟你混在一起的案子):")
+        for k, c in purity["neighbors"][:6]:
+            print(f"     {k[:22]:<24} {c:>12,}")
+
+    print("\n" + "=" * 62)
+    print("③ 真实案例（可回中国裁判文书网核对）")
+    print("=" * 62)
+    for c in cases:
+        flag = "" if (not a.cause or c["cause"] == a.cause) else "  ❌案由不符,别用"
+        print(f"  {c['case_no'] or '(无案号)':<24} {c['court'][:20]:<22} {c['cause'][:14]:<16} {c['title'][:26]}{flag}")
+
+    # ④ 可点深链 —— 读者点开就是上面那批结果,自己能验
+    #    ⚠️ 前端只吃 q / cause / province 三个参数(2026-08-17 实测,
+    #       lastYears / procedure / caseType 传了不生效,不要放进链接假装能用)
+    link_p = {k: v for k, v in (("q", a.q), ("cause", a.cause), ("province", a.province)) if v}
+    link = "https://tob.wenshucha.com/cases?" + urllib.parse.urlencode(link_p)
+    print("\n" + "=" * 62)
+    print("④ 可点深链（贴进回答，读者点开即是同一批结果）")
+    print("=" * 62)
+    print(f"  {link}")
+    print("  注：前端仅支持 q/cause/province；其余筛选项让读者自己在页面上点，")
+    print("      让他亲手收窄一次，比看你描述更有说服力。")
+
+    print("\n" + "=" * 62)
+    print("⚠️  写回答时必须说清楚的两件事")
+    print("=" * 62)
+    print("  1) 中国裁判文书网**没有稳定的公开原文直链**(2021 年后需登录+验证码),")
+    print("     所以只能给案号让人自己去查,不要承诺「点击直达原文」——")
+    print("     我们自己的产品页也是这么写的:「原文直链目前系统性为空」。")
+    if a.narrow:
+        print("  2) q2（在结果中搜索）对正文是分词 OR 不是精确短语，")
+        print("     上面带「在结果中搜」的行只能说明「加了这个词还剩多少条」，")
+        print("     **绝不能解释成「多少案子是这么判的」**。")
+
+
+if __name__ == "__main__":
+    main()
