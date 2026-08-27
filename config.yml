@@ -132,6 +132,7 @@ sites:
     host: sinoverdict.wenshucha.com
     sitemap: https://sinoverdict.wenshucha.com/sitemap.xml
     urls_to_push:
+      - https://sinoverdict.wenshucha.com/blog/peoples-court-case-database-official-chinese-case-law.html
       - https://sinoverdict.wenshucha.com/blog/chinese-case-law-metadata-field-census.html
       - https://sinoverdict.wenshucha.com/blog/chinese-case-law-coverage-by-year-recency-cliff.html
       - https://sinoverdict.wenshucha.com/
