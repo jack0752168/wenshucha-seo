@@ -126,6 +126,46 @@ sites:
       - https://www.wenshucha.com/data/labor/yantai.html
       - https://www.wenshucha.com/data/labor/zhengzhou.html
       - https://www.wenshucha.com/data/labor/zhongshan.html
+      - https://www.wenshucha.com/data/labor/huaian.html
+      - https://www.wenshucha.com/data/labor/fuzhou.html
+      - https://www.wenshucha.com/data/labor/panzhihua.html
+      - https://www.wenshucha.com/data/labor/zhumadian.html
+      - https://www.wenshucha.com/data/labor/xuzhou.html
+      - https://www.wenshucha.com/data/labor/wuzhou.html
+      - https://www.wenshucha.com/data/labor/xiangyang.html
+      - https://www.wenshucha.com/data/labor/bijie.html
+      - https://www.wenshucha.com/data/labor/wuhu.html
+      - https://www.wenshucha.com/data/labor/wuxi.html
+      - https://www.wenshucha.com/data/labor/jilin.html
+      - https://www.wenshucha.com/data/labor/xinxiang.html
+      - https://www.wenshucha.com/data/labor/shijiazhuang.html
+      - https://www.wenshucha.com/data/labor/jiyuan.html
+      - https://www.wenshucha.com/data/labor/zhuzhou.html
+      - https://www.wenshucha.com/data/labor/guilin.html
+      - https://www.wenshucha.com/data/labor/yinchuan.html
+      - https://www.wenshucha.com/data/labor/shiyan.html
+      - https://www.wenshucha.com/data/labor/guiyang.html
+      - https://www.wenshucha.com/data/labor/kaili.html
+      - https://www.wenshucha.com/data/labor/pingquan.html
+      - https://www.wenshucha.com/data/labor/dengfeng.html
+      - https://www.wenshucha.com/data/labor/hengyang.html
+      - https://www.wenshucha.com/data/labor/mianzhu.html
+      - https://www.wenshucha.com/data/labor/leshan.html
+      - https://www.wenshucha.com/data/labor/zunyi.html
+      - https://www.wenshucha.com/data/labor/anshan.html
+      - https://www.wenshucha.com/data/labor/anyang.html
+      - https://www.wenshucha.com/data/labor/xuchang.html
+      - https://www.wenshucha.com/data/labor/yichang.html
+      - https://www.wenshucha.com/data/labor/zhangjiagang.html
+      - https://www.wenshucha.com/data/labor/pingli.html
+      - https://www.wenshucha.com/data/labor/lanzhou.html
+      - https://www.wenshucha.com/data/labor/linjiang.html
+      - https://www.wenshucha.com/data/labor/taiyuan.html
+      - https://www.wenshucha.com/data/labor/yutian.html
+      - https://www.wenshucha.com/data/labor/quanzhou.html
+      - https://www.wenshucha.com/data/labor/changde.html
+      - https://www.wenshucha.com/data/labor/xingyang.html
+      - https://www.wenshucha.com/data/labor/loudi.html
     check_ssl: true
 
   - name: sinoverdict-en

@@ -28,8 +28,18 @@ except ImportError:
     raise SystemExit("需要 pypinyin: pip3 install pypinyin")
 
 
+# 同一城市在源数据里有两种写法(省名前缀漂移),合并后只出一页,
+# 否则两页抢同一个查询词 = 自我蚕食(2026-08-29 实测:乌鲁木齐 249 / 新疆乌鲁木齐 639)
+CITY_ALIASES = {"新疆乌鲁木齐": "乌鲁木齐"}
+
+# 合并后规范名的 slug 若与已上线 URL 不同,保留已上线的那个(那页百度已抓过,别造 404)
+SLUG_OVERRIDES = {"乌鲁木齐": "xinjiangwulumuqi"}
+
+
 def slug_of(city: str) -> str:
     """城市名 → 拼音 slug 做文件名/URL(中文文件名会让服务器 tar/cp 出错)"""
+    if city in SLUG_OVERRIDES:
+        return SLUG_OVERRIDES[city]
     return "".join(lazy_pinyin(city)).lower()
 
 # 当事人 PII 脱敏:判决书摘录里可能含邮箱/手机号/身份证,展示前抹掉
@@ -90,7 +100,7 @@ def load_rows():
 def aggregate(rows, idx):
     by_city = defaultdict(list)
     for r in rows:
-        city = r[idx["city"]]
+        city = CITY_ALIASES.get(r[idx["city"]], r[idx["city"]])
         if city:
             by_city[city].append(r)
     return by_city
@@ -303,7 +313,7 @@ footer a{{color:#fff}}
   <div class="dis">数据来源:中国裁判文书网公开判决,经文书查结构化处理,样本为部分收录(且仅含劳动者获支持的判决)非全量,
   当事人个人信息已脱敏。本页为信息性数据分析,不构成法律意见或个案结果承诺,胜诉与否及金额因案而异,具体维权请咨询执业律师。</div>
 </main>
-<footer><div class="wrap">文书查 SinoVerdict · 深圳星谱网络科技有限公司 · 1.5 亿裁判文书数据 · 商务 131-6872-7779 · <a href="mailto:chenjiaxin@wenshucha.com">chenjiaxin@wenshucha.com</a> · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2025437990号-2</a></div></footer>
+<footer><div class="wrap">文书查 SinoVerdict · 深圳星谱网络科技有限公司 · 1.6 亿裁判文书数据 · 商务 131-6872-7779 · <a href="mailto:chenjiaxin@wenshucha.com">chenjiaxin@wenshucha.com</a> · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2025437990号-2</a></div></footer>
 </body>
 </html>"""
 
