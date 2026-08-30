@@ -237,6 +237,7 @@ sites:
       - https://sinoverdict.wenshucha.com/blog/china-criminal-economic-crime-case-law-dataset.html
       - https://sinoverdict.wenshucha.com/blog/legal-mcp-servers-by-jurisdiction-china-gap-2026.html
       - https://sinoverdict.wenshucha.com/blog/chinese-provincial-high-court-websites-inventory-2026.html
+      - https://sinoverdict.wenshucha.com/blog/chinese-bankruptcy-register-national-court-endpoints-2026.html
     check_ssl: true
 
   - name: mcp-zh-dev
