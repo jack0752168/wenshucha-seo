@@ -55,7 +55,7 @@ def main():
     ap.add_argument("--procedure", default="", help="审理程序,如 二审")
     ap.add_argument("--court", default="", help="法院,如 深圳")
     ap.add_argument("--lastYears", default="", help="近N年")
-    ap.add_argument("--narrow", nargs="*", default=[], help="在结果中依次追加的词(只做收窄演示)")
+    ap.add_argument("--narrow", nargs="*", default=[], help="在结果中各自独立加的词(注意:实现是 q2 覆盖,非累加;每个词都在同一基准上单加)")
     ap.add_argument("--cases", type=int, default=4, help="取几条真实案例")
     ap.add_argument("--utm", default="zhihu", help="渠道标记,进深链的 utm_source")
     ap.add_argument("--json", action="store_true")
@@ -77,7 +77,7 @@ def main():
     steps.append(("+ 隐藏公告 = 开", dict(p), call("/search", p)["total"]))
     for w in a.narrow:
         p["q2"] = w
-        steps.append((f"+ 在结果中搜「{w}」", dict(p), call("/search", p)["total"]))
+        steps.append((f"+ 在结果中搜「{w}」(独立加词,非累加)", dict(p), call("/search", p)["total"]))
 
     # ② 聚合分布(用不含 q2 的参数,避免 OR 噪声污染分布)
     agg_p = {k: v for k, v in p.items() if k not in ("size", "q2")}

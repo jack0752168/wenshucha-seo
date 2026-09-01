@@ -193,3 +193,8 @@ https://tob.wenshucha.com/cases?q=%E8%AF%95%E7%94%A8%E6%9C%9F&cause=%E5%8A%B3%E5
 
 连着读三五份同类的，你对"这类主张法院一般怎么看"的感觉，会比读十篇法条解读文章强得多。
 <!-- BODY-END -->
+
+
+---
+发布状态：✅ 已发布（2026-08-25 回填核实，来源＝知乎 members/answers API 按 qid 比对）
+URL：https://www.zhihu.com/question/8674128689/answer/2074817658541949926

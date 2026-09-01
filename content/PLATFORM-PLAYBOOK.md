@@ -407,6 +407,80 @@ AI封图         ← ✅ 有「根据全文智能生成封面」,纯页内,自�
 但第 3 步的正文区 y 值随标题行数变(07-29 是 349、07-30 两行标题时是 388),仍必须探针确认。
 **字数：** 起稿直接按 3500 字目标写。写到 4800 再回头砍要多花三轮,且容易砍出逻辑断口。
 
+**🔴 2026-08-27 正文灌注两条新结论（本轮实测，改的是第 3 步）：**
+
+**① 分批 type 会段落错位，而且字数校验查不出来。**
+本轮把 31 段分 3 批 `computer type` 灌进去，第 2 批末尾的两段被挤位：
+p19 变成空段、「比如同类借贷纠纷里…」被黏进最后一段 p29 的尾巴、「附带好处是…」漂到全文最末。
+**`chars` 读回 1990、预期 1989 —— 一个字都没丢，纯粹是顺序乱了**，所以
+「字数对上了」「首尾对上了」**都不足以判正文灌对了**。
+**判据必须加一条：逐段 dump 顺序**
+```js
+const d=document.querySelectorAll('iframe')[0].contentDocument;
+[...d.querySelectorAll('p')].map((p,i)=>i+'|'+p.innerText.replace(/\s/g,'').slice(0,16)).join('\n')
+```
+拿它跟草稿的段落表对一遍，再存草稿。
+
+**② 百家号 iframe 正文可以直接改 DOM，而且能落库 —— 与知乎 Draft.js 相反。**
+错位不必清空重灌。用 JS 拆段 / 重排 / 删空段之后：
+底栏「字数」当场同步成 1989 → 存草稿拿到 article_id → **重载 /edit 复核，顺序完全正确**。
+⇒ 百家号编辑器**以 iframe DOM 为准，没有独立 model**（知乎那条「execCommand 改了 DOM 但 model 没更新」
+的教训**不适用于百家号**，别把两个平台的经验混用）。
+但**重载 /edit 复核这一步不能省** —— 它才是「服务端到底存了什么」的硬判据。
+
+**③ 编辑器渲染依赖 tab 在前台。**
+navigate 到 `/edit` 后若 `document.visibilityState==='hidden'`：
+`[contenteditable]` 恒 **0**、iframe 只有 **2** 个（正常是 3 个），看起来像编辑器坏了，其实是没渲染。
+osascript 切前台后立刻变成 `ces=1 / iframes=3 / visible`。
+osascript 仍须按 08-27 早间那条写法：**`activate` 放在 `set active tab index` 之后**、
+**`delay 2`**、**marker 用 `setInterval` 每 300ms 锁死 `document.title`**。
+
+**🔴 2026-08-27 12:00 轮三条新结论（第 3、7 步）：**
+
+**① 灌正文不必再算坐标——用 JS 把焦点送进 iframe，比「点(560,349)+探针」稳。**
+```js
+const f=document.querySelectorAll('iframe')[0], d=f.contentDocument, w=f.contentWindow;
+w.focus(); d.body.focus();                       // 本轮实测 d.body 自身就是 contenteditable=true
+const r=d.createRange(); r.selectNodeContents(d.body); r.collapse(true);
+const s=w.getSelection(); s.removeAllRanges(); s.addRange(r);
+```
+之后直接 `computer type` 即可。**两字探针仍然要打**（确认没落回标题栏），
+但坐标换算系数那一步可以整个跳过。判据仍是
+`document.querySelectorAll('iframe')[0].contentDocument.body.innerText`。
+
+**② 分批 type 的错位有第二种形态：整段被吞。**
+08-27 早间记的是「段落被挤位、顺序乱、字数查不出来」。本轮遇到的是更狠的一种：
+**第 2 批的第一行小标题「三、把检索要素拆成三层…」整段消失**，p16 直接接到「实操上可以把要素拆成三层」。
+⇒ **批次交界的第一段是高危位**。逐段 dump 时必须盯交界处，
+比对首尾段、比对字数**都发现不了整段丢失**（丢的是小标题，字数只差 25，很容易被当成改写误差放过）。
+最保险的判据是**拿 dump 出来的段落表跟草稿逐行对齐**，不是抽查。
+修法照旧走 iframe DOM 直改，`cloneNode(false)` 一个同级 `<p>`、`textContent` 赋值、`insertBefore`，
+底栏字数当场同步、存草稿 → 重载 /edit 复核顺序正确 ⇒ 再次印证百家号以 iframe DOM 为准。
+
+**③ AI 封面生成可能要 ~68 秒，别在 40 秒判它空转。**
+手册写的是 20-25 秒，本轮实测约 **68 秒**（三轮 wait 才等到「重新生成」出现）。
+判据正则 `/整理封面信息中|生成封面中|生成中/` 全程有效，一直是 `busy:true`。
+⇒ **至少等满 3 轮（约 70 秒）再考虑回退「免费正版图库」**，
+提前回退等于白丢一次已经在跑的生成。
+
+**🔴 2026-08-27 覆盖上面 A 段的破法(先读这条,A 段的 class 强推已被证明治不了根因):**
+
+弹框卡 `opacity:0` 的真凶是 **CSS `animation` 停在 0% 关键帧**,不是 class。
+computed style 实证:`animation-name: css-xxxx-antZoomIn` / `play-state: running` / **`fill-mode: both`**,
+0% 帧是 `transform: matrix(0.2,0,0,0.2,0,0)` + `opacity:0`。
+**CSS animation 优先级高于 inline style**,所以 A 段那套「改 class + 设 style.opacity」全被它覆盖
+(2026-08-27 实测:class 确实变成了 `-appear-active`,opacity 仍读 0)。
+**一行破法(对 `.cheetah-modal` 及其两层父元素都打):**
+```js
+[m, m.parentElement, m.parentElement.parentElement].filter(Boolean).forEach(x=>{
+  x.style.setProperty('animation','none','important');
+  x.style.setProperty('opacity','1','important');
+  x.style.setProperty('transform','none','important');});
+```
+弹框当场从 196×134 变 980×671 / opacity 1。
+**优于 A 段之处:截图正常渲染**,不用像 A 段那样退到「一切判据只读 DOM、禁用坐标点」——
+候选封面那一步仍需要的真实坐标点击照常可用。**每开一个新弹框/新面板都要再打一次。**
+
 **🔴 2026-08-21 封面链路两处大改(旧步骤 5-8 已部分作废,先读这段再照旧文走):**
 
 **A. 根因新形态:tab 不可见 → 弹框动画永不启动 → 卡死在 opacity 0。**
@@ -1220,3 +1294,270 @@ AI 封面失败时的合规兜底＝**「免费正版图库」搜通用词选图
 
 **看数**：百度统计「来源分析 → 全部来源」直接分渠道；我们自己的像素日志里
 `p=` 参数带 utm，`traffic_report.py` 会拆出来。两套交叉验证。
+
+---
+
+## 🔴 2026-08-24 15:xx 百家号发文链路三处新坑（都已找到破法，建议作为今后标准手法）
+
+**坑A · CDP `type` 在 hidden tab 下会静默吞掉 ASCII 字符。**
+标题「法律AI能预测胜诉率吗？…」用 `computer{action:'type'}` 打进去，落地变成「法律能预测胜诉率吗？…」
+——**AI 两个字母凭空消失，无任何报错**。单独 `key:'A'` 同样无效。中文全都进得去（走 insertText 通道），
+ASCII 走 keyDown/keyUp 被后台节流丢弃。
+**破法**：`document.execCommand('insertText',false,'AI')`，先用 Range 把光标定位到插入点：
+```js
+const el=document.querySelector('[contenteditable=true]'); el.focus();
+const tn=document.createTreeWalker(el,NodeFilter.SHOW_TEXT).nextNode();
+const r=document.createRange(); r.setStart(tn,2); r.setEnd(tn,2);
+const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+document.execCommand('insertText',false,'AI');
+```
+**实测被 React model 认**：存草稿 + 整页重载后标题完整保留（含 AI）。
+⚠️ 凡是标题/正文里有英文、数字、域名的，`type` 之后**必须逐字校验**，别默认打进去了。
+
+**坑B（正面收获）· 正文改用「iframe DOM 直写 `<p>` 段落」，一次灌完全文。**
+```js
+const doc=document.querySelectorAll('iframe')[0].contentDocument;
+doc.body.innerHTML = P.map(t=>'<p>'+t+'</p>').join('');
+doc.body.dispatchEvent(new Event('input',{bubbles:true}));
+```
+47 段一次灌完，存草稿 + 重载验证：**47段/textLen 2304/`a` 标签数 0 全部持久化**。
+比逐字 type 快一个数量级，且天然绕开坑A的 ASCII 丢失。与 08-20 已验证的 `p.remove()` 会被 ueditor
+持久化同源（ueditor 存稿时读 body innerHTML）。**建议今后正文一律走这条，不再打探针**——
+但**灌完必须存草稿 + 重载 + 逐项验（段数/字数/a标签数/首末段）**再往下走。
+
+**坑C · JS 合成 MouseEvent 五连点【不触发】百家号的 React onClick。**
+对「选择封面」派发 pointerdown/mousedown/pointerup/mouseup/click 全套，弹框纹丝不动；
+换**真实坐标点击**同一位置立刻打开。（与知乎 Draft.js 那条「合成 paste 有效」不同，别混用经验。）
+→ **百家号侧：定位用 JS 读 rect，点击一律用真实坐标。**
+- 换算系数本轮实测 **1538/1512 = 1.0172**（每次现读 `innerWidth/innerHeight` 重算）
+- 封面框：点**图片图标**（文字「选择封面」上方约 32px），本轮 viewport(415,370.5) → 截图(422,382) 命中
+- ⚠️ **本轮 hidden tab 下截图是实时的、不是旧缓存**，与 08-24 上午第4篇「截图恒为旧缓存画面」形态相反
+  ——**两种形态都存在，别一律套用**，先截一张对着 DOM 校验一次再决定信不信截图。
+
+**⚠️ 附：「生成」按钮空点 ≠ 卡死。** 第1次点「生成」后 43 秒无图、**无进度文案、无失败提示、按钮仍 enabled**
+＝这次点击**根本没触发**；第2次同坐标点击 36 秒正常出图。
+**判据**：先看按钮 disabled 状态 + 有无「整理封面信息中/生成封面中」文案——
+两者皆无就是空点，直接重点，**不要走 08-20 那条「40秒开网络追踪 / 存草稿刷页」流程**（那条针对的是
+真的在转但轮询打到 `/rc/undefined` 的情形）。
+
+**⚠️ 止损线①的假阳性：** `grep '未通过'` 会命中作品管理页的**筛选 tab 选项**
+（全部/已发布/待发布/未通过/已撤回/草稿），**不是文章状态**。本轮命中过一次，截图确认后排除。
+**判止损线一律截图看状态标签，别用纯文本 grep**——误判会让任务在正常状态下自杀停发。
+
+**✅ 列表渲染空白时的对账替代法：** 作品管理列表行经常渲染不出来（innerText 仅 200-260 字符），
+此时**顶部「共N篇」是可靠的**——拿它与上一篇发完时记录的总数比对即可确认 M，不必死等列表渲染。
+
+**🔴 2026-08-25 11:2x 封面链路第三次改写：AI封面可能整条哑火，备用路径＝免费正版图库**
+
+08-25 第4篇实测：弹框照例撞 `visibilityState:hidden` 楔死，用剥离 `-appear-prepare` 的老办法推开后
+内容正常渲染、封面描述与封面文字都手填成功，**但点「生成」不产生任何生成请求** ——
+`read_network_requests` 全程只抓到一条 `fclog.baidu.com/log/weirwood?type=perf`，无生成 API 调用。
+试过的三条路各两轮**全部无反应、无 loading、无报错**：
+① JS `btn.click()`（按钮 `disabled:false`，不是禁用态）
+② 真实坐标点击「生成」
+③ 主入口「AI一键生成封面」
+
+**⇒ 已排除「隐藏 tab 节流」这个解释**：期间用 PUBLISH-LOG 08-25 那条 osascript 打 title 标记法
+把 tab 真正切到前台（`document.title='ZZMARK_...'` → osascript 按 title 匹配 → `visibilityState` 变 `visible`、
+弹框自然渲染、截图恢复可用），**生成依然哑火**。更像服务侧当时不可用或当日额度用尽
+（今日前 3 篇均已用 AI 封面）。
+
+**破法＝改走「免费正版图库」标签，一次通过：**
+```
+点「免费正版图库」标签 → 搜索框输中性词（实测「卷宗」有结果）→ 回车
+→ 点某张图（不是右上角圆圈，点图本身即可）→ 右侧「封面预览」即时更新、标签变「免费正版图库(1)」
+→ 点右下「确定 (1)」→ 弹框关闭，封面落入「设置封面」区
+```
+⚠️ **旧手册那句「法律类关键词常无结果」在本例不成立**（「卷宗」返回 7+ 张），可放宽，先搜再说。
+
+**⚠️ 图库这条路反而比 AI 封面干净**，不存在 AI 封面那两类已发生过的内容红线：
+08-25 早上「编造正文没有的『3个关键动作』」、09:22「伪造邮箱 info@design.com + DATE:2024」。
+实拍图零文字、零联系方式，闸门一/三一次过。
+**另：封面非 AI 生成时，「采用AI生成内容」声明要保持未勾选**（勾了反而是不实声明）。
+
+**AI助手「错别字」误报第三次复现**（本院→个圆、补上→不上、搜到→收到），全是把对的改错，
+**「全部采纳」一律别点** —— 见 [[reference_bjh_ai_assistant_false_typos]]。
+
+---
+## 【2026-08-25 补】百家号封面：AI 封面 UI 已换代 + 失败回退路径
+
+**新版 AI 封面 UI**（旧「根据全文智能生成封面」链接已消失）：
+弹框三 tab = `正文/本地上传` / `AI封面` / `免费正版图库`。AI封面里有：中间「AI一键生成封面」按钮、
+下方「热门模板」横排、`封面描述` textarea、`封面文字` textarea（≤15字）、右下「生成」按钮。
+两个 textarea 用 native value setter + input/change 事件可靠写入。
+⚠️「从正文总结」自动填的封面文字会**编造正文没有的内容**，一律手填。
+
+**08-25 实测两层故障与回退**：
+1. 后台 tab（`visibilityState:hidden`）时弹框**截图假空、DOM 实存**（980×671）。先判 visibilityState；
+   要看画面就改 `document.title` 打唯一标记，再 osascript **按 title** 激活（按 URL 会选错 tab）。
+2. 前台可见后，「生成」与「AI一键生成封面」各点一次、各等 20–30 秒，主区域恒空态、loading 恒 true、
+   零产出 ⇒ 平台侧服务不可用。
+
+**标准回退 = 「免费正版图库」**：切该 tab → 搜索框输关键词（法律类搜「法律」）→ Enter →
+点选一张 → 右下「确定」。正版免费、非本地上传、不违反本 playbook，实测一次通过，耗时 <30 秒。
+**纪律：AI 封面最多试两轮，不出图立刻切图库。**
+
+**🔴 2026-08-26 止损线误报（差点整轮停发，30 秒就能排除）：**
+`/builder/rc/content` 首页 `document.body.innerText` 里恒含「未通过」两个字——**那是筛选 tab 的按钮标签，
+不是文章状态**。用 `/未通过/.test(bodyText)` 判止损线会每天都误报。
+**正确判法＝点「未通过」tab（或直接开 `?collection=rejected`）看「共N篇」**，本次实测共 0 篇。
+同理「已撤回」「待发布」也都是 tab 标签。
+
+**🔴 2026-08-26 知乎专栏灌正文：paste 之后千万别直接打字（一轮栽两次）。**
+详见记忆 `reference_zhihu_column_paste_selection_eats_body.md`。三句话版：
+① paste 后整篇仍处**选中态**，紧接着打的字符会替换全文（实测 38 段被打成一个「。」）；
+② 非空编辑器里 paste **只改 DOM 不进 Draft 模型**，判据是服务端 `/api/articles/<id>/draft` 的 content 长度，
+   不是底栏字数；破法＝真实 cmd+a → 真实 Delete → 验字数 0 → paste → 真实点文字中间（验 isCollapsed）
+   → 打 1 个字符（字数 0 跳到全文）→ BackSpace → 轮询 /draft 对上 → 才点发布；
+③ **点发布前草稿没落地＝提交上一版，而且事后改不回来**（改好点「更新」卡「发布中...」，线上纹丝不动）。
+另：「专栏当日上限约 2 篇」已证伪（当日第 3 篇正常入库），但第 4 次 publish 被静默限流。
+
+**🔴 2026-08-26 12:2x 图库选图两条硬判据（hidden tab 下实测，省一个回合）：**
+
+**A. 图库候选图只能用真实坐标点击，JS 派发事件无效。**
+对 `.image-wrapper`（img 的直接父级）派发 pointerdown/mousedown/pointerup/mouseup/click 五连
+**完全没反应**——按钮仍是「确定」无计数、预览区无图。这跟弹框推进那套「一切走 DOM」不同：
+**弹框开合可以用 JS 强推，选图不行。**
+破法：`getBoundingClientRect()` 取该 wrapper 的 CSS 中心坐标，×（截图宽 ÷ innerWidth，实测 1568/1512≈1.037）
+换算成截图坐标，用 `computer left_click` 真实点击 —— 一次命中。opacity:0 的弹框照样接收点击。
+
+**B. 判「选中了没有」不能看 `[class*=selected]`。**
+本版式选中后 `modal.querySelectorAll('[class*=selected]')` **仍返 0 个**，照它判会误判成没选上、
+反复重点。**真判据（三条同时出现）**：① 标签页文字变「免费正版图库**(1)**」
+② 底部按钮变「确定 **(1)**」③ 封面预览区出现 width>250 的大图（src 含 `bjhwater`）。
+
+**C. 「确定」按钮在 DOM 里有两个同名的，第一个 rect 全 0（隐藏）。**
+取坐标必须过滤 `rect.width>0`，否则会点到 (0,0)。
+
+---
+
+## 🔧 2026-08-28 07:xx 三条链路更正（都省回合，建议作为标准手法）
+
+**① 后台 tab 下编辑器零渲染：`document.hidden` 补丁不够，要补 `resize`+`focus`。**
+百家号 `/builder/rc/edit?type=news` 在 `visibilityState:hidden` 时 `document.body.innerText` 只有 50 字符、
+`[contenteditable]`=0、iframe 只有 1 个。照 08-27 那条只打 `document.hidden` 覆盖 + rAF→setTimeout，
+**等 19 秒仍不渲染**。补上这两行立刻活：
+```js
+window.dispatchEvent(new Event('resize'));
+window.dispatchEvent(new Event('focus'));
+```
+读数从 `{nEditable:0, iframe:1, bodyLen:50}` 变成 `{nEditable:1, iframe:3, bodyLen:404}`。
+**同一手法对知乎问题页有效**（「写回答」按钮渲染不出来时同样用它救）。
+⇒ 今后标准开场白＝`hidden 覆盖 + rAF polyfill + resize + focus`，四件一起打，别只打前两件。
+
+**② 知乎按钮文字带零宽空格，`\s` strip 不掉。**
+`写回答` 按钮的 `innerText` 实际是 `"​写回答"`。用 08-18 手册那句
+`.replace(/\s/g,'')` 归一化后精确等值匹配**恒失败**（本轮直接抛 `no write btn`）。
+**正确归一化：`.replace(/[​‌‍\s]/g,'')`**。这条对「发布回答」「发布」同样适用。
+
+**③「发布按钮第一次点击永远不生效」——本轮不成立，改成条件判断。**
+08-18 手册写「第一次点击永远不生效，必须点两次」。2026-08-28 专栏发文**第 1 次点击就转「发布中 ...」**，
+20 秒后 URL 自动去掉 `/edit`，线上 `.Post-RichTextContainer` 38 个 p 对得上，一次成功。
+⇒ **改成：点一次 → 截图看按钮文字 → 只有仍是「发布」才再点第二次；已转「发布中」就绝不再点。**
+按旧规则盲点第二次，在这种情形下等于对一篇已在发布的文章重复提交。
+
+**④ 08-26「paste 后整篇仍选中」复现，收选区用真实 `Right` 键最稳。**
+截图可见全文高亮、`getSelection().isCollapsed:false`、底栏字数 0。
+用真实坐标点正文中间**能让字数 0→1879，但 `isCollapsed` 仍是 false**（危险，此时打字会吃掉全文）。
+**破法＝按一次真实 `Right` 方向键**：`isCollapsed` 立刻变 true，blocks/textLen 纹丝不动，零删除风险。
+比「再点一次」可靠。之后再走 08-26 那套「打 1 字符 → BackSpace → 轮询 /draft」。
+
+**⑤ 服务端草稿落库判据再确认。**
+paste 完等 35 秒，`/api/v4/articles/{id}/draft` 仍 `contentLen:0`（标题倒是存住了）——
+**光等是不落库的**，必须打 1 个字符再 BackSpace 才触发；触发后 `srvLen:2145 / 38 个 <p>`。
+**发布前一律以服务端 draft 的 `<p>` 数为准，不看底栏字数。**
+
+---
+
+## 🔧 2026-08-31 07:xx 两条根因级破法（都省一整轮，建议作为今后标准手法）
+
+### ① 百家号正文：`iframe.body.innerHTML` 直写**已不可靠**，改走 ueditor 实例 `setContent`
+
+08-24 那条「坑B·iframe DOM 直写 `<p>` 一次灌完」本轮**失效**：写完 DOM 里 34 段/2020 字齐全、
+点「存草稿」也弹「已保存」，但**重载后正文全没了（nP=1／len=0），只有标题留住**。
+`execCommand('insertHTML')` 走一遍同样失败（返回 true，DOM 有内容，模型没有）。
+
+**唯一可靠的判据＝底栏「字数」计数器。** 它卡在 `字数 0` 就是模型没收到，
+**不是 08-12 手册说的「防抖」**——那条得改：字数长时间为 0 是真信号，不是延迟。
+
+**破法（一次通过）**：百家号编辑器把 ueditor 实例挂在 `window.UE_V2`（**不是 `UE`，`typeof window.UE === 'undefined'`**）：
+```js
+const ed = UE_V2.instants.ueditorInstant0;
+ed.setContent(P.map(t=>'<p>'+esc(t)+'</p>').join(''));
+try{ ed.fireEvent('contentchange') }catch(e){}
+// 校验（这三个都要看）
+ed.getContentTxt().length      // 纯文本字数，应与源文全等
+ed.getContent().length         // 带标签
+document.body.innerText.match(/字数[^\n]*/)[0]   // 应立刻从「字数 0」跳到真实字数
+```
+本轮 `setContent` 后计数器当场 `字数 0` → `字数 2020`，重载复核 35 段/2020 字/`a`标签 0 全部持久化。
+⚠️ setContent 后 ueditor 会**自补一个零宽字符空段**（本轮 DOM 35 段 vs 源文 34 段，第 35 段内容是 `‍`），
+逐段 diff 时要把它排除，不是注入出错。
+⚠️ 另：探针字（本轮先打过一个「哦」）会被 `setContent` 一并冲掉，不用单独清。
+
+### ② 知乎：paste 之后补探针，**必须先真实点击到段落文字里**，否则会吃掉末段
+
+08-28 ⑤ 那条「必须打 1 个字符再 BackSpace 才触发落库」正确，但**漏了一个前置条件**，本轮因此报废一份草稿：
+paste 完直接 `computer type` 打探针 → **末段整段消失，位置被首段的副本+探针顶替**（服务端确实落了 26 个 `<p>`，
+但 tail 是首段内容）。当时 `getSelection().isCollapsed === true`，看着完全正常。
+
+**根因：`isCollapsed=true` 不代表光标可用。** 程序化 `selectNodeContents+collapse` 留下的光标
+`anchorNode` 不在任何 `[data-block]` 里、`anchorOffset=0`，Draft 把它映射到了错误位置。
+
+**发探针前必须过的三条判据：**
+```js
+const s=getSelection(), n=s.anchorNode;
+const blk = n && (n.nodeType===3?n.parentElement:n).closest('[data-block="true"]');
+// 要求同时成立：s.isCollapsed===true / n.nodeType===3 / blk 命中且 indexOf(blk)>=0
+```
+拿不到就**真实点击某段文字中间**再验一次（不是点段落边缘、不是点空白）。
+本轮据此在第 4 段 offset 16 落点，探针精确出现在该位置、字数 0→1664、26 段零破坏。
+
+**③ 附带更正两条：**
+- **paste 本身就会落库，探针只是「催保存」不是「让内容进模型」。** 首次注入读 `/draft` 得 `srvLen:0` 是
+  **竞态假零**——同一草稿重载后服务端有 26 个 `<p>`／1828 字符。判落库要么重载看，要么多轮询几次，
+  别看一次 0 就断定没进去。
+- **`cmd+a` 经 CDP 发到知乎 Draft.js 编辑器完全不生效**（连发两次 `String(getSelection()).length` 恒 0），
+  08-26 那条「真实 cmd+a → 真实 Delete」清空法在本环境**不可用**。脏了别修，**弃掉草稿、新开 `/write` 重灌**最快。
+
+### ④ 截图坐标换算系数**按 tab 各算**，不能跨 tab 抄
+本轮同一时刻：百家号 tab `1313/1100 ≈ 1.1936`，知乎 tab `1372/1100 ≈ **1.247**`。
+拿百家号的系数去点知乎，落点差 ~50px，直接点进空白（`blockIdx=-1`）。**每个 tab 现截一张现算。**
+
+---
+
+## 🔧 2026-09-01 09:3x 两条链路更正（都省回合）
+
+### ① 知乎草稿落库判据的 API 路径变了：`/api/v4/articles/{id}/draft` **已 404**，正确路径是 `/api/articles/{id}/draft`
+
+本轮按 08-26/08-28 手册那句去轮询 `v4` 版本，**连轮 6 次全返 `{len:0, nP:0, title:''}`**，
+差点据此判定「paste 没落库」并去重灌正文。真相是 **`v4` 端点返的是 HTML（404 页），
+`await r.json()` 抛 `SyntaxError: Unexpected token '<'`**，我早先那版 catch 把它吞成了 `{}`，于是长得像一个漂亮的假零。
+换成不带 `v4` 的路径立刻拿到真值：`contentLen:1701 / 32 个 <p> / titleLen:29 / a 标签 0`。
+
+**纪律**：轮询 draft 一律先看 `res.status` 和 `content-type`，`status!==200` 或非 json 直接当「路径错」处理，
+**不要当成「没落库」**。三条路径实测：
+```
+/api/articles/{id}/draft   → 200 json ✅（title/content 都在）
+/api/articles/{id}         → 404
+/api/v4/articles/{id}      → 404
+```
+
+### ② 收选区 + 触发落库：用「先删末字符再补回」代替「打探针再 BackSpace」，零残留
+
+08-31 那条记的痛点是「触发落库的探针字符会被发出去（删除不触发二次落库）」。本轮的做法绕开了它：
+
+1. paste 后整篇仍选中（`isCollapsed:false`），**先真实点击某段文字中间**（此时 `anchorNode` 是文本节点且在 `[data-block]` 内，但 `isCollapsed` 仍可能是 false）；
+2. **再按一次真实 `Right`** → `isCollapsed` 变 true，光标落在末段末尾（本轮 idx 31 / offset 24），32 blocks 纹丝不动；
+3. 按 `BackSpace` 删掉正文最后一个字符（本轮是句号），
+4. 再 `type` 把这个字符打回去 —— 打字触发落库，而落库的内容**正好是完整正确的正文**，不需要事后删探针。
+
+判据仍是服务端 draft 的 `<p>` 数，本轮 32/32 全等、末段逐字对上。
+⚠️ 底栏「草稿保存中」在本轮**始终没变过**（等了 25 秒仍是这五个字），
+**它不是保存状态指示器，别拿它当落库判据**，一律看 `/api/articles/{id}/draft`。
+
+### ③ 百家号作品管理列表：直接 navigate `/rc/content` 是能挂载的，只是**要等到 20 秒**
+记忆 [[bjh_content_list_needs_spa_nav]] 那条「直接导航 SPA 恒不挂载、必须先进 /rc/home 再点侧栏」本轮**只对了一半**：
+先进 home 点侧栏这条路本轮**连点三次有两次没生效**（负载 68 时 CDP 点击会静默丢失）；
+反而是直接 navigate `/rc/content` + 循环 `resize` 轮询 8×2.5 秒后正常挂载并读到「共 145 篇」。
+⇒ **今后先用「直接导航 + 长轮询 resize」，它失败再回退侧栏点击。**

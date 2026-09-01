@@ -44,20 +44,40 @@ if not TOKEN:
     if SECRET.exists():
         TOKEN = SECRET.read_text().strip()
 
-DOMAIN = "www.wenshucha.com"
+# 2026-09-01：加 --site 参数，为把配额挪到 tob 做准备。
+#   起因：主域索引量卡在 2、几十天零变化，而 nginx 日志实证百度**正在爬 tob 的真内容页**
+#   （14 天 209 次，抓 /tob、/cases、/api/cases/search2），主域那边近 2 万次全砸首页。
+#   主域推了十三个月毫无起色，继续占用每天 10 条配额是浪费。
+#   ⚠️ 换 site 前该域名必须先在百度站长验证通过，否则整批落进 not_same_site 静默作废。
+SITES = {
+    "www": {"domain": "www.wenshucha.com",
+            "alias": ("https://wenshucha.com",),
+            "sitemap": "https://www.wenshucha.com/sitemap.xml"},
+    "tob": {"domain": "tob.wenshucha.com",
+            "alias": (),
+            "sitemap": "https://tob.wenshucha.com/sitemap.xml"},
+}
+_sel = "www"
+for _i, _a in enumerate(sys.argv):
+    if _a == "--site" and _i + 1 < len(sys.argv):
+        _sel = sys.argv[_i + 1]
+SITE = SITES.get(_sel) or SITES["www"]
+DOMAIN = SITE["domain"]
 LIMIT = 10
 PUSH_COOLDOWN_DAYS = 14
-HOME = {"https://www.wenshucha.com", "https://www.wenshucha.com/"}
+HOME = {f"https://{DOMAIN}", f"https://{DOMAIN}/"}
 
 
 def normalize_for_baidu(url: str):
-    """site=www 所以 URL 也要 www;去锚点(百度把 /#x 当首页,白烧配额);其他子域过滤。"""
+    """URL 必须和 site= 注册的主机完全一致,否则百度静默丢进 not_same_site。
+    去锚点(百度把 /#x 当首页,白烧配额);非本站主机一律过滤。"""
     url = url.split("#", 1)[0]
     if not url:
         return None
-    if url.startswith("https://wenshucha.com"):
-        return url.replace("https://wenshucha.com", "https://www.wenshucha.com", 1)
-    if url.startswith("https://www.wenshucha.com"):
+    for a in SITE["alias"]:
+        if url.startswith(a):
+            return url.replace(a, f"https://{DOMAIN}", 1)
+    if url.startswith(f"https://{DOMAIN}"):
         return url
     return None
 
@@ -264,11 +284,34 @@ def main():
         except Exception:
             pass
     urls = []
-    for site in CONFIG["sites"]:
-        if site["host"] in ("wenshucha.com", "www.wenshucha.com"):
-            urls.extend(site["urls_to_push"])
+    if DOMAIN == "www.wenshucha.com":
+        for site in CONFIG["sites"]:
+            if site["host"] in ("wenshucha.com", "www.wenshucha.com"):
+                urls.extend(site["urls_to_push"])
+    else:
+        # tob 不在 config.yml 里管，直接吃它自己的 sitemap（237 条）
+        try:
+            xml = urllib.request.urlopen(SITE["sitemap"], timeout=20).read().decode("utf-8", "replace")
+            import re as _re
+            urls = _re.findall(r"<loc>([^<]+)</loc>", xml)
+            # 2026-09-01 Jack 定案：主推【类案检索 /cases】，律师工作台 /tob 暂不推。
+            # sitemap 是按站点结构排的，/tob 在最前、/cases 排第 9 —— 每天只有 10 条配额，
+            # 照原序推等于把弹药打在不推的产品上。这里按主推优先级重排。
+            # 见记忆 project_tob_push_cases_not_workbench
+            PRIO = ("/cases", "/sifa", "/analytics", "/ai")
+            def _rank(u):
+                path = u.split(DOMAIN, 1)[-1] or "/"
+                for i, pre in enumerate(PRIO):
+                    if path.startswith(pre):
+                        return (i, len(path))
+                return (len(PRIO) + (1 if path.startswith("/tob") else 0), len(path))
+            urls.sort(key=_rank)
+            print(f"({DOMAIN} sitemap 取到 {len(urls)} 条，已按主推优先级重排：/cases 优先，/tob 垫底)")
+        except Exception as e:
+            print(f"取 {DOMAIN} sitemap 失败: {e}")
+            return 0
     if not urls:
-        print("config.yml 没有 wenshucha.com 主站 URL")
+        print(f"没有可推的 {DOMAIN} URL")
         return 0
     picked = select(urls)
     if not picked:

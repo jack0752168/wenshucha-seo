@@ -115,6 +115,17 @@ def parse(path: Path):
             t = strip_md(re.sub(r"^#\s+", "", s))
             if not re.match(r"^【?知乎", t):     # 排除 "【知乎 · date】slug" 这种文件头
                 title, in_body = t, True
+            else:
+                # 2026-09-01 修:文件头行只是「不当标题」,不该顺带把正文闸门关死。
+                # 旧版这里直接 continue,in_body 永远 False,后面每一行都被
+                # `if not in_body: continue` 丢掉 => body=[] => product_gate 报
+                # 「大数 0 个」把好稿判成废稿(08-27 zhihu-xingzheng-anli-nazhao
+                # 实际有 13 个大数/4 个筛选项,被误杀 5 天)。
+                # 括号里通常是真标题,能取就取。
+                mt = re.search(r"[（(]([^（()）]{4,60})[）)]\s*$", t)
+                if mt:
+                    title = mt.group(1).strip()
+                in_body = True
             continue
 
         if not in_body:
@@ -217,6 +228,15 @@ def product_gate(body):
 
 if __name__ == "__main__":
     r = parse(Path(sys.argv[1]))
+    # 2026-09-01 加:解析拿到空正文 = 格式没被识别,不是「稿子没数据」。
+    # 必须在这里断掉,否则 product_gate 会把它报成「大数 0 个/筛选项 0 个」,
+    # 读起来跟「这稿真的没数据」一模一样,直接导致误杀。
+    if not r["body"]:
+        print("❌ 解析失败(exit 5):正文为空,说明这份 md 的格式没被 parse 识别,"
+              "**不是**稿子没数据。", file=sys.stderr)
+        print("   排查:首行是否为 `# 真标题`(以「知乎」开头的会被当文件头)、"
+              "有没有 `## 正文` 或 <!-- BODY-START --> 界标。", file=sys.stderr)
+        sys.exit(5)
     errs = lint(r["body"])
     if "--no-gate" not in sys.argv:
         gerrs, stat = product_gate(r["body"])

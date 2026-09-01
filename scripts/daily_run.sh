@@ -43,8 +43,16 @@ echo "--- [1/5] IndexNow → Bing/Yandex ---"
 python3 scripts/push_indexnow.py 2>&1 | tee /tmp/seo_daily_indexnow.out
 
 echo
-echo "--- [2/5] 百度主动推送 ---"
-python3 scripts/push_baidu.py 2>&1 | tee /tmp/seo_daily_baidu.out
+echo "--- [2/5] 百度主动推送 → tob（2026-09-01 起换靶子）---"
+# 为什么从主域换到 tob：主域索引量卡在 2、连续几十天零变化，推了十三个月毫无起色；
+# 而 nginx 日志实证百度【正在爬 tob 的真内容页】，tob 有 237 条 sitemap、SSR 真正文。
+# 每天只有 10 条配额，继续喂主域是纯浪费。tob 已于 2026-09-01 在百度站长验证通过。
+# 主域保留每周一条兜底，防止彻底失联。
+python3 scripts/push_baidu.py --site tob 2>&1 | tee /tmp/seo_daily_baidu.out
+if [ "$(date +%u)" = "1" ]; then
+    echo "  --- 周一兜底:主域也推一次 ---"
+    python3 scripts/push_baidu.py 2>&1 | tail -3
+fi
 
 echo
 echo "--- [3/5] Google Indexing API ---"
