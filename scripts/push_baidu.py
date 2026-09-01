@@ -294,19 +294,31 @@ def main():
             xml = urllib.request.urlopen(SITE["sitemap"], timeout=20).read().decode("utf-8", "replace")
             import re as _re
             urls = _re.findall(r"<loc>([^<]+)</loc>", xml)
-            # 2026-09-01 Jack 定案：主推【类案检索 /cases】，律师工作台 /tob 暂不推。
-            # sitemap 是按站点结构排的，/tob 在最前、/cases 排第 9 —— 每天只有 10 条配额，
-            # 照原序推等于把弹药打在不推的产品上。这里按主推优先级重排。
-            # 见记忆 project_tob_push_cases_not_workbench
-            PRIO = ("/cases", "/sifa", "/analytics", "/ai")
+            # 2026-09-01 Jack 定案：【只推类案检索及其相关】，其余一律不推。
+            #   原话：「就只推那个类案检索，然后以及相关的，那个法律工作材料相关的不推，
+            #          其他的也不推」
+            # 这是【硬过滤】不是排序 —— 排序只是把它们排后面，配额一多照样推出去。
+            # 每天总共 10 条(按账号共享,见 reference_baidu_verify_blocked_by_ipset)，
+            # 一条都不能浪费在不推的产品上。
+            ALLOW = ("/cases", "/sifa", "/analytics")   # 类案检索 + 其可索引外壳 + 结果统计视图
+            DENY  = ("/tob", "/ai")                     # 律师工作台/胜算评估/API试用、AI助手
+            def _keep(u):
+                path = u.split(DOMAIN, 1)[-1] or "/"
+                if any(path.startswith(d) for d in DENY):
+                    return False
+                return any(path.startswith(a) for a in ALLOW)
+            before = len(urls)
+            urls = [u for u in urls if _keep(u)]
+            PRIO = ALLOW
             def _rank(u):
                 path = u.split(DOMAIN, 1)[-1] or "/"
                 for i, pre in enumerate(PRIO):
                     if path.startswith(pre):
                         return (i, len(path))
-                return (len(PRIO) + (1 if path.startswith("/tob") else 0), len(path))
+                return (len(PRIO), len(path))
             urls.sort(key=_rank)
-            print(f"({DOMAIN} sitemap 取到 {len(urls)} 条，已按主推优先级重排：/cases 优先，/tob 垫底)")
+            print(f"({DOMAIN} sitemap {before} 条 → 过滤后 {len(urls)} 条"
+                  f"（只留类案检索相关；剔除 {before - len(urls)} 条工作台/AI 助手）)")
         except Exception as e:
             print(f"取 {DOMAIN} sitemap 失败: {e}")
             return 0
