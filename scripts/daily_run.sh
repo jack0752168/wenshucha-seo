@@ -47,12 +47,13 @@ echo "--- [2/5] 百度主动推送 → tob（2026-09-01 起换靶子）---"
 # 为什么从主域换到 tob：主域索引量卡在 2、连续几十天零变化，推了十三个月毫无起色；
 # 而 nginx 日志实证百度【正在爬 tob 的真内容页】，tob 有 237 条 sitemap、SSR 真正文。
 # 每天只有 10 条配额，继续喂主域是纯浪费。tob 已于 2026-09-01 在百度站长验证通过。
-# 主域保留每周一条兜底，防止彻底失联。
+#
+# ⚠️ 2026-09-01 实测更正：配额是【按账号共享】，不是按站点各给 10 条。
+#    同一 token 打两个 site，第二个直接 {"error":400,"message":"over quota"}。
+#    所以「顺手给主域也推一条兜底」不是额外的，是【从 tob 嘴里抢】。
+#    主域推了十三个月索引量还是 2，拿 tob 的机会去喂它没有道理 —— 兜底那段已删。
+#    要恢复主域推送，先把 tob 的索引量曲线拉出来看，用数据决定，别凭手感。
 python3 scripts/push_baidu.py --site tob 2>&1 | tee /tmp/seo_daily_baidu.out
-if [ "$(date +%u)" = "1" ]; then
-    echo "  --- 周一兜底:主域也推一次 ---"
-    python3 scripts/push_baidu.py 2>&1 | tail -3
-fi
 
 echo
 echo "--- [3/5] Google Indexing API ---"
