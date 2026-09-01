@@ -1,0 +1,283 @@
+{
+  "snapshots": [
+    {
+      "date": "2026-06-10",
+      "totals": {
+        "baidu_keywords": 57,
+        "baidu_clicks": 3,
+        "period": "近30天"
+      },
+      "baidu": [
+        {
+          "kw": "裁判文书 数据",
+          "rank": 1,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书数据库",
+          "rank": 1.5,
+          "impr": 4,
+          "clicks": 1
+        },
+        {
+          "kw": "国家裁判数据库",
+          "rank": 2,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "中国 裁判 文书",
+          "rank": 22.2,
+          "impr": 5,
+          "clicks": 0
+        },
+        {
+          "kw": "中国裁判文书网 高级检索",
+          "rank": 33,
+          "impr": 5,
+          "clicks": 0
+        },
+        {
+          "kw": "北大法宝 中国裁判文书网",
+          "rank": 35.1,
+          "impr": 7,
+          "clicks": 0
+        },
+        {
+          "kw": "中国裁判文书网 北大法宝",
+          "rank": 41.8,
+          "impr": 5,
+          "clicks": 0
+        },
+        {
+          "kw": "中国裁判文书网 案号",
+          "rank": 44.9,
+          "impr": 10,
+          "clicks": 0
+        },
+        {
+          "kw": "中国裁判文书网 检索",
+          "rank": 45.4,
+          "impr": 7,
+          "clicks": 0
+        }
+      ],
+      "google": [
+        {
+          "kw": "中国法律文书网",
+          "rank": 30,
+          "impr": 2,
+          "clicks": 0
+        },
+        {
+          "kw": "裁判 文书",
+          "rank": 31,
+          "impr": 2,
+          "clicks": 0
+        },
+        {
+          "kw": "裁判文书",
+          "rank": 30,
+          "impr": 1,
+          "clicks": 0
+        }
+      ]
+    },
+    {
+      "date": "2026-07-06",
+      "totals": {
+        "baidu_keywords": 89,
+        "baidu_clicks": 9,
+        "period": "近30天"
+      },
+      "baidu": [
+        {
+          "kw": "裁判文书数据库",
+          "rank": 1.4,
+          "impr": 7,
+          "clicks": 2
+        },
+        {
+          "kw": "文书查",
+          "rank": 5.7,
+          "impr": 3,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书数据",
+          "rank": 1.5,
+          "impr": 2,
+          "clicks": 1
+        },
+        {
+          "kw": "国家裁判数据库",
+          "rank": 2,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "接入裁判文书网api",
+          "rank": 5,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "中国裁判文书网数据",
+          "rank": 2,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书 数据",
+          "rank": 1,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书网全量数据",
+          "rank": 2,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "中国裁判文书网 案号",
+          "rank": 44.8,
+          "impr": 12,
+          "clicks": 0
+        }
+      ],
+      "google": []
+    },
+    {
+      "date": "2026-07-22",
+      "source": "百度搜索资源平台 流量与关键词 · PC搜索 · 最近30天(浏览器抓取)",
+      "baidu": [
+        {
+          "kw": "文书查",
+          "rank": 3.5,
+          "impr": 6,
+          "clicks": 3
+        },
+        {
+          "kw": "全量裁判文书",
+          "rank": 5,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "site:www.wenshucha.com",
+          "rank": 1.4,
+          "impr": 36,
+          "clicks": 0
+        },
+        {
+          "kw": "site:wenshucha.com",
+          "rank": 2.4,
+          "impr": 5,
+          "clicks": 0
+        },
+        {
+          "kw": "2026 司法大数据平台 -广告 -推广 -site:baidu",
+          "rank": 45.7,
+          "impr": 3,
+          "clicks": 0
+        },
+        {
+          "kw": "中国裁判文书网 ai -广告 -推广 -site:baidu",
+          "rank": 23.3,
+          "impr": 3,
+          "clicks": 0
+        },
+        {
+          "kw": "中国裁判文书网 ai生成内容侵权 -广告 -推广 -site",
+          "rank": 26,
+          "impr": 3,
+          "clicks": 0
+        },
+        {
+          "kw": "数据采集字段 裁判文书 -广告 -推广 -site:baidu",
+          "rank": 8,
+          "impr": 2,
+          "clicks": 0
+        },
+        {
+          "kw": "文书查是什么平台",
+          "rank": 3,
+          "impr": 1,
+          "clicks": 0
+        }
+      ],
+      "google": [],
+      "totals": {
+        "baidu_kw": 25,
+        "baidu_impr": 76,
+        "baidu_clicks": 4,
+        "baidu_impr_real": 35,
+        "note": "76 展现中 41 次是 site: 自查噪声,真实展现约 35"
+      },
+      "pages": [
+        {
+          "url": "/index.html",
+          "impr": 55,
+          "clicks": 4,
+          "rank": 10.2
+        },
+        {
+          "url": "/portfolio.html",
+          "impr": 13,
+          "clicks": 0,
+          "rank": 2.2
+        },
+        {
+          "url": "/",
+          "impr": 5,
+          "clicks": 0,
+          "rank": 5.8
+        }
+      ],
+      "findings": "全站仅 4 个页面有展现,41 篇 blog + 40 个 data 页展现为 0。nginx 日志证实:百度蜘蛛 13 个月抓 23113 次,98.4% 砸在首页,/blog/ 仅 6 次,/data/ 0 次,sitemap.xml 0 次。"
+    },
+    {
+      "date": "2026-08-30",
+      "source": "百度搜索资源平台 · PC搜索「流量与关键词」最近30天(浏览器读取,已登录 mmaamamama123)+ 索引量工具",
+      "totals": {
+        "baidu_keywords": 0,
+        "baidu_impressions": 0,
+        "baidu_clicks": 0,
+        "baidu_index_count": 2,
+        "baidu_index_asof": "2026-08-28",
+        "period": "近30天"
+      },
+      "note": "PC搜索近30天 展现0/点击0,热门关键词表『暂无数据』⇒ 展现≥5 的词数=0。移动搜索页无关键词表(仅趋势图),展现线非零但无 tooltip,未读出确切值,故不记数。索引量工具:2 页,自 08-11 起持平,最新数据日 08-28(尚未覆盖 08-29 的抓取)。",
+      "baidu": [],
+      "google": []
+    },
+    {
+      "date": "2026-08-31",
+      "totals": {
+        "baidu_keywords": 0,
+        "baidu_clicks": 0,
+        "period": "近30天",
+        "baidu_index_count": 2,
+        "baidu_index_latest_day": "2026-08-29",
+        "note": "索引量2页(08-29数据日,已覆盖08-29大抓,变化0);PC展现0/点击0;移动展现0/点击0(tooltip实读,推翻08-30「移动展现非零」)"
+      },
+      "baidu": [],
+      "google": []
+    },
+    {
+      "date": "2026-09-01",
+      "totals": {
+        "baidu_keywords": 0,
+        "baidu_clicks": 0,
+        "period": "近30天",
+        "baidu_index_count": 2,
+        "baidu_index_latest_day": "2026-08-30",
+        "note": "索引量仍2页,数据日推进到08-30、变化0 ⇒ 昨天立的判据(08-30数据日进来后2还动不动)已触发:不动,本项降频为每周一次;PC展现0/点击0、热门关键词暂无数据(表格实读);移动搜索面板今日三条路径(直连带斜杠/不带斜杠/从PC页点tab)均不挂载,body仅662字符,故移动今日未读=未知,不记0"
+      },
+      "baidu": [],
+      "google": []
+    }
+  ]
+}
