@@ -1,331 +1,293 @@
-# wenshucha-seo 站点 + URL 配置
-# 这里集中维护"哪些站、哪些 URL 要被搜索引擎收录"
-
 global:
-  # IndexNow key(8-128 chars,只能 a-z A-Z 0-9 -)
-  # 同一个 key 在所有 host 根目录的 {key}.txt 中,内容就是 key 本身
-  indexnow_key: "a8f3b9c2d1e5f7a8b9c0d1e2f3a4b5c6"
-  ssl_warn_days: 30          # SSL < 30 天告警
-  ssl_critical_days: 14      # SSL < 14 天紧急告警
-  # 百度普通收录推送 token(主战场是国内,百度优先)
-  # 来源: ziyuan.baidu.com → 普通收录 → API提交 → token
-  # baidu_push_token 已移出版本控制(曾在公开仓库泄露)→ secrets/baidu_push_token
-  baidu_push_token: ""
-
+  indexnow_key: a8f3b9c2d1e5f7a8b9c0d1e2f3a4b5c6
+  ssl_warn_days: 30
+  ssl_critical_days: 14
+  baidu_push_token: ''
 sites:
-
-  - name: wenshucha-main
-    # 2026-07-27:host/sitemap 由非 www 改为 www。站点 07-23 起规范主域=www,
-    # 非 www 一律 301;IndexNow 的 keyLocation 用非 www 会落在 301 上(已实测),
-    # 且推送队列里混非 www = 把「跳转起点」而不是终点交给爬虫。
-    host: www.wenshucha.com
-    sitemap: https://www.wenshucha.com/sitemap.xml
-    urls_to_push:
-      - https://www.wenshucha.com/
-      - https://www.wenshucha.com/case-search/
-      - https://www.wenshucha.com/legal-ai/
-      - https://www.wenshucha.com/buyers-guide/
-      - https://www.wenshucha.com/data/
-      - https://www.wenshucha.com/data/labor-report/
-      - https://www.wenshucha.com/blog/
-      - https://www.wenshucha.com/blog/limitation-period-defense-tolling-search.html
-      - https://www.wenshucha.com/blog/counterparty-litigation-screening-corporate-legal.html
-      - https://www.wenshucha.com/blog/attorney-fees-liquidated-damages-claim-drafting.html
-      - https://www.wenshucha.com/blog/case-filing-cause-of-action-jurisdiction.html
-      - https://www.wenshucha.com/blog/mediation-settlement-agreement-enforceability.html
-      - https://www.wenshucha.com/blog/property-preservation-litigation-guide.html
-      - https://www.wenshucha.com/blog/enforcement-stage-judgment-search-asset-leads.html
-      - https://www.wenshucha.com/blog/appeal-retrial-reversal-grounds-search.html
-      - https://www.wenshucha.com/blog/similar-case-search-report-writing-guide.html
-      - https://www.wenshucha.com/blog/legal-brief-argument-similar-case-citation.html
-      - https://www.wenshucha.com/blog/cross-examination-opinion-evidence-challenge.html
-      - https://www.wenshucha.com/blog/evidence-list-proof-checklist-litigation.html
-      - https://www.wenshucha.com/blog/ai-case-file-review-digital-dossier.html
-      - https://www.wenshucha.com/blog/similar-case-search-completeness-guide.html
-      - https://www.wenshucha.com/blog/government-legal-ai-procurement-budget-process.html
-      - https://www.wenshucha.com/blog/legal-ai-offline-corpus-update-delivery.html
-      - https://www.wenshucha.com/blog/legal-ai-capacity-planning-scaling.html
-      - https://www.wenshucha.com/blog/legal-ai-model-version-management-upgrade.html
-      - https://www.wenshucha.com/blog/legal-ai-cutover-data-migration.html
-      - https://www.wenshucha.com/blog/legal-ai-inference-performance-gpu-utilization.html
-      - https://www.wenshucha.com/blog/legal-ai-multi-tenant-permission-isolation.html
-      - https://www.wenshucha.com/blog/legal-ai-vector-database-retrieval-engine-selection.html
-      - https://www.wenshucha.com/blog/legal-ai-open-source-base-model-selection.html
-      - https://www.wenshucha.com/blog/legal-ai-private-deployment-disaster-recovery-ha.html
-      - https://www.wenshucha.com/blog/legal-ai-data-security-audit-mlps-evaluation.html
-      - https://www.wenshucha.com/blog/legal-ai-private-deployment-monitoring-alerting.html
-      - https://www.wenshucha.com/blog/legal-ai-vendor-due-diligence.html
-      - https://www.wenshucha.com/blog/legal-ai-private-deployment-tco-three-year.html
-      - https://www.wenshucha.com/blog/legal-ai-rag-vs-finetune-technical-route.html
-      - https://www.wenshucha.com/blog/legal-ai-continuous-operation-iteration.html
-      - https://www.wenshucha.com/blog/law-firm-ai-adoption-user-enablement.html
-      - https://www.wenshucha.com/blog/legal-data-classification-grading.html
-      - https://www.wenshucha.com/blog/law-firm-rag-knowledge-base.html
-      - https://www.wenshucha.com/blog/legal-ai-acceptance-testing-evaluation.html
-      - https://www.wenshucha.com/blog/legal-ai-tender-technical-specifications.html
-      - https://www.wenshucha.com/blog/legal-ai-hallucination-citation-verification.html
-      - https://www.wenshucha.com/blog/xinchuang-domestic-stack-legal-ai-deployment.html
-      - https://www.wenshucha.com/blog/judgment-api-integration-python-nodejs.html
-      - https://www.wenshucha.com/blog/legal-empirical-research-data-access.html
-      - https://www.wenshucha.com/blog/legal-ai-startup-data-foundation.html
-      - https://www.wenshucha.com/blog/lawyer-workbench-case-win-rate.html
-      - https://www.wenshucha.com/blog/similar-case-retrieval-semantic-vs-keyword.html
-      - https://www.wenshucha.com/blog/wenshucha-mcp-claude-desktop-setup.html
-      - https://www.wenshucha.com/blog/judicial-data-platform-security-compliance.html
-      - https://www.wenshucha.com/blog/procuratorate-ai-case-pushing-indictment.html
-      - https://www.wenshucha.com/blog/legal-data-platform-comparison-2026.html
-      - https://www.wenshucha.com/blog/law-firm-llm-finetune-case-archive.html
-      - https://www.wenshucha.com/blog/court-ai-trial-assistance-sentencing-document.html
-      - https://www.wenshucha.com/blog/judgment-corpus-private-deployment-architecture.html
-      - https://www.wenshucha.com/blog/law-firm-ai-procurement-pitfalls.html
-      - https://www.wenshucha.com/blog/court-similar-case-recommendation-system.html
-      - https://www.wenshucha.com/blog/law-firm-data-compliance-confidentiality.html
-      - https://www.wenshucha.com/blog/law-firm-on-prem-llm-gpu-guide.html
-      - https://www.wenshucha.com/blog/judicial-data-platform-construction.html
-      - https://www.wenshucha.com/blog/law-firm-ai-roi-calculation.html
-      - https://www.wenshucha.com/blog/court-ai-procurement-checklist.html
-      - https://www.wenshucha.com/blog/law-firm-private-ai-deployment-guide.html
-      - https://www.wenshucha.com/data/labor/
-      - https://www.wenshucha.com/data/labor/beijing.html
-      - https://www.wenshucha.com/data/labor/changchun.html
-      - https://www.wenshucha.com/data/labor/changsha.html
-      - https://www.wenshucha.com/data/labor/chengdu.html
-      - https://www.wenshucha.com/data/labor/chongqing.html
-      - https://www.wenshucha.com/data/labor/dalian.html
-      - https://www.wenshucha.com/data/labor/dongguan.html
-      - https://www.wenshucha.com/data/labor/foshan.html
-      - https://www.wenshucha.com/data/labor/guangzhou.html
-      - https://www.wenshucha.com/data/labor/haerbin.html
-      - https://www.wenshucha.com/data/labor/haikou.html
-      - https://www.wenshucha.com/data/labor/hangzhou.html
-      - https://www.wenshucha.com/data/labor/hefei.html
-      - https://www.wenshucha.com/data/labor/jiaozuo.html
-      - https://www.wenshucha.com/data/labor/jinan.html
-      - https://www.wenshucha.com/data/labor/jiutai.html
-      - https://www.wenshucha.com/data/labor/kunming.html
-      - https://www.wenshucha.com/data/labor/kunshan.html
-      - https://www.wenshucha.com/data/labor/liuzhou.html
-      - https://www.wenshucha.com/data/labor/luoyang.html
-      - https://www.wenshucha.com/data/labor/nanchang.html
-      - https://www.wenshucha.com/data/labor/nanjing.html
-      - https://www.wenshucha.com/data/labor/nanning.html
-      - https://www.wenshucha.com/data/labor/ningbo.html
-      - https://www.wenshucha.com/data/labor/qingdao.html
-      - https://www.wenshucha.com/data/labor/shanghai.html
-      - https://www.wenshucha.com/data/labor/shaoxing.html
-      - https://www.wenshucha.com/data/labor/shenyang.html
-      - https://www.wenshucha.com/data/labor/shenzhen.html
-      - https://www.wenshucha.com/data/labor/suzhou.html
-      - https://www.wenshucha.com/data/labor/tangshan.html
-      - https://www.wenshucha.com/data/labor/tianjin.html
-      - https://www.wenshucha.com/data/labor/wenzhou.html
-      - https://www.wenshucha.com/data/labor/wuhan.html
-      - https://www.wenshucha.com/data/labor/xiamen.html
-      - https://www.wenshucha.com/data/labor/xian.html
-      - https://www.wenshucha.com/data/labor/xinjiangwulumuqi.html
-      - https://www.wenshucha.com/data/labor/yantai.html
-      - https://www.wenshucha.com/data/labor/zhengzhou.html
-      - https://www.wenshucha.com/data/labor/zhongshan.html
-      - https://www.wenshucha.com/data/labor/huaian.html
-      - https://www.wenshucha.com/data/labor/fuzhou.html
-      - https://www.wenshucha.com/data/labor/panzhihua.html
-      - https://www.wenshucha.com/data/labor/zhumadian.html
-      - https://www.wenshucha.com/data/labor/xuzhou.html
-      - https://www.wenshucha.com/data/labor/wuzhou.html
-      - https://www.wenshucha.com/data/labor/xiangyang.html
-      - https://www.wenshucha.com/data/labor/bijie.html
-      - https://www.wenshucha.com/data/labor/wuhu.html
-      - https://www.wenshucha.com/data/labor/wuxi.html
-      - https://www.wenshucha.com/data/labor/jilin.html
-      - https://www.wenshucha.com/data/labor/xinxiang.html
-      - https://www.wenshucha.com/data/labor/shijiazhuang.html
-      - https://www.wenshucha.com/data/labor/jiyuan.html
-      - https://www.wenshucha.com/data/labor/zhuzhou.html
-      - https://www.wenshucha.com/data/labor/guilin.html
-      - https://www.wenshucha.com/data/labor/yinchuan.html
-      - https://www.wenshucha.com/data/labor/shiyan.html
-      - https://www.wenshucha.com/data/labor/guiyang.html
-      - https://www.wenshucha.com/data/labor/kaili.html
-      - https://www.wenshucha.com/data/labor/pingquan.html
-      - https://www.wenshucha.com/data/labor/dengfeng.html
-      - https://www.wenshucha.com/data/labor/hengyang.html
-      - https://www.wenshucha.com/data/labor/mianzhu.html
-      - https://www.wenshucha.com/data/labor/leshan.html
-      - https://www.wenshucha.com/data/labor/zunyi.html
-      - https://www.wenshucha.com/data/labor/anshan.html
-      - https://www.wenshucha.com/data/labor/anyang.html
-      - https://www.wenshucha.com/data/labor/xuchang.html
-      - https://www.wenshucha.com/data/labor/yichang.html
-      - https://www.wenshucha.com/data/labor/zhangjiagang.html
-      - https://www.wenshucha.com/data/labor/pingli.html
-      - https://www.wenshucha.com/data/labor/lanzhou.html
-      - https://www.wenshucha.com/data/labor/linjiang.html
-      - https://www.wenshucha.com/data/labor/taiyuan.html
-      - https://www.wenshucha.com/data/labor/yutian.html
-      - https://www.wenshucha.com/data/labor/quanzhou.html
-      - https://www.wenshucha.com/data/labor/changde.html
-      - https://www.wenshucha.com/data/labor/xingyang.html
-      - https://www.wenshucha.com/data/labor/loudi.html
-    check_ssl: true
-
-  - name: sinoverdict-en
-    host: sinoverdict.wenshucha.com
-    sitemap: https://sinoverdict.wenshucha.com/sitemap.xml
-    urls_to_push:
-      - https://sinoverdict.wenshucha.com/blog/chinese-court-registry-pagination-caps-enumerability-test.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-bankruptcy-registry-pagination-window-outgrown-2023.html
-      - https://sinoverdict.wenshucha.com/blog/peoples-court-case-database-official-chinese-case-law.html
-      - https://sinoverdict.wenshucha.com/blog/prc-court-data-official-endpoints-inventory-2026.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-case-law-metadata-field-census.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-case-law-coverage-by-year-recency-cliff.html
-      - https://sinoverdict.wenshucha.com/
-      - https://sinoverdict.wenshucha.com/about.html
-      - https://sinoverdict.wenshucha.com/blog/prepare-chinese-court-judgments-training-corpus.html
-      - https://sinoverdict.wenshucha.com/blog/deployment-geography-chinese-case-law-corpus.html
-      - https://sinoverdict.wenshucha.com/blog/traditional-simplified-chinese-case-law-retrieval.html
-      - https://sinoverdict.wenshucha.com/blog/what-survives-termination-chinese-legal-data-licence.html
-      - https://sinoverdict.wenshucha.com/blog/data-change-log-chinese-case-law-corpus.html
-      - https://sinoverdict.wenshucha.com/blog/who-owns-evaluation-artefacts-chinese-legal-data.html
-      - https://sinoverdict.wenshucha.com/blog/cross-border-retrieval-latency-cost-chinese-case-law.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-legal-data-pilot-scope-exit-criteria.html
-      - https://sinoverdict.wenshucha.com/blog/evaluate-chinese-case-law-vendor-coverage-verification.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-court-data-licensing-cost-terms.html
-      - https://sinoverdict.wenshucha.com/blog/crawl-chinese-court-judgments-llm-training-robots-txt.html
-      - https://sinoverdict.wenshucha.com/llms.txt
-      - https://sinoverdict.wenshucha.com/llms-full.txt
-      - https://sinoverdict.wenshucha.com/#how
-      - https://sinoverdict.wenshucha.com/#access
-      - https://sinoverdict.wenshucha.com/#faq
-      - https://sinoverdict.wenshucha.com/app/
-      - https://sinoverdict.wenshucha.com/blog/
-      - https://sinoverdict.wenshucha.com/blog/licensing-chinese-court-data-guide.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-case-law-api-structure.html
-      - https://sinoverdict.wenshucha.com/blog/state-of-chinese-case-law-data-2026.html
-      - https://sinoverdict.wenshucha.com/blog/why-western-platforms-china-coverage-not-built-for-ai.html
-      - https://sinoverdict.wenshucha.com/blog/license-vs-scrape-chinese-case-law.html
-      - https://sinoverdict.wenshucha.com/blog/building-china-coverage-legal-ai-data-stack.html
-      - https://sinoverdict.wenshucha.com/blog/enterprise-data-partnership-models-chinese-case-law.html
-      - https://sinoverdict.wenshucha.com/blog/prc-precedent-foreign-arbitral-awards-enforcement.html
-      - https://sinoverdict.wenshucha.com/blog/china-antitrust-enforcement-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-ip-enforcement-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/structuring-prc-court-data-for-ai.html
-      - https://sinoverdict.wenshucha.com/blog/english-native-chinese-legal-research.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-legal-ai-data-market-map-2026.html
-      - https://sinoverdict.wenshucha.com/blog/cail2018-lecard-alternative-commercial-chinese-legal-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/mcp-server-chinese-case-law.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-legal-retrieval-pipeline-etl-indexing-citations.html
-      - https://sinoverdict.wenshucha.com/blog/english-language-api-chinese-court-judgments.html
-      - https://sinoverdict.wenshucha.com/blog/western-legal-ai-vendors-chinese-court-data-mistakes.html
-      - https://sinoverdict.wenshucha.com/blog/china-data-compliance-enforcement-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-labor-employment-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-contract-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-financial-lending-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-construction-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-tort-liability-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-marriage-family-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-bankruptcy-insolvency-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-company-shareholder-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-administrative-litigation-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-real-estate-property-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-insurance-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-maritime-shipping-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-customs-trade-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-securities-capital-markets-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-trade-secret-unfair-competition-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-tax-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-environmental-public-interest-litigation-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-product-liability-recall-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-medical-malpractice-dispute-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/china-criminal-economic-crime-case-law-dataset.html
-      - https://sinoverdict.wenshucha.com/blog/legal-mcp-servers-by-jurisdiction-china-gap-2026.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-provincial-high-court-websites-inventory-2026.html
-      - https://sinoverdict.wenshucha.com/blog/commercially-licensed-bulk-api-chinese-court-judgments.html
-      - https://sinoverdict.wenshucha.com/blog/chinese-bankruptcy-register-national-court-endpoints-2026.html
-    check_ssl: true
-
-  - name: mcp-zh-dev
-    host: mcp.wenshucha.com
-    sitemap: https://mcp.wenshucha.com/sitemap.xml
-    urls_to_push:
-      - https://mcp.wenshucha.com/
-    check_ssl: true
-
-  # ========== peilema · To C 劳动仲裁计算 9.9 元报告 ==========
-  # ⏸️ 2026-08-12 停推:赔了嗎已於 2026-08-11 下架,peilema.wenshucha.com **DNS 记录已删除**
-  #    (curl 000 = Could not resolve host)。继续推 IndexNow = 每天给 Bing 喂 5 条死链,
-  #    与「禁喂 404」同一条纪律。站若恢复,把下面五行取消注释即可,keywords.peilema_c 保留未动。
-  # - name: peilema-c
-  #   host: peilema.wenshucha.com
-  #   sitemap: https://peilema.wenshucha.com/sitemap.xml
-  #   urls_to_push:
-  #     - https://peilema.wenshucha.com/
-  #     - https://peilema.wenshucha.com/calculator
-  #     - https://peilema.wenshucha.com/sample
-  #     - https://peilema.wenshucha.com/service
-  #     - https://peilema.wenshucha.com/xhs
-  #   check_ssl: true
-
-# 关键词地图(给 check_indexed / weekly report / 内容生产用)
-# 三个站三套目标,见 memory/project_three_sites_target_customer.md
+- name: wenshucha-main
+  host: www.wenshucha.com
+  sitemap: https://www.wenshucha.com/sitemap.xml
+  urls_to_push:
+  - https://www.wenshucha.com/
+  - https://www.wenshucha.com/case-search/
+  - https://www.wenshucha.com/legal-ai/
+  - https://www.wenshucha.com/buyers-guide/
+  - https://www.wenshucha.com/data/
+  - https://www.wenshucha.com/data/labor-report/
+  - https://www.wenshucha.com/blog/
+  - https://www.wenshucha.com/blog/limitation-period-defense-tolling-search.html
+  - https://www.wenshucha.com/blog/counterparty-litigation-screening-corporate-legal.html
+  - https://www.wenshucha.com/blog/attorney-fees-liquidated-damages-claim-drafting.html
+  - https://www.wenshucha.com/blog/case-filing-cause-of-action-jurisdiction.html
+  - https://www.wenshucha.com/blog/mediation-settlement-agreement-enforceability.html
+  - https://www.wenshucha.com/blog/property-preservation-litigation-guide.html
+  - https://www.wenshucha.com/blog/enforcement-stage-judgment-search-asset-leads.html
+  - https://www.wenshucha.com/blog/appeal-retrial-reversal-grounds-search.html
+  - https://www.wenshucha.com/blog/similar-case-search-report-writing-guide.html
+  - https://www.wenshucha.com/blog/legal-brief-argument-similar-case-citation.html
+  - https://www.wenshucha.com/blog/cross-examination-opinion-evidence-challenge.html
+  - https://www.wenshucha.com/blog/evidence-list-proof-checklist-litigation.html
+  - https://www.wenshucha.com/blog/ai-case-file-review-digital-dossier.html
+  - https://www.wenshucha.com/blog/similar-case-search-completeness-guide.html
+  - https://www.wenshucha.com/blog/government-legal-ai-procurement-budget-process.html
+  - https://www.wenshucha.com/blog/legal-ai-offline-corpus-update-delivery.html
+  - https://www.wenshucha.com/blog/legal-ai-capacity-planning-scaling.html
+  - https://www.wenshucha.com/blog/legal-ai-model-version-management-upgrade.html
+  - https://www.wenshucha.com/blog/legal-ai-cutover-data-migration.html
+  - https://www.wenshucha.com/blog/legal-ai-inference-performance-gpu-utilization.html
+  - https://www.wenshucha.com/blog/legal-ai-multi-tenant-permission-isolation.html
+  - https://www.wenshucha.com/blog/legal-ai-vector-database-retrieval-engine-selection.html
+  - https://www.wenshucha.com/blog/legal-ai-open-source-base-model-selection.html
+  - https://www.wenshucha.com/blog/legal-ai-private-deployment-disaster-recovery-ha.html
+  - https://www.wenshucha.com/blog/legal-ai-data-security-audit-mlps-evaluation.html
+  - https://www.wenshucha.com/blog/legal-ai-private-deployment-monitoring-alerting.html
+  - https://www.wenshucha.com/blog/legal-ai-vendor-due-diligence.html
+  - https://www.wenshucha.com/blog/legal-ai-private-deployment-tco-three-year.html
+  - https://www.wenshucha.com/blog/legal-ai-rag-vs-finetune-technical-route.html
+  - https://www.wenshucha.com/blog/legal-ai-continuous-operation-iteration.html
+  - https://www.wenshucha.com/blog/law-firm-ai-adoption-user-enablement.html
+  - https://www.wenshucha.com/blog/legal-data-classification-grading.html
+  - https://www.wenshucha.com/blog/law-firm-rag-knowledge-base.html
+  - https://www.wenshucha.com/blog/legal-ai-acceptance-testing-evaluation.html
+  - https://www.wenshucha.com/blog/legal-ai-tender-technical-specifications.html
+  - https://www.wenshucha.com/blog/legal-ai-hallucination-citation-verification.html
+  - https://www.wenshucha.com/blog/xinchuang-domestic-stack-legal-ai-deployment.html
+  - https://www.wenshucha.com/blog/judgment-api-integration-python-nodejs.html
+  - https://www.wenshucha.com/blog/legal-empirical-research-data-access.html
+  - https://www.wenshucha.com/blog/legal-ai-startup-data-foundation.html
+  - https://www.wenshucha.com/blog/lawyer-workbench-case-win-rate.html
+  - https://www.wenshucha.com/blog/similar-case-retrieval-semantic-vs-keyword.html
+  - https://www.wenshucha.com/blog/wenshucha-mcp-claude-desktop-setup.html
+  - https://www.wenshucha.com/blog/judicial-data-platform-security-compliance.html
+  - https://www.wenshucha.com/blog/procuratorate-ai-case-pushing-indictment.html
+  - https://www.wenshucha.com/blog/legal-data-platform-comparison-2026.html
+  - https://www.wenshucha.com/blog/law-firm-llm-finetune-case-archive.html
+  - https://www.wenshucha.com/blog/court-ai-trial-assistance-sentencing-document.html
+  - https://www.wenshucha.com/blog/judgment-corpus-private-deployment-architecture.html
+  - https://www.wenshucha.com/blog/law-firm-ai-procurement-pitfalls.html
+  - https://www.wenshucha.com/blog/court-similar-case-recommendation-system.html
+  - https://www.wenshucha.com/blog/law-firm-data-compliance-confidentiality.html
+  - https://www.wenshucha.com/blog/law-firm-on-prem-llm-gpu-guide.html
+  - https://www.wenshucha.com/blog/judicial-data-platform-construction.html
+  - https://www.wenshucha.com/blog/law-firm-ai-roi-calculation.html
+  - https://www.wenshucha.com/blog/court-ai-procurement-checklist.html
+  - https://www.wenshucha.com/blog/law-firm-private-ai-deployment-guide.html
+  - https://www.wenshucha.com/data/labor/
+  - https://www.wenshucha.com/data/labor/beijing.html
+  - https://www.wenshucha.com/data/labor/changchun.html
+  - https://www.wenshucha.com/data/labor/changsha.html
+  - https://www.wenshucha.com/data/labor/chengdu.html
+  - https://www.wenshucha.com/data/labor/chongqing.html
+  - https://www.wenshucha.com/data/labor/dalian.html
+  - https://www.wenshucha.com/data/labor/dongguan.html
+  - https://www.wenshucha.com/data/labor/foshan.html
+  - https://www.wenshucha.com/data/labor/guangzhou.html
+  - https://www.wenshucha.com/data/labor/haerbin.html
+  - https://www.wenshucha.com/data/labor/haikou.html
+  - https://www.wenshucha.com/data/labor/hangzhou.html
+  - https://www.wenshucha.com/data/labor/hefei.html
+  - https://www.wenshucha.com/data/labor/jiaozuo.html
+  - https://www.wenshucha.com/data/labor/jinan.html
+  - https://www.wenshucha.com/data/labor/jiutai.html
+  - https://www.wenshucha.com/data/labor/kunming.html
+  - https://www.wenshucha.com/data/labor/kunshan.html
+  - https://www.wenshucha.com/data/labor/liuzhou.html
+  - https://www.wenshucha.com/data/labor/luoyang.html
+  - https://www.wenshucha.com/data/labor/nanchang.html
+  - https://www.wenshucha.com/data/labor/nanjing.html
+  - https://www.wenshucha.com/data/labor/nanning.html
+  - https://www.wenshucha.com/data/labor/ningbo.html
+  - https://www.wenshucha.com/data/labor/qingdao.html
+  - https://www.wenshucha.com/data/labor/shanghai.html
+  - https://www.wenshucha.com/data/labor/shaoxing.html
+  - https://www.wenshucha.com/data/labor/shenyang.html
+  - https://www.wenshucha.com/data/labor/shenzhen.html
+  - https://www.wenshucha.com/data/labor/suzhou.html
+  - https://www.wenshucha.com/data/labor/tangshan.html
+  - https://www.wenshucha.com/data/labor/tianjin.html
+  - https://www.wenshucha.com/data/labor/wenzhou.html
+  - https://www.wenshucha.com/data/labor/wuhan.html
+  - https://www.wenshucha.com/data/labor/xiamen.html
+  - https://www.wenshucha.com/data/labor/xian.html
+  - https://www.wenshucha.com/data/labor/xinjiangwulumuqi.html
+  - https://www.wenshucha.com/data/labor/yantai.html
+  - https://www.wenshucha.com/data/labor/zhengzhou.html
+  - https://www.wenshucha.com/data/labor/zhongshan.html
+  - https://www.wenshucha.com/data/labor/huaian.html
+  - https://www.wenshucha.com/data/labor/fuzhou.html
+  - https://www.wenshucha.com/data/labor/panzhihua.html
+  - https://www.wenshucha.com/data/labor/zhumadian.html
+  - https://www.wenshucha.com/data/labor/xuzhou.html
+  - https://www.wenshucha.com/data/labor/wuzhou.html
+  - https://www.wenshucha.com/data/labor/xiangyang.html
+  - https://www.wenshucha.com/data/labor/bijie.html
+  - https://www.wenshucha.com/data/labor/wuhu.html
+  - https://www.wenshucha.com/data/labor/wuxi.html
+  - https://www.wenshucha.com/data/labor/jilin.html
+  - https://www.wenshucha.com/data/labor/xinxiang.html
+  - https://www.wenshucha.com/data/labor/shijiazhuang.html
+  - https://www.wenshucha.com/data/labor/jiyuan.html
+  - https://www.wenshucha.com/data/labor/zhuzhou.html
+  - https://www.wenshucha.com/data/labor/guilin.html
+  - https://www.wenshucha.com/data/labor/yinchuan.html
+  - https://www.wenshucha.com/data/labor/shiyan.html
+  - https://www.wenshucha.com/data/labor/guiyang.html
+  - https://www.wenshucha.com/data/labor/kaili.html
+  - https://www.wenshucha.com/data/labor/pingquan.html
+  - https://www.wenshucha.com/data/labor/dengfeng.html
+  - https://www.wenshucha.com/data/labor/hengyang.html
+  - https://www.wenshucha.com/data/labor/mianzhu.html
+  - https://www.wenshucha.com/data/labor/leshan.html
+  - https://www.wenshucha.com/data/labor/zunyi.html
+  - https://www.wenshucha.com/data/labor/anshan.html
+  - https://www.wenshucha.com/data/labor/anyang.html
+  - https://www.wenshucha.com/data/labor/xuchang.html
+  - https://www.wenshucha.com/data/labor/yichang.html
+  - https://www.wenshucha.com/data/labor/zhangjiagang.html
+  - https://www.wenshucha.com/data/labor/pingli.html
+  - https://www.wenshucha.com/data/labor/lanzhou.html
+  - https://www.wenshucha.com/data/labor/linjiang.html
+  - https://www.wenshucha.com/data/labor/taiyuan.html
+  - https://www.wenshucha.com/data/labor/yutian.html
+  - https://www.wenshucha.com/data/labor/quanzhou.html
+  - https://www.wenshucha.com/data/labor/changde.html
+  - https://www.wenshucha.com/data/labor/xingyang.html
+  - https://www.wenshucha.com/data/labor/loudi.html
+  check_ssl: true
+- name: sinoverdict-en
+  host: sinoverdict.wenshucha.com
+  sitemap: https://sinoverdict.wenshucha.com/sitemap.xml
+  urls_to_push:
+  - https://sinoverdict.wenshucha.com/blog/chinese-court-registry-pagination-caps-enumerability-test.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-bankruptcy-registry-pagination-window-outgrown-2023.html
+  - https://sinoverdict.wenshucha.com/blog/peoples-court-case-database-official-chinese-case-law.html
+  - https://sinoverdict.wenshucha.com/blog/prc-court-data-official-endpoints-inventory-2026.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-case-law-metadata-field-census.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-case-law-coverage-by-year-recency-cliff.html
+  - https://sinoverdict.wenshucha.com/
+  - https://sinoverdict.wenshucha.com/about.html
+  - https://sinoverdict.wenshucha.com/blog/prepare-chinese-court-judgments-training-corpus.html
+  - https://sinoverdict.wenshucha.com/blog/deployment-geography-chinese-case-law-corpus.html
+  - https://sinoverdict.wenshucha.com/blog/traditional-simplified-chinese-case-law-retrieval.html
+  - https://sinoverdict.wenshucha.com/blog/what-survives-termination-chinese-legal-data-licence.html
+  - https://sinoverdict.wenshucha.com/blog/data-change-log-chinese-case-law-corpus.html
+  - https://sinoverdict.wenshucha.com/blog/who-owns-evaluation-artefacts-chinese-legal-data.html
+  - https://sinoverdict.wenshucha.com/blog/cross-border-retrieval-latency-cost-chinese-case-law.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-legal-data-pilot-scope-exit-criteria.html
+  - https://sinoverdict.wenshucha.com/blog/evaluate-chinese-case-law-vendor-coverage-verification.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-court-data-licensing-cost-terms.html
+  - https://sinoverdict.wenshucha.com/blog/crawl-chinese-court-judgments-llm-training-robots-txt.html
+  - https://sinoverdict.wenshucha.com/llms.txt
+  - https://sinoverdict.wenshucha.com/llms-full.txt
+  - https://sinoverdict.wenshucha.com/#how
+  - https://sinoverdict.wenshucha.com/#access
+  - https://sinoverdict.wenshucha.com/#faq
+  - https://sinoverdict.wenshucha.com/app/
+  - https://sinoverdict.wenshucha.com/blog/
+  - https://sinoverdict.wenshucha.com/blog/licensing-chinese-court-data-guide.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-case-law-api-structure.html
+  - https://sinoverdict.wenshucha.com/blog/state-of-chinese-case-law-data-2026.html
+  - https://sinoverdict.wenshucha.com/blog/why-western-platforms-china-coverage-not-built-for-ai.html
+  - https://sinoverdict.wenshucha.com/blog/license-vs-scrape-chinese-case-law.html
+  - https://sinoverdict.wenshucha.com/blog/building-china-coverage-legal-ai-data-stack.html
+  - https://sinoverdict.wenshucha.com/blog/enterprise-data-partnership-models-chinese-case-law.html
+  - https://sinoverdict.wenshucha.com/blog/prc-precedent-foreign-arbitral-awards-enforcement.html
+  - https://sinoverdict.wenshucha.com/blog/china-antitrust-enforcement-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-ip-enforcement-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/structuring-prc-court-data-for-ai.html
+  - https://sinoverdict.wenshucha.com/blog/english-native-chinese-legal-research.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-legal-ai-data-market-map-2026.html
+  - https://sinoverdict.wenshucha.com/blog/cail2018-lecard-alternative-commercial-chinese-legal-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/mcp-server-chinese-case-law.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-legal-retrieval-pipeline-etl-indexing-citations.html
+  - https://sinoverdict.wenshucha.com/blog/english-language-api-chinese-court-judgments.html
+  - https://sinoverdict.wenshucha.com/blog/western-legal-ai-vendors-chinese-court-data-mistakes.html
+  - https://sinoverdict.wenshucha.com/blog/china-data-compliance-enforcement-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-labor-employment-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-contract-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-financial-lending-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-construction-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-tort-liability-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-marriage-family-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-bankruptcy-insolvency-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-company-shareholder-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-administrative-litigation-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-real-estate-property-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-insurance-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-maritime-shipping-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-customs-trade-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-securities-capital-markets-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-trade-secret-unfair-competition-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-tax-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-environmental-public-interest-litigation-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-product-liability-recall-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-medical-malpractice-dispute-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/china-criminal-economic-crime-case-law-dataset.html
+  - https://sinoverdict.wenshucha.com/blog/legal-mcp-servers-by-jurisdiction-china-gap-2026.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-provincial-high-court-websites-inventory-2026.html
+  - https://sinoverdict.wenshucha.com/blog/commercially-licensed-bulk-api-chinese-court-judgments.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-bankruptcy-register-national-court-endpoints-2026.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-case-number-province-code-audit-2016-reform.html
+  check_ssl: true
+- name: mcp-zh-dev
+  host: mcp.wenshucha.com
+  sitemap: https://mcp.wenshucha.com/sitemap.xml
+  urls_to_push:
+  - https://mcp.wenshucha.com/
+  check_ssl: true
 keywords:
-
-  # --- wenshucha.com (To B · 大律所 + 地方政府,卖私有化离线 AI) ---
   wenshucha_tob:
     high_intent:
-      - "律所私有 AI 部署"
-      - "司法大数据本地化"
-      - "法律 AI 私有化"
-      - "政府司法 AI 解决方案"
-      - "裁判文书数据私有部署"
-      - "法院信息中心 AI"
-      - "数字法治政府方案"
+    - 律所私有 AI 部署
+    - 司法大数据本地化
+    - 法律 AI 私有化
+    - 政府司法 AI 解决方案
+    - 裁判文书数据私有部署
+    - 法院信息中心 AI
+    - 数字法治政府方案
     long_tail:
-      - "律所本地化大模型"
-      - "法院 AI 智能审判辅助"
-      - "司法机关数据中台"
-      - "法律 LLM 内网部署"
-      - "类案推送系统"
-      - "1.5亿裁判文书私有库"
-
-  # --- sinoverdict (To B 海外 · AI 法律大公司,卖数据 license) ---
+    - 律所本地化大模型
+    - 法院 AI 智能审判辅助
+    - 司法机关数据中台
+    - 法律 LLM 内网部署
+    - 类案推送系统
+    - 1.5亿裁判文书私有库
   sinoverdict_enterprise:
     high_intent:
-      - "Chinese legal data licensing"
-      - "China case law database for AI vendors"
-      - "Chinese court judgments enterprise API"
-      - "Chinese legal corpus for LLM training"
-      - "bulk Chinese case law access"
+    - Chinese legal data licensing
+    - China case law database for AI vendors
+    - Chinese court judgments enterprise API
+    - Chinese legal corpus for LLM training
+    - bulk Chinese case law access
     long_tail:
-      - "Chinese legal data for AI vendors"
-      - "license Chinese case law to AI companies"
-      - "enterprise data partner Chinese law"
-      - "PRC court data for AI"
-      - "Chinese case law dataset enterprise"
-
-  # --- peilema (To C · 被裁员劳动者,卖 9.9 元仲裁报告) ---
+    - Chinese legal data for AI vendors
+    - license Chinese case law to AI companies
+    - enterprise data partner Chinese law
+    - PRC court data for AI
+    - Chinese case law dataset enterprise
   peilema_c:
-    high_intent:           # 高搜索量 + 高商业意图
-      - "N+1 计算器"
-      - "裁员赔偿计算器"
-      - "劳动仲裁赔偿"
-      - "违法解雇赔偿标准"
-      - "2N 赔偿"
-      - "经济补偿金计算"
-      - "辞退赔偿标准"
-    emotional_long_tail:   # 高情绪用户场景词
-      - "被裁员了能拿多少赔偿"
-      - "公司违法解雇怎么算"
-      - "N+1 还是 2N"
-      - "公司不发工资怎么办"
-      - "申请劳动仲裁多久能拿到钱"
-      - "劳动仲裁需要请律师吗"
-      - "裁员赔偿不到位怎么办"
-      - "被辞退没签合同怎么办"
-    persona:               # 用户身份情境词
-      - "互联网裁员赔偿"
-      - "35 岁被优化赔偿"
-      - "孕期被辞退赔偿"
-      - "怀孕期间被裁员"
-      - "试用期被辞退"
-      - "工作 10 年被裁赔偿"
-      - "N+3 是什么意思"
+    high_intent:
+    - N+1 计算器
+    - 裁员赔偿计算器
+    - 劳动仲裁赔偿
+    - 违法解雇赔偿标准
+    - 2N 赔偿
+    - 经济补偿金计算
+    - 辞退赔偿标准
+    emotional_long_tail:
+    - 被裁员了能拿多少赔偿
+    - 公司违法解雇怎么算
+    - N+1 还是 2N
+    - 公司不发工资怎么办
+    - 申请劳动仲裁多久能拿到钱
+    - 劳动仲裁需要请律师吗
+    - 裁员赔偿不到位怎么办
+    - 被辞退没签合同怎么办
+    persona:
+    - 互联网裁员赔偿
+    - 35 岁被优化赔偿
+    - 孕期被辞退赔偿
+    - 怀孕期间被裁员
+    - 试用期被辞退
+    - 工作 10 年被裁赔偿
+    - N+3 是什么意思
