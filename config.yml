@@ -228,6 +228,7 @@ sites:
   - https://sinoverdict.wenshucha.com/blog/commercially-licensed-bulk-api-chinese-court-judgments.html
   - https://sinoverdict.wenshucha.com/blog/chinese-bankruptcy-register-national-court-endpoints-2026.html
   - https://sinoverdict.wenshucha.com/blog/chinese-case-number-province-code-audit-2016-reform.html
+  - https://sinoverdict.wenshucha.com/blog/derived-not-observed-read-time-metadata-backfill-audit.html
   check_ssl: true
 - name: mcp-zh-dev
   host: mcp.wenshucha.com
