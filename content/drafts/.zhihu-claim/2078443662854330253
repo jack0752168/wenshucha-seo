@@ -1,0 +1,6 @@
+qid=2078443662854330253
+claimed_at=2026-09-05 09:28 +0800
+by=zhihu-answer-engine (scheduled)
+state=banked
+purpose=顺延至 09-06,今日让位给 zhapian
+note=09-05 09:5x 过期开场已修（六个小时->挂了几天；刚才现查->写这篇之前又原样重跑过一遍核对，且确已重跑核对 115942->675->640->640 与 09-02 一致）。lint exit 0 / 52段 / 3838字 / 外链1 / 无markdown残留。⚠️ 银行锁挡不住不认它的 runner（见 09-05 撞车），取稿前仍须拉 answers API。

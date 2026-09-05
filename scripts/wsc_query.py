@@ -128,6 +128,24 @@ def main():
         for r in rows[:6]:
             print(f"    {str(r.get('key'))[:22]:<24} {r.get('count'):>12,}")
 
+    if a.cause and not purity:
+        _rows = aggs.get("cause") or []
+        _floor = _rows[-1]["count"] if _rows else None
+        _filt = next((t for lbl, _, t in reversed(steps) if "在结果中搜" not in lbl), None)
+        print("\n" + "=" * 62)
+        print("②.5 案由纯度体检 🚨 **无法体检 —— 按最脏处理**")
+        print("=" * 62)
+        print(f"  你传的案由「{a.cause}」**没出现在 cause 聚合的前 {len(_rows)} 名里**。")
+        print("  这不是「没问题」,恰恰相反:说明精确标着这个案由的条数")
+        if _floor is not None and _filt:
+            print(f"  **低于榜末的 {_floor:,}**,即纯度上限约 {_floor / _filt * 100:.1f}%（分母 {_filt:,}）。")
+        print("  ⛔ 过滤器给出的总数**一个都不能**当「这类案子有多少件」写出去。")
+        print("     可选处置:① 换一个更常见的案由;② 只用 ③ 里案由相符的真实案例;")
+        print("             ③ 在回答里如实写「这个案由我查不出干净的数」,一个数不报。")
+        print("  同批里实际装进来的是这些案子(全都不是你要的):")
+        for r in _rows[:6]:
+            print(f"     {str(r.get('key'))[:22]:<24} {r.get('count'):>12,}")
+
     if purity:
         print("\n" + "=" * 62)
         print("②.5 案由纯度体检 🚨 引用数字前必看")

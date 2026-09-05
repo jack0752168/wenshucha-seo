@@ -1,0 +1,12 @@
+qid=1920571124745474563
+claimed_at=2026-09-05 10:17 +0800
+banked_at=2026-09-05 10:45 +0800
+by=zhihu-answer-engine (scheduled)
+state=banked
+purpose=09-06 银行队列（行政案由，账号 88 篇零覆盖行政线，这是第一篇）
+draft=content/drafts/2026-09-05/zhihu-fuyi-weichi-guanxia.md
+lint=exit 0 / 71段 / 4,979字 / 外链1 / markdown残留0
+sha1=154d515853e21b2f2e7bbfccaf90c4761ccb5cc2
+note=投前必做：①重探答数(当前16，>30弃)②逐条重读线上回答，开场点名东方9号/崔永贵/J律师在庭/杨应军须仍属实
+     ③开场写「已经有十几个回答」是会腐坏的表述，按实际答数复核 ④投前60秒拉 answers API 用当日入库数定夺
+     ⚠️ 银行锁挡不住不认它的 runner（见 09-05 09:2x 撞车条）

@@ -31,7 +31,13 @@ BODY_MARK_END = re.compile(r"<!--\s*BODY-END\s*-->")
 # 这些小节标题出现后,整节丢到下一个同级/更高级标题为止
 DROP_SECTION = re.compile(r"^#{2,4}\s*(备选标题|自查|发布前|交付|⚠️)")
 # 正文起点
-BODY_START = re.compile(r"^#{1,3}\s*正文\s*$|^=+\s*BODY\s*=+\s*$")
+# 2026-09-03 修:旧版要求界标行「正文」后面必须立刻结束,于是 `## 正文（发布用）`
+# 和 `## 正文（注入用，段落以空行分隔）` 都不匹配 => 界标形同虚设,in_body 由文件
+# 首行 `#` 提前开闸(见下方 ~L113),界标之前的 ES 原始输出/wsc_query 参数表/内部
+# 方法论笔记全被当正文抽出来(fuqi 282 段、gongshang 322 段,真实只有 66/68 段),
+# 而 lint 照样 exit=0。照手册「先跑 extract 再注入」就会把内部参数发到公开回答。
+BODY_START = re.compile(r"^#{1,3}\s*正文\s*(?:[（(][^）)]{0,40}[）)]\s*)?$"
+                        r"|^=+\s*BODY\s*=+\s*$")
 TITLE_SECTION = re.compile(r"^#{1,3}\s*标题\s*$|^#{1,3}\s*标题（")
 
 
@@ -91,7 +97,10 @@ def parse(path: Path):
                 continue
 
         if BODY_START.match(s):
+            # 界标的语义是「正文从这里才开始」,所以此前收进来的一律作废。
+            # 只置 in_body 不清仓 = 2026-09-03 那个事故的另一半原因。
             in_body, in_title_sec = True, False
+            body.clear()
             continue
         if TITLE_SECTION.match(s):
             in_title_sec = True
@@ -140,6 +149,9 @@ def parse(path: Path):
 
     return {"title": title, "body": body}
 
+
+# 正文段数上限,见 __main__ 里的 exit 6
+BODY_MAX_PARAS = 100
 
 # 只写给我们自己看的运维词 —— 出现在正文里就是穿帮,见 lint() 第 ③ 条
 OPS_NOTE_RE = re.compile(
@@ -237,6 +249,21 @@ if __name__ == "__main__":
         print("   排查:首行是否为 `# 真标题`(以「知乎」开头的会被当文件头)、"
               "有没有 `## 正文` 或 <!-- BODY-START --> 界标。", file=sys.stderr)
         sys.exit(5)
+    # 2026-09-03 加(exit 6):正文段数上限。
+    # 我们的知乎回答实测 42-68 段,>100 段只有一个成因 —— 界标没裁干净,
+    # ES 原始输出/内部笔记被当正文抽了出来。这一类 lint 和 product_gate 都不报警
+    # (运维词命中不了、大数案号深链反而更"齐全"),所以必须单开一条硬闸门。
+    # 发布真品一律以 .inject.txt 为准。
+    if len(r["body"]) > BODY_MAX_PARAS:
+        print(f"❌ 正文 {len(r['body'])} 段 > {BODY_MAX_PARAS} 段上限(exit 6):"
+              "几乎可以肯定是界标未裁,内部参数/ES 原始输出混进了正文。", file=sys.stderr)
+        print("   排查:界标行是不是 `## 正文…`(本脚本认带括号后缀);"
+              "或改用 <!-- BODY-START --> / <!-- BODY-END --> 显式框住。", file=sys.stderr)
+        print("   ⛔ 在裁干净之前禁止注入 —— 发布真品用 .inject.txt。", file=sys.stderr)
+        for i in (0, 1, 2):
+            if i < len(r["body"]):
+                print(f"   首段[{i}]: {r['body'][i][:70]}", file=sys.stderr)
+        sys.exit(6)
     errs = lint(r["body"])
     if "--no-gate" not in sys.argv:
         gerrs, stat = product_gate(r["body"])
