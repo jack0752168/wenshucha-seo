@@ -1,0 +1,20 @@
+qid: 1999206475290133592
+title: 劳动争议案件胜诉后应如何追缴社保？
+claimed_at: 2026-09-07 12:1x +0800
+by: zhihu-answer-engine (scheduled, 12:0x 轮建锁 / 16:3x 轮成稿)
+state: banked
+draft: content/drafts/2026-09-07/zhihu-answer-1999206475290133592.md
+totals_at_bank: 1  (<30 PASS，抢首答级) / mine=false
+source: 邀请矿口 question/waiting?type=invite
+note: 排期 09-08（CAP=7 生效日）。开场点名线上唯一答主「胡至」，投前须复验该答仍在线。
+      长青程序题、无新闻钩子，按 reference_zhihu_banked_draft_decay_by_news_hook 属可安全过夜类。
+---
+state: published
+published_at: 2026-09-08 08:2x +0800
+aid: 2080562088955601947
+url: https://www.zhihu.com/question/1999206475290133592/answer/2080562088955601947
+by: wenshucha-platform-distribute (scheduled, 09-08 07:00 轮)
+verify: 43/43 blocks · 3235 字与源文一致 · 发布后 URL 出 aid + contenteditable 归零 + toast「发布成功」
+note: 投前复验全过——totals=1(<30)、mine=false、开场点名「胡至」仍是线上唯一答主、ES 四链数字逐位复现(1,803,775/680,348/654,246/110,702/85,612/77%)。
+      🔴 投前删掉了原稿的 tob 深链段(3 段)，换成纯文本复现条件：实测该深链会被页面强制改写成 province=广东 并吞掉其余参数，
+      读者点开看到的不是正文描述的那一批，「点开是同一批」这句话会变成假话。

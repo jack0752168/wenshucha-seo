@@ -1,0 +1,12 @@
+qid: 2080315112951497773
+state: banked
+draft: content/drafts/2026-09-08/zhihu-answer-2080315112951497773.md
+body: content/drafts/2026-09-08/zhihu-answer-2080315112951497773.body.txt
+inject: content/drafts/2026-09-08/inject-paras-2080315112951497773.json
+title: 收到自称法院的调解短信和电话，是被起诉了吗？该怎么应对？
+cause: 信用卡纠纷
+purity: 88%
+lint: exit 0 / 63段 / 3818字符 / sha1 bacdb71148c4c7428ccec0cf4b4b58b7714dccc2
+claimed_at: 2026-09-08 13:0x
+runner: zhihu-answer-engine (排程轮 12:4x-13:1x, CAP+窗口双满故空跑转产能储备)
+note: 为 09-09 补缺而写（09-09 CAP=6，银行原只剩 2 篇）。投前须复验开场点名的「七哥努力」「墨年」仍在线；正文不含答数，totals 变动不需改开场。深链落地实测 1,813,131（差因已写进正文）。

@@ -1,0 +1,15 @@
+qid: 2079252827059270623
+claimed_at: 2026-09-07 14:2x +0800
+by: zhihu-answer-engine (scheduled, 14:0x 轮)
+state: banked
+draft: content/drafts/2026-09-07/zhihu-answer-2079252827059270623.md
+note: 2026-09-07 16:2x 补锁 —— 14:0x 轮建稿时漏建锁，zhihu_bank_audit.sh 报「有稿无锁」。
+      稿与 inject 包均已落盘（14:23/14:24），内容未动，仅补占用标记防第二 runner 撞车。
+
+--- 2026-09-08 12:3x 状态校正（非本轮投递，是补封）---
+state=published
+依据=线上 /api/v4/members/{me}/answers 全量 105 篇的 qid 集合命中本 qid。
+原因=此前发布后忘了回写锁，锁一直停在 banked/无状态，
+     会让后续轮次把它当"待发"重投 ⇒ 知乎一人一题只能一条，重投＝覆盖已发好的稿，是净损失
+     （守 [[reference_zhihu_backlog_queue_contains_published]]）。
+⚠️ 下轮开工请照此法过滤：**锁目录 ≠ 待发队列，必须先与线上 qid 集做差集。**

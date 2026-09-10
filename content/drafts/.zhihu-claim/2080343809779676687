@@ -1,0 +1,18 @@
+qid: 2080343809779676687
+title: 被冒名登记为公司法定代表人，代办人员未审慎审查需承担哪些责任？
+claimed_at: 2026-09-08 14:3x +0800
+by: zhihu-answer-engine (scheduled, 14:1x 轮预写)
+state: claimed
+purpose: 09-09 银行队列第 4 篇。09-08 CAP=6 已于 12:26:41 打满，滚动窗口 39/40，本轮空跑不投递。
+gate: mine=false / 0答(<30 PASS) / 线上 105 qid 全集无此题
+chain: q=冒名 caseType=民事 lastYears=3（cause 框弃用，纯度仅 7%）
+---
+banked_at: 2026-09-08 14:5x +0800
+state: banked
+draft: content/drafts/2026-09-09/zhihu-answer-2080343809779676687.md
+body: content/drafts/2026-09-09/zhihu-answer-2080343809779676687.body.txt
+inject: content/drafts/2026-09-09/inject-paras-2080343809779676687.json
+paras: 82
+body_sha1: a42fa71da2a9a9f54fc7b8b89bd196d0bd14848c
+lint: zhihu_extract.py exit=0
+note: 09-09 银行队列第 4 篇。发布前须逐位复检 ES 数字（近三年滚动窗口）。首答稿，开场无点名答主，无 credit 失效风险。

@@ -24,9 +24,15 @@ TO = "jack.jiaxin.chen@gmail.com"
 DRY = "--dry" in sys.argv
 
 
+class Fetchfail(Exception):
+    """SSH 层失败。必须抛出去，不能吞成「没有新申请」——那会让整条到件通道静默死掉。"""
+
+
 def ssh(cmd, timeout=40):
     r = subprocess.run(["ssh", "-o", "ConnectTimeout=25", SRV, cmd],
                        capture_output=True, text=True, timeout=timeout)
+    if r.returncode != 0:
+        raise Fetchfail(f"ssh 退出码 {r.returncode}: {(r.stderr or '').strip()[:300]}")
     return r.stdout
 
 
@@ -126,13 +132,42 @@ def telegram(rows):
         print("Telegram 推送失败(不影响主流程):", e)
 
 
+def alert(msg):
+    """通道本身坏了要喊出来。静默失败＝表单白做。"""
+    import pathlib
+    sh = pathlib.Path.home() / ".claude/bin/notify-telegram.sh"
+    if sh.exists():
+        try:
+            subprocess.run([str(sh), msg], timeout=20)
+        except Exception:
+            pass
+
+
 if __name__ == "__main__":
-    rows = fetch_new()
+    try:
+        rows = fetch_new()
+    except Exception as e:
+        m = f"⚠️ MCP 申请到件通道拉取失败：{e}\n（表单仍在收，但 Jack 收不到通知，需人工看 {LEDGER}）"
+        print(m)
+        if not DRY:
+            alert(m)
+        sys.exit(1)
     if not rows:
         print("没有新申请")
         sys.exit(0)
     print(f"发现 {len(rows)} 条新申请")
-    if send(rows):
+    try:
+        ok = send(rows)
+    except Exception as e:
+        m = f"⚠️ MCP 申请有 {len(rows)} 条新提交，但发邮件失败：{e}\n表单页 https://www.wenshucha.com/mcp/apply/"
+        print(m)
+        if not DRY:
+            alert(m)
+        sys.exit(1)
+    if ok:
         telegram(rows)
         if not DRY:
             mark_notified([d["_line"] for d in rows])
+    else:
+        alert(f"⚠️ MCP 申请有 {len(rows)} 条新提交，但邮件未发出（钥匙串取不到 SMTP 密码）")
+        sys.exit(1)

@@ -1,0 +1,12 @@
+qid: 2080340074370278773
+state: banked
+draft: content/drafts/2026-09-08/zhihu-answer-2080340074370278773.md
+body: content/drafts/2026-09-08/zhihu-answer-2080340074370278773.body.txt
+inject: content/drafts/2026-09-08/inject-paras-2080340074370278773.json
+title: 公司要求用现金方式全额返还绩效，该怎么办？
+cause: 劳动争议 × 绩效工资（主链,纯度76%,只用内部构成）/ 不当得利纠纷（对照链,88%）
+lint: exit 0 / 57段 / 3416字符 / sha1 4e7f0aef65d811f7674f5d4407af7ac99ae95fb6
+claimed_at: 2026-09-08 13:5x
+runner: zhihu-answer-engine (排程轮 12:4x-14:0x, CAP+窗口双满故空跑转产能储备)
+note: 为 09-09 补缺而写。投前须复验唯一答主「本慧」仍在线。深链落地实测 1,261,732（差因已写进正文）。
+warn: 与同批 2080315112951497773（信用卡篇）同族招式「文书类型构成」，建议隔开至少 2 篇再投，勿同日相邻。

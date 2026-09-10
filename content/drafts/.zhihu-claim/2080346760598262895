@@ -1,0 +1,24 @@
+qid: 2080346760598262895
+title: 被父母强行送进精神病院，如何维权并追究他们的法律责任？
+claimed_at: 2026-09-09 12:5x +0800
+by: zhihu-answer-engine (scheduled, 12:3x 轮空跑产出)
+state: claimed
+purpose: 09-10 银行队列第 5 篇。09-09 CAP=5 已于 09:42:11 打满，本轮空跑不投递。
+gate: mine=false / **0答 抢首答**（/api/v4/questions/{qid}/answers?limit=1 → paging.totals=0，12:5x 实测）/ 线上 110 qid 全集无此题
+chain: q=精神病院 caseType=民事 lastYears=3 → 493；procedure=特别程序 → 112（cause 框全程弃用，见下）
+---
+banked_at: 2026-09-09 13:0x +0800
+state: banked
+draft: content/drafts/2026-09-10/zhihu-answer-2080346760598262895.md
+body: content/drafts/2026-09-10/zhihu-answer-2080346760598262895.body.txt
+inject: content/drafts/2026-09-10/inject-paras-2080346760598262895.json
+paras: 70
+body_sha1: 0dd4a9ab2b931b4d47cfd5dc778cd10a484ec17e
+lint: zhihu_extract.py exit=0 / 70 段 / 3,107 中文字 / 4,240 字符
+note: |
+  09-10 银行队列第 5 篇。首答稿，开场无点名答主，**无 credit 失效风险**；发布前仍须复验 totals 是否仍 <30。
+  ⚠️ cause 筛选器在这条链上完全不可用：--cause 申请变更监护人 与 --cause 申请确定监护人 都返回 filter_total=78
+     且返回的案子案由全不符（分词 OR，复证 reference_wsc_cause_filter_not_exact）。
+     ⇒ 正文里所有分案由数字**一律取自 /agg2 精确聚合**，不取筛选器总数；深链也**不带 cause**。
+  ⚠️ 09-10 发布当天必须重跑的三样：① 全部 ES 数字逐位复跑（09-09 新纪律，ver 不变也要跑）
+     ② tob 深链冷加载落地数（09-09 实测 493，与后端全等）③ answers totals。

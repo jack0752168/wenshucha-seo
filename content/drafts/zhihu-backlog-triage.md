@@ -54,7 +54,7 @@
 ## ① 真·待发队列（**线上核对后剩 9 篇，全部专栏型**，按最早优先）
 
 2. ~~2026-08-24/zhihu-db-account-sharing.md~~ — ✅ **09-04 15:28:34 已清** → https://zhuanlan.zhihu.com/p/2079229014946866968
-3. 2026-08-24/zhihu-expert-opinion-cross-exam.md — 质证意见判决书一字不提
+3. ~~2026-08-24/zhihu-expert-opinion-cross-exam.md~~ — ✅ **09-07 17:24:56 已清** → https://zhuanlan.zhihu.com/p/2080344764151603502 （补数据后重发，原稿 lint exit 4）
 4. 2026-08-25/zhihu-zhongcai-buggongkai.md — 仲裁裁决查不到，制度上为什么不给看
 5. 2026-08-26/zhihu-judge-past-rulings.md — 查了法官过往判决仍猜不到结果
 6. 2026-08-26/zhihu-judge-questions-in-court.md — 法官庭上会问什么

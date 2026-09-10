@@ -1,0 +1,15 @@
+qid: 2033631716649210696
+state: banked
+claimed_at: 2026-09-06 16:27:06
+draft: content/drafts/2026-09-06/zhihu-answer-2033631716649210696.md
+note: 搜索口(search_v3)新入池；离婚后财产纠纷 × q=增值收益 纯度85%达标；1答长青题不腐坏；拟 09-08 发（09-07 库存已 7 篇＞CAP6）
+---
+state: published
+published_at: 2026-09-08 08:3x +0800
+aid: 2080562666989425858
+url: https://www.zhihu.com/question/2033631716649210696/answer/2080562666989425858
+by: wenshucha-platform-distribute (scheduled, 09-08 07:00 轮)
+verify: 72/72 blocks · 3551 字与源文一致 · URL 出 aid + contenteditable 归零 + toast「发布成功」
+note: 投前复验全过——totals=1(<30)、mine=false、开场点名「杨律师」仍是线上唯一答主、
+      ES 数字逐位复现(4,334,540/8,837/8,496/1,066/905/84.9%)。
+      🔴 同 1999206475290133592，投前删掉 tob 深链段(3 段)换成纯文本复现条件（深链被强制改写成 province=广东）。

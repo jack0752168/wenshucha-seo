@@ -167,21 +167,28 @@ def main():
         flag = "" if (not a.cause or c["cause"] == a.cause) else "  ❌案由不符,别用"
         print(f"  {c['case_no'] or '(无案号)':<24} {c['court'][:20]:<22} {c['cause'][:14]:<16} {c['title'][:26]}{flag}")
 
-    # ④ 可点深链 —— 读者点开就是上面那批结果,自己能验
-    #    ⚠️ 前端只吃 q / cause / province 三个参数(2026-08-17 实测,
-    #       lastYears / procedure / caseType 传了不生效,不要放进链接假装能用)
-    #    2026-08-24 加 utm:百度统计和我们自己的像素都读它,不带就永远分不清
-    #    这条流量是知乎来的还是别处来的(百家号根本不让放链接,只能靠 /bjh 短链认)
-    link_p = {k: v for k, v in (("q", a.q), ("cause", a.cause), ("province", a.province)) if v}
+    # ④ 可点深链
+    #    2026-09-05 实测推翻旧注释：lastYears / procedure / caseType 都是生效的，
+    #       只是不会渲染成「当前筛选」里的 chip，当年据此误判为不生效。
+    #    🔴 province 必须显式带上，哪怕是全国口径（此时写空串）——
+    #       省略它前端会把读者浏览器上一次用过的省份补回来（实测被改写成 province=广东），
+    #       读者看到的就不是你正文里的那批。这个坑 09-05 / 09-07 / 09-08 已踩三次，
+    #       前两次都是“写稿时记得带”靠不住，所以修到这里。
+    #       见 memory reference_tob_deeplink_params_beyond_three。
+    #    2026-08-24 加 utm：百度统计和我们自己的像素都读它
+    link_p = {k: v for k, v in (("q", a.q), ("cause", a.cause)) if v}
+    link_p["province"] = a.province   # 空串 = 全国口径，能覆盖浏览器旧值；绝不能省略
     link_p["utm_source"] = a.utm
     link_p["utm_medium"] = "answer" if a.utm == "zhihu" else "post"
     link = "https://tob.wenshucha.com/cases?" + urllib.parse.urlencode(link_p)
     print("\n" + "=" * 62)
-    print("④ 可点深链（贴进回答，读者点开即是同一批结果）")
+    print("④ 可点深链（贴前必须冷加载实测一次，见下方红字）")
     print("=" * 62)
     print(f"  {link}")
-    print("  注：前端仅支持 q/cause/province；其余筛选项让读者自己在页面上点，")
-    print("      让他亲手收窄一次，比看你描述更有说服力。")
+    print("  🔴 落地数 ≠ 上面任何一格后端数：前端 cause 是精确匹配（≈后端纯度格）、")
+    print("     q 是短语匹配（后端是分词 OR），多词 q 实测可差 20 倍。")
+    print("     ∴ 贴前必须冷加载（先回 tob.wenshucha.com/ 首页再进目标 URL）实测一次，")
+    print("     把落地那个数抄进正文并如实写明差额；做不到就别贴链接，改写纯文本检索条件。")
 
     print("\n" + "=" * 62)
     print("⚠️  写回答时必须说清楚的两件事")

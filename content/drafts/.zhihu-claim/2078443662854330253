@@ -1,6 +1,30 @@
 qid=2078443662854330253
 claimed_at=2026-09-05 09:28 +0800
 by=zhihu-answer-engine (scheduled)
-state=banked
+state=PUBLISHED
 purpose=顺延至 09-06,今日让位给 zhapian
 note=09-05 09:5x 过期开场已修（六个小时->挂了几天；刚才现查->写这篇之前又原样重跑过一遍核对，且确已重跑核对 115942->675->640->640 与 09-02 一致）。lint exit 0 / 52段 / 3838字 / 外链1 / 无markdown残留。⚠️ 银行锁挡不住不认它的 runner（见 09-05 撞车），取稿前仍须拉 answers API。
+
+--- 2026-09-05 15:3x 队列体检追加 ---
+totals_recheck=0 @15:2x（<30 PASS）⇒ 开场「挂了几天还没人答」仍属实
+时间副词：正文零命中（09-05 09:5x 已修过的两处未复发）
+本篇无点名答主（totals=0），形态①不适用
+
+--- 2026-09-05 21:1x 队列体检追加 ---
+totals_recheck=0 @21:1x（<30 PASS，首答位仍空；mine=false 未被抢发）
+时间副词/答数自述：正文均零命中
+🔧 补记 draft 路径（本锁自 09-05 09:28 建锁起就漏记，zhihu_bank_audit.sh 每轮都要靠 grep 全库兜底才找得到稿子）：
+draft=content/drafts/2026-09-02/zhihu-yiqi-xingshi-vs-jicheng.md
+
+--- 2026-09-06 08:16 已发布 ---
+aid=2079845415734735386  created_time=2026-09-06 08:16:28 +0800
+totals 88->89, is_collapsed=false/by=nobody, publish 200/8697B, 无 103002
+本锁已结案，勿再取用。
+
+--- 2026-09-08 12:3x 状态校正（非本轮投递，是补封）---
+state=published
+依据=线上 /api/v4/members/{me}/answers 全量 105 篇的 qid 集合命中本 qid。
+原因=此前发布后忘了回写锁，锁一直停在 banked/无状态，
+     会让后续轮次把它当"待发"重投 ⇒ 知乎一人一题只能一条，重投＝覆盖已发好的稿，是净损失
+     （守 [[reference_zhihu_backlog_queue_contains_published]]）。
+⚠️ 下轮开工请照此法过滤：**锁目录 ≠ 待发队列，必须先与线上 qid 集做差集。**
