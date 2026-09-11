@@ -233,6 +233,7 @@ sites:
   - https://sinoverdict.wenshucha.com/blog/ingest-batch-artifacts-chinese-case-law-time-series.html
   - https://sinoverdict.wenshucha.com/blog/chinese-case-law-case-type-filter-era-bias.html
   - https://sinoverdict.wenshucha.com/blog/category-recall-label-lag-chinese-case-law.html
+  - https://sinoverdict.wenshucha.com/blog/fallback-coverage-conditional-chinese-case-law.html
   - https://sinoverdict.wenshucha.com/blog/procedure-code-crosswalk-chinese-case-law.html
   - https://sinoverdict.wenshucha.com/blog/deduplication-survivorship-rule-chinese-case-law.html
   check_ssl: true
