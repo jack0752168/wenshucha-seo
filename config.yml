@@ -236,6 +236,7 @@ sites:
   - https://sinoverdict.wenshucha.com/blog/fallback-coverage-conditional-chinese-case-law.html
   - https://sinoverdict.wenshucha.com/blog/procedure-code-crosswalk-chinese-case-law.html
   - https://sinoverdict.wenshucha.com/blog/deduplication-survivorship-rule-chinese-case-law.html
+  - https://sinoverdict.wenshucha.com/blog/structured-labor-dataset-complete-columns-selection-artifact.html
   check_ssl: true
 - name: mcp-zh-dev
   host: mcp.wenshucha.com
