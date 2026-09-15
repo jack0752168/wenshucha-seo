@@ -59,6 +59,15 @@ def ts(s):
     d, t = s.split(':', 1); day, mo, yr = d.split('/')
     return datetime(int(yr), MON[mo], int(day), int(t[0:2]), int(t[3:5]), int(t[6:8]))
 
+def is_internal(ref):
+    # 按 referer 的 host 判站内,不按子串:知乎/微信等跳转链会把我们的 URL 塞进 ?target=,子串判会误杀外部来源
+    try:
+        h = ref.split('/')[2] if '://' in ref else ref
+    except Exception:
+        return False
+    h = h.split(':')[0].lower()
+    return h == 'wenshucha.com' or h.endswith('.wenshucha.com')
+
 def norm(ref):
     h = ref.split('/')[2] if '://' in ref else ref[:24]
     h = re.sub(r'^(www|cn|m)\.', '', h).split(':')[0]
@@ -90,7 +99,7 @@ if os.path.exists('%(PX)s'):
         px['days'][d]['ips'].append(ip)
         px['paths'][U.unquote(q.get('p', '?'))[:48]] += 1
         r = U.unquote(q.get('r', ''))
-        if r and 'wenshucha.com' not in r: px['refs'][norm(r)] += 1
+        if r and not is_internal(r): px['refs'][norm(r)] += 1
 for d in px['days']: px['days'][d]['uv'] = len(set(px['days'][d].pop('ips')))
 px['paths'] = px['paths'].most_common(15); px['refs'] = px['refs'].most_common(12)
 out['pixel'] = px
@@ -102,7 +111,7 @@ for raw in open('%(MAIN)s', 'rb'):
     m = LINE.match(raw.decode('utf-8', 'replace'))
     if not m: continue
     ip, t, meth, path, code, size, ref, ua = m.groups()
-    if not ref or ref == '-' or 'wenshucha.com' in ref or not SRC.search(ref): continue
+    if not ref or ref == '-' or is_internal(ref) or not SRC.search(ref): continue
     if code != '200' or FAKE.match(path) or ip.startswith(SCAN): fake_n += 1; continue
     T = ts(t); age = (now - T).days
     e = norm(ref)
@@ -141,7 +150,7 @@ tob['real_ips'] = len(real)
 tob['real_uv_days'] = {d: len(v & real) for d, v in sorted(page_days.items())}
 for ip in real:
     r = ref_first.get(ip, '')
-    if r and r != '-' and 'wenshucha.com' not in r: tob['refs'][norm(r)] += 1
+    if r and r != '-' and not is_internal(r): tob['refs'][norm(r)] += 1
 # tob 像素(2026-09-15 起)：与 www 同一口径
 if os.path.exists('%(TOBPX)s'):
     import urllib.parse as U2
@@ -155,7 +164,7 @@ if os.path.exists('%(TOBPX)s'):
         tob['px_days'].setdefault(d, {'pv': 0, 'ips': []})
         tob['px_days'][d]['pv'] += 1; tob['px_days'][d]['ips'].append(ip)
         r = U2.unquote(q.get('r', ''))
-        if r and 'wenshucha.com' not in r: tob['px_refs'][norm(r)] += 1
+        if r and not is_internal(r): tob['px_refs'][norm(r)] += 1
     for d in tob['px_days']: tob['px_days'][d]['uv'] = len(set(tob['px_days'][d].pop('ips')))
 tob['refs'] = tob['refs'].most_common(10); tob['paths'] = tob['paths'].most_common(10)
 tob['px_refs'] = tob['px_refs'].most_common(10)
