@@ -32,6 +32,7 @@ HOST = "root@114.132.74.235"
 PX_LOG = "/www/wwwlogs/wenshucha.px.log"
 MAIN_LOG = "/www/wwwlogs/wenshucha.com.log"
 TOB_LOG = "/www/wwwlogs/tob.wenshucha.com.log"
+TOB_PX = "/www/wwwlogs/tob.px.log"     # 2026-09-15 起 tob 也有像素
 
 # 远端一次跑完,只回传 JSON —— 日志 180MB,别拉回本地
 REMOTE = r'''
@@ -45,6 +46,10 @@ BOT = re.compile(r'bot|spider|crawler|slurp|bytespider|python-requests|curl|wget
                  r'scrapy|okhttp|go-http|java/|semrush|ahrefs|petal|gptbot|claudebot|ccbot|'
                  r'perplexity|amazonbot|dataforseo|censys|zgrab', re.I)
 OURS = {'202.68', '114.132'}          # Jack 的 EPN 出口 + 服务器自己回源
+# 2026-09-15 实测：腾讯云 43.x 网段的 headless Chrome 伪造百度 referer 打【真实路径】(/ /case-search/ /cases /api/cases/*),
+# status 200,旧 FAKE 规则(只看不存在路径)拦不住,一天能造出 50-2000 次假「百度来源」。像素口径对它天然免疫
+# (伪造 HTTP Referer 时 document.referrer 为空),referer 口径必须按网段剔。
+SCAN = ('43.',)
 SRC = re.compile(r'baidu|google|bing|sogou|so\.com|360|zhihu|baijiahao|toutiao|doubao|'
                  r'yuanbao|chatgpt|perplexity|kimi|metaso|weixin|xiaohongshu', re.I)
 # 扫描器伪造 referer 时打的路径:站上根本没有这些东西
@@ -98,7 +103,7 @@ for raw in open('%(MAIN)s', 'rb'):
     if not m: continue
     ip, t, meth, path, code, size, ref, ua = m.groups()
     if not ref or ref == '-' or 'wenshucha.com' in ref or not SRC.search(ref): continue
-    if code != '200' or FAKE.match(path): fake_n += 1; continue
+    if code != '200' or FAKE.match(path) or ip.startswith(SCAN): fake_n += 1; continue
     T = ts(t); age = (now - T).days
     e = norm(ref)
     for k, dmax in win.items():
@@ -111,22 +116,53 @@ out['referer'] = {'windows': {k: v.most_common() for k, v in ref_b.items()},
                   'daily': {d: dict(c) for d, c in sorted(daily.items())[-30:]}}
 
 # ③ tob 子站(知乎深链的落点)—— 08-18 才开始有日志
-tob = {'total': 0, 'refs': Counter(), 'paths': Counter(), 'since': None}
+tob = {'total': 0, 'refs': Counter(), 'paths': Counter(), 'since': None, 'scan_dropped': 0,
+       'real_uv_days': {}, 'real_ips': 0, 'px_days': {}, 'px_refs': Counter()}
+# 真浏览器下限：同一 IP 既打过页面又取过 /_next/static(裸拉 HTML 的机器不会取)。tob 09-15 前没像素,只有这招。
+static_ips = set(); page_days = defaultdict(set); ref_first = {}
 if os.path.exists('%(TOB)s'):
     for raw in open('%(TOB)s', 'rb'):
         m = LINE.match(raw.decode('utf-8', 'replace'))
         if not m: continue
         ip, t, meth, path, code, size, ref, ua = m.groups()
         if BOT.search(ua) or '.'.join(ip.split('.')[:2]) in OURS: continue
+        if ip.startswith(SCAN): tob['scan_dropped'] += 1; continue
         tob['total'] += 1
         if tob['since'] is None: tob['since'] = ts(t).strftime('%%Y-%%m-%%d %%H:%%M')
-        if ref and ref != '-' and 'wenshucha.com' not in ref: tob['refs'][norm(ref)] += 1
+        if '/_next/static' in path: static_ips.add(ip); continue
+        if path.startswith('/api/') or path.startswith('/px.gif') or re.search(r'\.(css|js|png|jpg|svg|ico|woff2?|txt|xml|json)(\?|$)', path): continue
+        if code not in ('200', '304'): continue
+        d = ts(t).strftime('%%Y-%%m-%%d'); page_days[d].add(ip)
+        if ip not in ref_first: ref_first[ip] = ref
         tob['paths'][path.split('?')[0][:40]] += 1
+allp = set().union(*page_days.values()) if page_days else set()
+real = allp & static_ips
+tob['real_ips'] = len(real)
+tob['real_uv_days'] = {d: len(v & real) for d, v in sorted(page_days.items())}
+for ip in real:
+    r = ref_first.get(ip, '')
+    if r and r != '-' and 'wenshucha.com' not in r: tob['refs'][norm(r)] += 1
+# tob 像素(2026-09-15 起)：与 www 同一口径
+if os.path.exists('%(TOBPX)s'):
+    import urllib.parse as U2
+    for raw in open('%(TOBPX)s', 'rb'):
+        m = LINE.match(raw.decode('utf-8', 'replace'))
+        if not m: continue
+        ip, t, meth, path, code, size, ref, ua = m.groups()
+        if BOT.search(ua) or '.'.join(ip.split('.')[:2]) in OURS: continue
+        d = ts(t).strftime('%%Y-%%m-%%d')
+        q = dict(pp.split('=', 1) for pp in path.split('?', 1)[-1].split('&') if '=' in pp)
+        tob['px_days'].setdefault(d, {'pv': 0, 'ips': []})
+        tob['px_days'][d]['pv'] += 1; tob['px_days'][d]['ips'].append(ip)
+        r = U2.unquote(q.get('r', ''))
+        if r and 'wenshucha.com' not in r: tob['px_refs'][norm(r)] += 1
+    for d in tob['px_days']: tob['px_days'][d]['uv'] = len(set(tob['px_days'][d].pop('ips')))
 tob['refs'] = tob['refs'].most_common(10); tob['paths'] = tob['paths'].most_common(10)
+tob['px_refs'] = tob['px_refs'].most_common(10)
 out['tob'] = tob
 
 print(json.dumps(out, ensure_ascii=False))
-''' % {"PX": PX_LOG, "MAIN": MAIN_LOG, "TOB": TOB_LOG}
+''' % {"PX": PX_LOG, "MAIN": MAIN_LOG, "TOB": TOB_LOG, "TOBPX": TOB_PX}
 
 
 def fetch():
@@ -177,7 +213,18 @@ def render_text(d):
     print("\n" + "=" * 58)
     print("③ tob.wenshucha.com(知乎深链的落点)")
     print("=" * 58)
-    print(f"  日志自 {tob['since']} 起 · 非机器请求 {tob['total']}")
+    print(f"  日志自 {tob['since']} 起 · 剔 43.x 扫描器 {tob.get('scan_dropped', 0)} 次")
+    print(f"  真浏览器下限(打过页面且取过 _next/static 的 IP):{tob.get('real_ips', 0)} 个")
+    rud = tob.get('real_uv_days') or {}
+    if rud:
+        last = sorted(rud.items())[-14:]
+        print("  逐日真浏览器 UV(下限):", " ".join(f"{d[5:]}:{v}" for d, v in last))
+    if tob.get('px_days'):
+        print("  像素口径(09-15 起):")
+        for d in sorted(tob['px_days'])[-14:]:
+            v = tob['px_days'][d]; print(f"    {d}   PV {v['pv']:>5}   UV {v['uv']:>4}")
+        if tob.get('px_refs'): print("    像素来源:", " / ".join(f"{k} {v}" for k, v in tob['px_refs'][:8]))
+    print("  真浏览器首次来源(referer):")
     for k, v in tob["refs"]: print(f"    {k:<16}{v:>5}")
     if not tob["refs"]: print("    (还没有外部来源)")
 
@@ -189,7 +236,8 @@ def render_text(d):
 # 口径纪律(别再退化成裸数):
 #   · 报昨天整天,不报今天 —— 09:00 跑的时候今天才过了 9 小时,拿来比会一直显示"跌"
 #   · 访问数以像素为准(只有真浏览器跑 JS),不用 nginx 裸行数
-#   · 来源已剔掉伪造 referer(腾讯云 43.x 段冒充百度打不存在的路径,占原始数的 39%)
+#   · 来源已剔掉伪造 referer:(a)打不存在路径的 (b)2026-09-15 起 43.x 网段一律剔,它们伪造百度 referer 打真实路径,
+#     曾把日报里的「百度」虚报成 400+/月
 #   · 样本太小的时候明说"样本小",不给百分比 —— 日均只有个位数,涨跌%全是噪声
 # ——————————————————————————————————————————————
 def render_daily(d):
@@ -234,6 +282,11 @@ def render_daily(d):
     else:
         L.append("_🏷 渠道归因:暂无带标记的访问(短链 /bjh /zh 2026-08-24 才上，需要新发的内容带上才会有数)_")
 
+    # ①.6 像素口径的来源(2026-09-15 加):referer 口径就算剔了 43.x 仍会残留伪造 referer,
+    #     像素是唯一干净口径 —— 两个数并排放,差得离谱时以像素为准。
+    if px.get("refs"):
+        L.append("_🧭 像素口径来源(累计,真浏览器):_ " + "、".join(f"{k} {v}" for k, v in px["refs"][:6]))
+
     # ② 访问来源(referer 口径,可回溯)
     day_src = rf["daily"].get(y) or {}
     if day_src:
@@ -251,10 +304,18 @@ def render_daily(d):
         L.append(f"_近 30 天合计 {tot30} 次(日均 {tot30/30:.1f})· "
                  + " / ".join(f"{k} {v}" for k, v in w[:4]) + "_")
 
-    # ④ 知乎深链有没有真导流 —— 这是目前唯一在建的转化路径
-    if tob["refs"]:
-        L.append("*🔗 tob 子站外部来源:* "
-                 + "、".join(f"{k} {v}" for k, v in tob["refs"][:5]))
+    # ④ tob 产品站:昨日真人(像素优先,没有像素就用「取过静态资源」的下限)+ 外部来源
+    tpx = (tob.get('px_days') or {}).get(y)
+    if tpx:
+        L.append(f"*🧪 昨日 tob 真人:* {tpx['pv']} PV · {tpx['uv']} 人(像素)")
+    else:
+        ruv = (tob.get('real_uv_days') or {}).get(y)
+        if ruv is not None:
+            L.append(f"*🧪 昨日 tob 真人:* ≥{ruv} 人(下限口径:取过静态资源的 IP)")
+    if tob.get('px_refs'):
+        L.append("_tob 像素来源(累计):_ " + "、".join(f"{k} {v}" for k, v in tob['px_refs'][:5]))
+    elif tob["refs"]:
+        L.append("_tob 真浏览器首次来源(30 天累计):_ " + "、".join(f"{k} {v}" for k, v in tob["refs"][:5]))
 
     return "\n".join(L)
 
