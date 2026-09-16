@@ -44,15 +44,19 @@ LINE = re.compile(r'^(\S+) \S+ \S+ \[([^\]]+)\] "(\S+) ([^"]*?) \S+" (\d{3}) (\d
 MON = {m: i for i, m in enumerate('Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(), 1)}
 BOT = re.compile(r'bot|spider|crawler|slurp|bytespider|python-requests|curl|wget|headless|'
                  r'scrapy|okhttp|go-http|java/|semrush|ahrefs|petal|gptbot|claudebot|ccbot|'
-                 r'perplexity|amazonbot|dataforseo|censys|zgrab', re.I)
+                 r'perplexity|amazonbot|dataforseo|censys|zgrab|Dalvik', re.I)   # Dalvik = Android 原生 HTTP 客户端,不跑 JS
 OURS = {'202.68', '114.132'}          # Jack 的 EPN 出口 + 服务器自己回源
 # 2026-09-15 实测：腾讯云 43.x 网段的 headless Chrome 伪造百度 referer 打【真实路径】(/ /case-search/ /cases /api/cases/*),
 # status 200,旧 FAKE 规则(只看不存在路径)拦不住,一天能造出 50-2000 次假「百度来源」。像素口径对它天然免疫
 # (伪造 HTTP Referer 时 document.referrer 为空),referer 口径必须按网段剔。
-SCAN = ('43.',)
+SCAN = ('43.', '106.13.244.', '106.13.245.')
 # 2026-09-16：像素也会被跑 JS 的爬虫打——57.141.0.0/16 = Meta Platforms（FB-BLOCK，whois 实查），单日打 125 次像素、
 # 落地 URL 带十几层 %%2525 重复编码；43.x 的 headless 农场同理。像素口径按这些网段再剔一遍。
 PX_SCAN = ('43.', '57.141.', '57.144.')
+# 2026-09-16 归因复盘：像素里还有三种非读者——① 办公室出口(深圳联通 163.125.x,动态;Jack 的 Mac 国内直连就是它,同网段 Windows 1440 宽=自己人)
+# ② 屏宽 800 的 Android UA(puppeteer 默认视窗;123.6.49.x/27.115.124.x,30 天打了 87 次首页) ③ 106.13.244/245(百度云,UA 轮换扒 tob 深链)。
+OFFICE = ('163.125.249.3', '163.125.144.23')
+PX_W_BOT = {'800'}
 SRC = re.compile(r'baidu|google|bing|sogou|so\.com|360|zhihu|baijiahao|toutiao|doubao|sm\.cn|quark|uc\.cn|'
                  r'yuanbao|chatgpt|perplexity|kimi|metaso|weixin|xiaohongshu', re.I)
 # 扫描器伪造 referer 时打的路径:站上根本没有这些东西
@@ -97,6 +101,8 @@ if os.path.exists('%(PX)s'):
         if '.'.join(ip.split('.')[:2]) in OURS: px['ours'] += 1; continue
         d = ts(t).strftime('%%Y-%%m-%%d')
         q = dict(p.split('=', 1) for p in path.split('?', 1)[-1].split('&') if '=' in p)
+        if q.get('w') in PX_W_BOT: px['bots'] += 1; continue
+        if ip in OFFICE: px['ours'] += 1; continue
         import urllib.parse as U
         px['days'].setdefault(d, {'pv': 0, 'ips': []})
         px['days'][d]['pv'] += 1
@@ -165,6 +171,7 @@ if os.path.exists('%(TOBPX)s'):
         if BOT.search(ua) or ip.startswith(PX_SCAN) or '.'.join(ip.split('.')[:2]) in OURS: continue
         d = ts(t).strftime('%%Y-%%m-%%d')
         q = dict(pp.split('=', 1) for pp in path.split('?', 1)[-1].split('&') if '=' in pp)
+        if q.get('w') in PX_W_BOT or ip in OFFICE: continue
         tob['px_days'].setdefault(d, {'pv': 0, 'ips': []})
         tob['px_days'][d]['pv'] += 1; tob['px_days'][d]['ips'].append(ip)
         r = U2.unquote(q.get('r', ''))
