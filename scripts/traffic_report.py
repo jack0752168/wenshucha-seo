@@ -50,6 +50,9 @@ OURS = {'202.68', '114.132'}          # Jack 的 EPN 出口 + 服务器自己回
 # status 200,旧 FAKE 规则(只看不存在路径)拦不住,一天能造出 50-2000 次假「百度来源」。像素口径对它天然免疫
 # (伪造 HTTP Referer 时 document.referrer 为空),referer 口径必须按网段剔。
 SCAN = ('43.',)
+# 2026-09-16：像素也会被跑 JS 的爬虫打——57.141.0.0/16 = Meta Platforms（FB-BLOCK，whois 实查），单日打 125 次像素、
+# 落地 URL 带十几层 %%2525 重复编码；43.x 的 headless 农场同理。像素口径按这些网段再剔一遍。
+PX_SCAN = ('43.', '57.141.', '57.144.')
 SRC = re.compile(r'baidu|google|bing|sogou|so\.com|360|zhihu|baijiahao|toutiao|doubao|'
                  r'yuanbao|chatgpt|perplexity|kimi|metaso|weixin|xiaohongshu', re.I)
 # 扫描器伪造 referer 时打的路径:站上根本没有这些东西
@@ -89,7 +92,7 @@ if os.path.exists('%(PX)s'):
         if not m: continue
         ip, t, meth, path, code, size, ref, ua = m.groups()
         px['total'] += 1
-        if BOT.search(ua): px['bots'] += 1; continue
+        if BOT.search(ua) or ip.startswith(PX_SCAN): px['bots'] += 1; continue
         if '.'.join(ip.split('.')[:2]) in OURS: px['ours'] += 1; continue
         d = ts(t).strftime('%%Y-%%m-%%d')
         q = dict(p.split('=', 1) for p in path.split('?', 1)[-1].split('&') if '=' in p)
@@ -158,7 +161,7 @@ if os.path.exists('%(TOBPX)s'):
         m = LINE.match(raw.decode('utf-8', 'replace'))
         if not m: continue
         ip, t, meth, path, code, size, ref, ua = m.groups()
-        if BOT.search(ua) or '.'.join(ip.split('.')[:2]) in OURS: continue
+        if BOT.search(ua) or ip.startswith(PX_SCAN) or '.'.join(ip.split('.')[:2]) in OURS: continue
         d = ts(t).strftime('%%Y-%%m-%%d')
         q = dict(pp.split('=', 1) for pp in path.split('?', 1)[-1].split('&') if '=' in pp)
         tob['px_days'].setdefault(d, {'pv': 0, 'ips': []})
