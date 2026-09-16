@@ -240,6 +240,7 @@ sites:
   - https://sinoverdict.wenshucha.com/blog/deduplication-survivorship-rule-chinese-case-law.html
   - https://sinoverdict.wenshucha.com/blog/structured-labor-dataset-complete-columns-selection-artifact.html
   - https://sinoverdict.wenshucha.com/blog/capital-contribution-acceleration-chinese-case-law-three-names.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-case-law-corpus-audit-date-semantics-missing-text.html
   check_ssl: true
 - name: mcp-zh-dev
   host: mcp.wenshucha.com
