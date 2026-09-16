@@ -53,7 +53,7 @@ SCAN = ('43.',)
 # 2026-09-16：像素也会被跑 JS 的爬虫打——57.141.0.0/16 = Meta Platforms（FB-BLOCK，whois 实查），单日打 125 次像素、
 # 落地 URL 带十几层 %%2525 重复编码；43.x 的 headless 农场同理。像素口径按这些网段再剔一遍。
 PX_SCAN = ('43.', '57.141.', '57.144.')
-SRC = re.compile(r'baidu|google|bing|sogou|so\.com|360|zhihu|baijiahao|toutiao|doubao|'
+SRC = re.compile(r'baidu|google|bing|sogou|so\.com|360|zhihu|baijiahao|toutiao|doubao|sm\.cn|quark|uc\.cn|'
                  r'yuanbao|chatgpt|perplexity|kimi|metaso|weixin|xiaohongshu', re.I)
 # 扫描器伪造 referer 时打的路径:站上根本没有这些东西
 FAKE = re.compile(r'^/(files/|images/|portfolio\.html|search\?|.*\.(php|asp|jsp|xlsx|zip|sql|bak))', re.I)
@@ -77,7 +77,8 @@ def norm(ref):
     for k, v in (('baidu', '百度'), ('bing', 'Bing'), ('google', 'Google'), ('zhihu', '知乎'),
                  ('baijiahao', '百家号'), ('so.com', '360'), ('sogou', '搜狗'),
                  ('doubao', '豆包'), ('yuanbao', '元宝'), ('chatgpt', 'ChatGPT'),
-                 ('perplexity', 'Perplexity'), ('kimi', 'Kimi'), ('metaso', '秘塔')):
+                 ('perplexity', 'Perplexity'), ('kimi', 'Kimi'), ('metaso', '秘塔'),
+                 ('sm.cn', '夸克/神马'), ('quark', '夸克/神马'), ('uc.cn', 'UC')):
         if k in h:
             return v
     return h

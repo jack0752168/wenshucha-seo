@@ -56,6 +56,9 @@ BOTS = {
     "百度": re.compile(r"Baiduspider", re.I),
     "Google": re.compile(r"Googlebot", re.I),
     "Bing": re.compile(r"bingbot", re.I),
+    # 2026-09-16 加：神马/夸克（UC 浏览器搜索后端）。09-03 起对 tob 每天抓 400-1,600 次，是当前唯一在涨的国内引擎；
+    # 真 IP 段 106.8 / 116.132 / 124.239 / 123.182 / 123.183，与百度一样按 IP 校验别只认 UA。
+    "神马/夸克": re.compile(r"YisouSpider", re.I),
     "360": re.compile(r"360Spider", re.I),
     "搜狗": re.compile(r"Sogou", re.I),
 }
