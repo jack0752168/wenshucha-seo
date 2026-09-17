@@ -241,6 +241,7 @@ sites:
   - https://sinoverdict.wenshucha.com/blog/structured-labor-dataset-complete-columns-selection-artifact.html
   - https://sinoverdict.wenshucha.com/blog/capital-contribution-acceleration-chinese-case-law-three-names.html
   - https://sinoverdict.wenshucha.com/blog/chinese-case-law-corpus-audit-date-semantics-missing-text.html
+  - https://sinoverdict.wenshucha.com/blog/equity-transfer-disputes-chinese-case-law-claim-type-litigation-clusters.html
   check_ssl: true
 - name: mcp-zh-dev
   host: mcp.wenshucha.com
