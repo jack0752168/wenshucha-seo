@@ -163,6 +163,7 @@ sites:
   sitemap: https://sinoverdict.wenshucha.com/sitemap.xml
   urls_to_push:
   - https://sinoverdict.wenshucha.com/blog/chinese-case-law-corpus-token-count-llm-training.html
+  - https://sinoverdict.wenshucha.com/blog/chinese-civil-code-2021-cutover-statute-citation-drift-case-law.html
   - https://sinoverdict.wenshucha.com/blog/chinese-case-law-full-text-coverage-placeholder-bodies-exists-query.html
   - https://sinoverdict.wenshucha.com/blog/chinese-case-law-delivery-acceptance-checks.html
   - https://sinoverdict.wenshucha.com/blog/company-dissolution-suits-chinese-case-law-grant-rate-denominator.html
