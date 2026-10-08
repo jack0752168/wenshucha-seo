@@ -278,6 +278,90 @@
       },
       "baidu": [],
       "google": []
+    },
+    {
+      "date": "2026-10-08",
+      "baidu": [],
+      "google": [
+        {
+          "kw": "裁判文书查询",
+          "rank": 18,
+          "impr": 1,
+          "clicks": 1
+        },
+        {
+          "kw": "site:sinoverdict.wenshucha.com",
+          "rank": 1,
+          "impr": 2,
+          "clicks": 0
+        },
+        {
+          "kw": "site:www.wenshucha.com",
+          "rank": 8.5,
+          "impr": 4,
+          "clicks": 0
+        },
+        {
+          "kw": "中国 裁判 文书 网",
+          "rank": 48,
+          "impr": 1,
+          "clicks": 0
+        },
+        {
+          "kw": "中国法律文书网",
+          "rank": 38,
+          "impr": 1,
+          "clicks": 0
+        },
+        {
+          "kw": "中国裁判文书网",
+          "rank": 46.285714285714285,
+          "impr": 7,
+          "clicks": 0
+        },
+        {
+          "kw": "中國裁判文書網",
+          "rank": 54,
+          "impr": 1,
+          "clicks": 0
+        },
+        {
+          "kw": "判决文书网",
+          "rank": 41,
+          "impr": 2,
+          "clicks": 0
+        },
+        {
+          "kw": "民事判决书查询",
+          "rank": 45,
+          "impr": 1,
+          "clicks": 0
+        },
+        {
+          "kw": "法律 文书 网",
+          "rank": 39,
+          "impr": 1,
+          "clicks": 0
+        },
+        {
+          "kw": "法律文书网",
+          "rank": 31,
+          "impr": 1,
+          "clicks": 0
+        },
+        {
+          "kw": "裁判文书网",
+          "rank": 46,
+          "impr": 4,
+          "clicks": 0
+        }
+      ],
+      "totals": {
+        "baidu_keywords": 0,
+        "baidu_clicks": 0,
+        "period": "百度PC近30天；Google2026-09-06至2026-10-05 final"
+      },
+      "note": "百度PC已掛載指數概況=展現0/點擊0、詞表暫無資料；移動 /keywords/mobile 面板有詞表但無數值及指數概況，未知不記0。Google使用既有ADC+既有quota project读取API，初次缺quota header403已修正，不啟用新服務。SinoVerdict子域僅1詞且展現<5，不報排名。"
     }
   ]
 }
