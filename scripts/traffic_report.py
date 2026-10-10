@@ -25,7 +25,7 @@ import re
 import subprocess
 import sys
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 HOST = "root@114.132.74.235"
@@ -57,6 +57,13 @@ PX_SCAN = ('43.', '57.141.', '57.144.')
 # ② 屏宽 800 的 Android UA(puppeteer 默认视窗;123.6.49.x/27.115.124.x,30 天打了 87 次首页) ③ 106.13.244/245(百度云,UA 轮换扒 tob 深链)。
 OFFICE = ('163.125.249.3', '163.125.144.23')
 PX_W_BOT = {'800'}
+# 2026-10-10 指名剔除的實證腳本（UA 完全像人、也跑 JS，上述規則都攔不住，只能按 IP 剔；對方換 IP 就再加）：
+#   223.73.66.247  — 同支 Chrome/124 UA，每約 10 分鐘一輪載入 /ai + /cases + 打 /api/ai/quota，
+#                    10-07 連續 21 小時跑 125 輪、當天全站 1888 次請求，把 tob 像素灌了 190 次
+#                    （10-04 ~ 10-07，佔同期 tob 像素 41%%）。同時在輪詢 AI 免費額度接口。
+#   35.223.235.106 — Google Cloud 網段，X11 Linux，一天內出現 Chrome 135/136/137/138 四種版本，
+#                    10-06~10-08 共 272 次請求、92 次 301（在爬 http 舊址）、無 referer，逐篇走 blog。
+PX_SCRIPTED = ('223.73.66.247', '35.223.235.106')
 SRC = re.compile(r'baidu|google|bing|sogou|so\.com|360|zhihu|baijiahao|toutiao|doubao|sm\.cn|quark|uc\.cn|'
                  r'yuanbao|chatgpt|perplexity|kimi|metaso|weixin|xiaohongshu', re.I)
 # 扫描器伪造 referer 时打的路径:站上根本没有这些东西
@@ -97,7 +104,7 @@ if os.path.exists('%(PX)s'):
         if not m: continue
         ip, t, meth, path, code, size, ref, ua = m.groups()
         px['total'] += 1
-        if BOT.search(ua) or ip.startswith(PX_SCAN): px['bots'] += 1; continue
+        if BOT.search(ua) or ip.startswith(PX_SCAN) or ip in PX_SCRIPTED: px['bots'] += 1; continue
         if '.'.join(ip.split('.')[:2]) in OURS: px['ours'] += 1; continue
         d = ts(t).strftime('%%Y-%%m-%%d')
         q = dict(p.split('=', 1) for p in path.split('?', 1)[-1].split('&') if '=' in p)
@@ -110,13 +117,20 @@ if os.path.exists('%(PX)s'):
         px['paths'][U.unquote(q.get('p', '?'))[:48]] += 1
         r = U.unquote(q.get('r', ''))
         if r and not is_internal(r): px['refs'][norm(r)] += 1
+# 2026-10-10：留下「當天打過像素的 IP 集合」，給 ② 的 referer 口徑做真人交叉核驗
+px_ips_by_day = {d: set(v['ips']) for d, v in px['days'].items()}
 for d in px['days']: px['days'][d]['uv'] = len(set(px['days'][d].pop('ips')))
 px['paths'] = px['paths'].most_common(15); px['refs'] = px['refs'].most_common(12)
+px['covered'] = sorted(px_ips_by_day)   # 給報告標示哪些窗口根本沒有像素可核驗
 out['pixel'] = px
 
 # ② referer 口径 —— 能回溯,看趋势
 now = datetime.now(); win = {'近30天': 30, '前30天': 60, '再前30天': 90}
-ref_b = {k: Counter() for k in win}; land = Counter(); fake_n = 0; daily = defaultdict(Counter)
+ref_b = {k: Counter() for k in win}; ref_bv = {k: Counter() for k in win}
+land = Counter(); fake_n = 0; daily = defaultdict(Counter); daily_v = defaultdict(Counter)
+# 2026-10-10：referer 口徑會被偽造 referer 灌水。實測 10-09 www 的 42 次 Google + 7 次百度
+# 來自 28 個 IP，沒有一個打像素（像素是內嵌在 HTML 裡的，真瀏覽器不可能不打）→ 全判為偽造。
+# 規則：同一天同一 IP 必須打過像素，該次搜索來源才計入 *_v。像素未覆蓋的日期退回原口徑。
 for raw in open('%(MAIN)s', 'rb'):
     m = LINE.match(raw.decode('utf-8', 'replace'))
     if not m: continue
@@ -124,15 +138,23 @@ for raw in open('%(MAIN)s', 'rb'):
     if not ref or ref == '-' or is_internal(ref) or not SRC.search(ref): continue
     if code != '200' or FAKE.match(path) or ip.startswith(SCAN): fake_n += 1; continue
     T = ts(t); age = (now - T).days
-    e = norm(ref)
+    e = norm(ref); dk = T.strftime('%%Y-%%m-%%d')
+    seen = px_ips_by_day.get(dk)
+    ver = True if seen is None else (ip in seen)
     for k, dmax in win.items():
-        if age < dmax and age >= dmax - 30: ref_b[k][e] += 1; break
+        if age < dmax and age >= dmax - 30:
+            ref_b[k][e] += 1
+            if ver: ref_bv[k][e] += 1
+            break
     if age < 30:
         land[path.split('?')[0][:44]] += 1
-        daily[T.strftime('%%Y-%%m-%%d')][e] += 1
+        daily[dk][e] += 1
+        if ver: daily_v[dk][e] += 1
 out['referer'] = {'windows': {k: v.most_common() for k, v in ref_b.items()},
+                  'windows_v': {k: v.most_common() for k, v in ref_bv.items()},
                   'fake_dropped': fake_n, 'landing': land.most_common(12),
-                  'daily': {d: dict(c) for d, c in sorted(daily.items())[-30:]}}
+                  'daily': {d: dict(c) for d, c in sorted(daily.items())[-30:]},
+                  'daily_v': {d: dict(c) for d, c in sorted(daily_v.items())[-30:]}}
 
 # ③ tob 子站(知乎深链的落点)—— 08-18 才开始有日志
 tob = {'total': 0, 'refs': Counter(), 'paths': Counter(), 'since': None, 'scan_dropped': 0,
@@ -168,7 +190,7 @@ if os.path.exists('%(TOBPX)s'):
         m = LINE.match(raw.decode('utf-8', 'replace'))
         if not m: continue
         ip, t, meth, path, code, size, ref, ua = m.groups()
-        if BOT.search(ua) or ip.startswith(PX_SCAN) or '.'.join(ip.split('.')[:2]) in OURS: continue
+        if BOT.search(ua) or ip.startswith(PX_SCAN) or ip in PX_SCRIPTED or '.'.join(ip.split('.')[:2]) in OURS: continue
         d = ts(t).strftime('%%Y-%%m-%%d')
         q = dict(pp.split('=', 1) for pp in path.split('?', 1)[-1].split('&') if '=' in pp)
         if q.get('w') in PX_W_BOT or ip in OFFICE: continue
@@ -223,9 +245,21 @@ def render_text(d):
     print("=" * 58)
     for k in ("再前30天", "前30天", "近30天"):
         rows = rf["windows"].get(k) or []
-        tot = sum(v for _, v in rows)
-        s = " / ".join(f"{a} {b}" for a, b in rows[:6])
-        print(f"  {k:<8}{tot:>5} 次  日均 {tot/30:>4.1f}   {s}")
+        vrows = (rf.get("windows_v") or {}).get(k) or []
+        tot = sum(v for _, v in rows); vtot = sum(v for _, v in vrows)
+        s = " / ".join(f"{a} {b}" for a, b in vrows[:6])
+        # 2026-10-10：像素 08-18 才上線，再前30天整段沒有像素可核驗。
+        # 若不標示，會被讀成「搜索流量在跌」，其實是舊窗口含未核驗的偽造 referer。
+        cov = set(px.get("covered") or [])
+        dmax = {"再前30天": 90, "前30天": 60, "近30天": 30}.get(k, 30)
+        _now = datetime.now()
+        lo = (_now - timedelta(days=dmax)).strftime("%Y-%m-%d")
+        hi = (_now - timedelta(days=dmax - 30)).strftime("%Y-%m-%d")
+        seg = [d for d in cov if lo <= d <= hi]
+        tag = "" if seg else "  ⚠️ 未核驗(像素上線前)"
+        print(f"  {k:<8}{vtot:>5} 次  日均 {vtot/30:>4.1f}   {s}{tag}")
+        if tot > vtot:
+            print(f"  {'':<8}(referer 口徑 {tot} 次，已剔 {tot - vtot} 次偽造)")
     print(f"\n  被判为伪造 referer 剔除:{rf['fake_dropped']} 次")
     print("\n  落地页:")
     for k, v in rf["landing"][:8]: print(f"    {k:<44}{v:>5}")
@@ -238,7 +272,8 @@ def render_text(d):
     rud = tob.get('real_uv_days') or {}
     if rud:
         last = sorted(rud.items())[-14:]
-        print("  逐日真浏览器 UV(下限):", " ".join(f"{d[5:]}:{v}" for d, v in last))
+        print("  逐日 UV(旧口径,含 UC 预取,不可当人数):",
+              " ".join(f"{d[5:]}:{v}" for d, v in last))
     if tob.get('px_days'):
         print("  像素口径(09-15 起):")
         for d in sorted(tob['px_days'])[-14:]:
@@ -258,6 +293,9 @@ def render_text(d):
 #   · 访问数以像素为准(只有真浏览器跑 JS),不用 nginx 裸行数
 #   · 来源已剔掉伪造 referer:(a)打不存在路径的 (b)2026-09-15 起 43.x 网段一律剔,它们伪造百度 referer 打真实路径,
 #     曾把日报里的「百度」虚报成 400+/月
+#   · 2026-10-10 起再加一层:referer 口径的每次搜索来源,必须同一天同一 IP 打过像素才算真人。
+#     实测 10-09 www 的 42 次 Google + 7 次百度来自 28 个 IP,一个都没打像素(像素内嵌在 HTML 里,
+#     真浏览器不可能不打) → 那行「昨日搜索/AI 来源」此前基本全是伪造 referer。现在改报核验后的数。
 #   · 样本太小的时候明说"样本小",不给百分比 —— 日均只有个位数,涨跌%全是噪声
 # ——————————————————————————————————————————————
 def render_daily(d):
@@ -307,21 +345,30 @@ def render_daily(d):
     if px.get("refs"):
         L.append("_🧭 像素口径来源(累计,真浏览器):_ " + "、".join(f"{k} {v}" for k, v in px["refs"][:6]))
 
-    # ② 访问来源(referer 口径,可回溯)
-    day_src = rf["daily"].get(y) or {}
+    # ② 搜索到来的真人(referer 口径 × 同日像素核验 —— 见脚本顶部 2026-10-10 注)
+    day_src = (rf.get("daily_v") or {}).get(y) or {}
+    raw_src = (rf.get("daily") or {}).get(y) or {}
+    tot, raw_tot = sum(day_src.values()), sum(raw_src.values())
     if day_src:
-        tot = sum(day_src.values())
         pairs = sorted(day_src.items(), key=lambda kv: -kv[1])
-        L.append(f"*🔎 昨日搜索/AI 来源:* 共 {tot} 次 —— "
-                 + "、".join(f"{k} {v}" for k, v in pairs))
+        note = f"（另剔 {raw_tot - tot} 次偽造 referer）" if raw_tot > tot else ""
+        L.append(f"*🔎 昨日搜索來源(像素核驗真人):* 共 {tot} 次 —— "
+                 + "、".join(f"{k} {v}" for k, v in pairs) + note)
+    elif raw_tot:
+        L.append(f"*🔎 昨日搜索來源(像素核驗真人):* 0 次"
+                 f"（referer 口徑有 {raw_tot} 次，但同 IP 當天都沒打像素 → 判為偽造 referer）")
     else:
-        L.append("*🔎 昨日搜索/AI 来源:* 0 次")
+        L.append("*🔎 昨日搜索來源(像素核驗真人):* 0 次")
 
-    # ③ 30 天构成(单日样本太小,月度构成才是能看的)
-    w = rf["windows"].get("近30天") or []
-    if w:
-        tot30 = sum(v for _, v in w)
-        L.append(f"_近 30 天合计 {tot30} 次(日均 {tot30/30:.1f})· "
+    # ③ 30 天构成(单日样本太小,月度构成才是能看的) —— 同样只用像素核验过的
+    wv = (rf.get("windows_v") or {}).get("近30天")
+    w = wv if wv is not None else (rf["windows"].get("近30天") or [])
+    w_raw = rf["windows"].get("近30天") or []
+    tot30 = sum(v for _, v in w)
+    tot30_raw = sum(v for _, v in w_raw)
+    if tot30 or tot30_raw:
+        note = f"，已剔 {tot30_raw - tot30} 次偽造 referer" if tot30_raw > tot30 else ""
+        L.append(f"_近 30 天搜索來源 {tot30} 次(日均 {tot30/30:.1f}{note})· "
                  + " / ".join(f"{k} {v}" for k, v in w[:4]) + "_")
 
     # ④ tob 产品站:昨日真人(像素优先,没有像素就用「取过静态资源」的下限)+ 外部来源
