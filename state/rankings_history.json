@@ -384,6 +384,29 @@
         "baidu": "Not measured: no safe reusable logged-in tab; unknown, not zero",
         "sinoverdict": "No query with impressions >= 5 in the final 30-day window"
       }
+    },
+    {
+      "date": "2026-10-10",
+      "totals": {
+        "baidu_keywords": null,
+        "baidu_clicks": null,
+        "period": "2026-09-08 through 2026-10-07, GSC final"
+      },
+      "baidu": [],
+      "google": [
+        {
+          "kw": "中国裁判文书网",
+          "rank": 47.25,
+          "impr": 8,
+          "clicks": 0
+        }
+      ],
+      "measurement_notes": {
+        "google": "Official Search Console API; only impressions >=5 reported",
+        "baidu": "UNKNOWN: iab_login_required; official landing page shows login",
+        "bing": "UNKNOWN: iab_login_required; redirected to sign-in landing page",
+        "sinoverdict": "No query with >=5 impressions; not a traffic improvement"
+      }
     }
   ]
 }
