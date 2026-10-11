@@ -407,6 +407,199 @@
         "bing": "UNKNOWN: iab_login_required; redirected to sign-in landing page",
         "sinoverdict": "No query with >=5 impressions; not a traffic improvement"
       }
+    },
+    {
+      "date": "2026-10-11",
+      "baidu": [],
+      "google": [
+        {
+          "kw": "中国裁判文书网",
+          "rank": 47.25,
+          "impr": 8,
+          "clicks": 0
+        }
+      ],
+      "bing": [
+        {
+          "kw": "裁判文书",
+          "rank": 6.75,
+          "impr": null,
+          "impr_display": "2.6K",
+          "impr_rounded": true,
+          "reliable_impressions_ge_5": true,
+          "clicks": 5
+        },
+        {
+          "kw": "文书查",
+          "rank": 3.26,
+          "impr": 62,
+          "clicks": 18
+        },
+        {
+          "kw": "文书库",
+          "rank": 10.0,
+          "impr": 19,
+          "clicks": 0
+        },
+        {
+          "kw": "裁判文书数据",
+          "rank": 7.53,
+          "impr": 17,
+          "clicks": 2
+        },
+        {
+          "kw": "裁判文书数据库",
+          "rank": 6.07,
+          "impr": 15,
+          "clicks": 3
+        },
+        {
+          "kw": "文书查 / sinoverdict mcp server",
+          "rank": 7.17,
+          "impr": 12,
+          "clicks": 0
+        },
+        {
+          "kw": "类案检索",
+          "rank": 5.38,
+          "impr": 8,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书万",
+          "rank": 7.75,
+          "impr": 8,
+          "clicks": 0
+        },
+        {
+          "kw": "裁判文书检索工具 免费",
+          "rank": 4.0,
+          "impr": 8,
+          "clicks": 2
+        },
+        {
+          "kw": "查文书api",
+          "rank": 2.5,
+          "impr": 8,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书-法律文书数据下载仓库",
+          "rank": 7.0,
+          "impr": 6,
+          "clicks": 1
+        },
+        {
+          "kw": "裁判文书api",
+          "rank": 4.0,
+          "impr": 6,
+          "clicks": 2
+        },
+        {
+          "kw": "司法裁判文书网",
+          "rank": 9.33,
+          "impr": 6,
+          "clicks": 0
+        },
+        {
+          "kw": "澄溪文书",
+          "rank": 5.5,
+          "impr": 6,
+          "clicks": 0
+        },
+        {
+          "kw": "裁判文书检索",
+          "rank": 2.4,
+          "impr": 5,
+          "clicks": 2
+        },
+        {
+          "kw": "判决文书",
+          "rank": 7.4,
+          "impr": 5,
+          "clicks": 0
+        },
+        {
+          "kw": "类案检索报告",
+          "rank": 7.6,
+          "impr": 5,
+          "clicks": 0
+        },
+        {
+          "kw": "“小智”上岗：一个ai系统如何帮检察官判断要不要逮捕",
+          "rank": 4.6,
+          "impr": 5,
+          "clicks": 0
+        },
+        {
+          "kw": "判决文书查询",
+          "rank": 7.4,
+          "impr": 5,
+          "clicks": 0
+        },
+        {
+          "kw": "裁判文书 全文数据库",
+          "rank": 8.8,
+          "impr": 5,
+          "clicks": 1
+        }
+      ],
+      "totals": {
+        "baidu_keywords": null,
+        "baidu_clicks": null
+      },
+      "sources": {
+        "google": {
+          "status": "ok",
+          "site": "sc-domain:wenshucha.com",
+          "period": {
+            "startDate": "2026-09-09",
+            "endDate": "2026-10-08",
+            "dimensions": [
+              "query"
+            ],
+            "rowLimit": 1000,
+            "dataState": "final"
+          },
+          "sinoverdict_reliable_keywords": 0
+        },
+        "baidu": {
+          "pc_status": "ok",
+          "pc_window": "last30days",
+          "pc_clicks": 0,
+          "pc_impressions": 1,
+          "pc_reliable_keywords": 0,
+          "excluded_operator_keyword": true,
+          "mobile_status": "UNKNOWN",
+          "mobile_reason": "No mounted numerical summary or keyword table; not zero",
+          "domain_totals_status": "partial"
+        },
+        "bing": {
+          "status": "ok",
+          "site": "https://wenshucha.com/",
+          "scope": "whole domain; no SinoVerdict attribution",
+          "selected_period": [
+            "2026-09-11",
+            "2026-10-10"
+          ],
+          "available_daily_period": [
+            "2026-09-11",
+            "2026-10-08"
+          ],
+          "available_days": 28,
+          "clicks": 166,
+          "impressions": 6205,
+          "impressions_display": "6.2K",
+          "daily_sum_status": "exact from visible date table",
+          "keyword_page": "1-25 of224",
+          "reliable_rows_in_first_page": 20,
+          "excluded_citation_artifacts": [
+            "https://www.wenshucha.com[reference:0]",
+            "[wenshucha.com](https://wenshucha.com)"
+          ],
+          "homepage_status": "unverified; no clean search performed"
+        }
+      }
     }
   ]
 }
