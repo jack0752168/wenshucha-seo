@@ -600,6 +600,31 @@
           "homepage_status": "unverified; no clean search performed"
         }
       }
+    },
+    {
+      "date": "2026-10-12",
+      "totals": {
+        "baidu_keywords": null,
+        "baidu_clicks": null,
+        "period": "unavailable: hidden IAB not available"
+      },
+      "baidu": [],
+      "google": [
+        {
+          "kw": "中国裁判文书网",
+          "rank": 47.25,
+          "impr": 8,
+          "clicks": 0
+        }
+      ],
+      "google_scope": "sc-domain:wenshucha.com",
+      "google_sinoverdict": [],
+      "google_period": "2026-09-10 to 2026-10-09",
+      "status": {
+        "baidu": "background_unavailable",
+        "google": "final API data",
+        "google_sinoverdict": "no query with impressions >=5"
+      }
     }
   ]
 }
