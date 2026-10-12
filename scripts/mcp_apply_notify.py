@@ -64,17 +64,22 @@ def mark_notified(idxs):
         return
     ids = ",".join(str(i) for i in idxs)
     ssh(f"""python3 - <<'PY'
-import json
+import json, fcntl, os
 p="{LEDGER}"
 mark=set([{ids}])
-out=[]
-for i,l in enumerate(open(p,encoding='utf-8')):
-    l=l.strip()
-    if not l: continue
-    d=json.loads(l)
-    if i in mark: d["notified"]=True
-    out.append(json.dumps(d,ensure_ascii=False))
-open(p,'w',encoding='utf-8').write("\\n".join(out)+"\\n")
+with open(os.path.dirname(p)+'/ledger.lock','a') as lock:
+    fcntl.flock(lock,fcntl.LOCK_EX)
+    out=[]
+    for i,l in enumerate(open(p,encoding='utf-8')):
+        l=l.strip()
+        if not l: continue
+        d=json.loads(l)
+        if i in mark: d["notified"]=True
+        out.append(json.dumps(d,ensure_ascii=False))
+    tmp=p+'.notify-tmp'
+    open(tmp,'w',encoding='utf-8').write("\\n".join(out)+"\\n")
+    os.chmod(tmp,0o600)
+    os.replace(tmp,p)
 print("marked",len(mark))
 PY""")
 
@@ -144,6 +149,11 @@ def alert(msg):
 
 
 if __name__ == "__main__":
+    try:
+        from report_demand_notify import process_new_report_demands
+        process_new_report_demands(dry=DRY)
+    except Exception:
+        print("研究報告需求通知受阻，保留佇列待重試；MCP 通道繼續。")
     try:
         rows = fetch_new()
     except Exception as e:
