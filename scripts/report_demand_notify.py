@@ -68,6 +68,8 @@ def process_new_report_demands(dry=False):
             if not status.get("smtp_accepted"): status["smtp_accepted"] = send_email(receipt)
         temp = STATE.with_suffix(".tmp"); temp.write_text(json.dumps(state) + "\n"); temp.chmod(0o600); temp.replace(STATE)
         if pending: print("研究需求通知：" + str(sum(bool(state[r["id"]].get("telegram_confirmed")) for r in pending)) + "/" + str(len(pending)) + " 筆 Telegram 回執已核；SMTP 僅記受理，不當作送達。")
+        if any(not state[r['id']].get('telegram_confirmed') or not state[r['id']].get('smtp_accepted') for r in receipts):
+            raise RuntimeError("report notification incomplete; durable queue retained")
 
 if __name__ == "__main__":
     import sys

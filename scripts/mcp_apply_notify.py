@@ -149,10 +149,12 @@ def alert(msg):
 
 
 if __name__ == "__main__":
+    report_failed = False
     try:
         from report_demand_notify import process_new_report_demands
         process_new_report_demands(dry=DRY)
     except Exception:
+        report_failed = True
         print("研究報告需求通知受阻，保留佇列待重試；MCP 通道繼續。")
     try:
         rows = fetch_new()
@@ -164,7 +166,7 @@ if __name__ == "__main__":
         sys.exit(1)
     if not rows:
         print("没有新申请")
-        sys.exit(0)
+        sys.exit(1 if report_failed else 0)
     print(f"发现 {len(rows)} 条新申请")
     try:
         ok = send(rows)
@@ -180,4 +182,6 @@ if __name__ == "__main__":
             mark_notified([d["_line"] for d in rows])
     else:
         alert(f"⚠️ MCP 申请有 {len(rows)} 条新提交，但邮件未发出（钥匙串取不到 SMTP 密码）")
+        sys.exit(1)
+    if report_failed:
         sys.exit(1)
