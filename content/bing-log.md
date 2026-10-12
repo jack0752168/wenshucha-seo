@@ -10,6 +10,51 @@
 | 2026-09-14 | 近7天 | 41 | 991 | 4.14% | 首周基线 |
 | 2026-09-21 | 近3月 | 354 | 5.9K | 5.96% | 第二周（排程写成「首周基线」，已更正）。AI Performance（近3月）Total Citations 462，Avg. Cited Pages 2 |
 | 2026-09-21 | 近7天 | 51 | 1.1K | 4.53% | 第二周。按天覆盖 09-14~09-19：点击 9/11/9/18/3/1，展现 271/222/226/193/88/127（09-18 起明显下滑） |
+| 2026-10-12 | 近3月 | 466 | 11,870 | 3.93% | All；成熟07/12～10/10；AI引用686，非實驗page口徑 |
+| 2026-10-12 | 近7天 | 55 | 3,198 | 1.72% | All；10/05～10六個成熟日，10/11未知；上週帳缺失 |
+
+## 2026-10-12 週 · 隱藏 IAB 補讀完成
+
+- 3 M、7 D均明確點選並等loading結束。All近3月466點擊／11,870曝光／CTR3.93%，成熟日期07/12～10/10；All近7天55／3,198／1.72%，選取10/05～11但**實際只有10/05～10六個成熟日**，10/11未知不補0。上週10/05帳缺失，不能報週環比。
+- 近7天Web裝置表：Desktop約3.1K曝光／50點擊／CTR1.60%／均位7.41；Mobile68／5／7.35%／5.47。是整域裝置，不代替同頁同詞的裝置交叉資料。Web and Chat總覽均位6.6，亦不是實驗page均位。
+- 近7天曝光≥5只有9詞。候選：裁判文书約1.6K／7／均位6.49；类案检索14／3／5.64；司法裁判文书网11／0／9.55。K是平台約值，均位不是乾淨真搜首頁證明。
+- AI Performance明確3 M載入：Total Citations686、Avg. Cited Pages2，引用不是進站或需求。
+- 固定CTR實驗：30D→Web Keywords「裁判文书」→Served pages CSV，/cases仍**2988曝光／9點擊／CTR精算0.3012%／均位6.6948**；09/12～10/10成熟資料，與基準相同。query3232／10不能代替page，全部是改版前資料。
+- Bing Index「Last crawl attempted Today at 09:00」未標時區；View Indexed page仍是舊title「类案检索 · 近 1.6 亿裁判文书全文检索 | 文书查」，未見新title。記not_yet_exposed；等待新版本重抓確認後取14個完整成熟日，延遲順延，10/13～26暫定窗不能直接當已曝光觀察窗。同頁同query逐日／裝置交叉未取得，unknown；已保存query逐日與page聚合CSV，兩者不互換。
+- 昨日SGT10/11漏斗unmeasured，counts/rates=null；10/12首日partial截至取數，排除QA／自訪／已知爬蟲後進站→成功檢索→展開庫內正文→服務端實收需求均0、部分正文另列0。不能當歷史零轉化或優化效果；聯絡點擊不是提交，提交不是付費。
+- 原traffic_report已讀：昨日www21PV／19獨立IP，tob31PV／28獨立IP，不是人數或歷史漏斗。Mac com.jack.mcp-apply-notify已載入、LastExitStatus=0；研究需求dry預檢待通知0。落庫QA沿用10/12已有隔離驗收，未重送假需求；沒有新實際通知可驗，SMTP accepted不當送達。
+- title/description/H1沒有修改，未提交索引或改平台設定。本週10/12名譽權已1學術頁，下輪10/15，本任務沒有增空頁。上午未完成段保留歷史。
+- 證據：`/Users/chenjiaxin/.codex/automations/10-40-bing/runs/2026-10-12/retry-1540/`；原traffic在上層traffic-retry.json。
+
+### 近7天 Web 關鍵詞（曝光≥5）
+
+| 詞／URL | 曝光 | 點擊 | CTR | 均位 |
+|---|---|---|---|---|
+| 裁判文书 | 1.6K | 7 | 0.44% | 6.49 |
+| 文书查 | 15 | 3 | 20.00% | 3.93 |
+| 类案检索 | 14 | 3 | 21.43% | 5.64 |
+| 司法裁判文书网 | 11 | 0 | 0.00% | 9.55 |
+| 文书网判决书 | 11 | 0 | 0.00% | 9.36 |
+| 裁判文书万 | 7 | 0 | 0.00% | 7.71 |
+| 裁判文书网 mcp, github | 6 | 0 | 0.00% | 6.33 |
+| 裁判文书往 | 6 | 0 | 0.00% | 7.33 |
+| 裁判文书我 | 5 | 0 | 0.00% | 5.60 |
+
+### 近7天 Web 頁面前10
+
+| 詞／URL | 曝光 | 點擊 | CTR | 均位 |
+|---|---|---|---|---|
+| https://tob.wenshucha.com/cases | 2.6K | 30 | 1.15% | 6.53 |
+| https://www.wenshucha.com/data/ | 117 | 7 | 5.98% | 7.87 |
+| https://www.wenshucha.com/case-search/ | 66 | 0 | 0.00% | 7.35 |
+| https://www.wenshucha.com/ | 42 | 2 | 4.76% | 14.71 |
+| https://mcp.wenshucha.com/ | 15 | 1 | 6.67% | 5.27 |
+| https://www.wenshucha.com/blog/court-ai-trial-assistance-sentencing-document.html | 15 | 2 | 13.33% | 4.20 |
+| https://www.wenshucha.com/data/labor-report/ | 6 | 0 | 0.00% | 4.33 |
+| https://www.wenshucha.com/blog/evidence-list-proof-checklist-litigation.html | 4 | 0 | 0.00% | 6.50 |
+| https://www.wenshucha.com/blog/similar-case-search-completeness-guide.html | 4 | 0 | 0.00% | 4.50 |
+| https://www.wenshucha.com/blog/legal-data-platform-comparison-2026.html | 4 | 0 | 0.00% | 6.25 |
+
 
 ## 2026-10-12 週 · 正式讀數（未完成）
 
