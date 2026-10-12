@@ -85,6 +85,7 @@ echo "--- [7/8] 访问量与来源(Jack 2026-08-18 定案:日报头条就是这�
 # 口径见 traffic_report.py 顶部注释。裸日志会虚高 300 倍,别退回去数行数。
 python3 scripts/traffic_report.py --daily 2>&1 | tee /tmp/seo_daily_traffic.out
 python3 scripts/funnel_report.py >> /tmp/seo_daily_traffic.out 2>&1
+python3 scripts/bing_report.py report >> /tmp/seo_daily_traffic.out 2>&1
 
 echo
 echo "--- [8/8] 生成人话日报 ---"

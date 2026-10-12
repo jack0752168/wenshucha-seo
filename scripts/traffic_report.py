@@ -96,6 +96,14 @@ def norm(ref):
 
 out = {}
 
+def pixel_source(q, ref):
+    import urllib.parse as U
+    tags = {'bing': 'Bing', 'baidu': '百度', 'google': 'Google', 'zhihu': '知乎', 'baijiahao': '百家號', 'weixin': '微信', 'chatgpt': 'ChatGPT', 'copilot': 'Copilot'}
+    tagged = U.parse_qs(U.urlsplit(U.unquote(q.get('p', ''))).query).get('utm_source', [''])[0].lower()
+    if tagged: return tags.get(tagged, '其他標記來源')
+    if not ref: return '直接／來源不明'
+    return '站內／自家站' if is_internal(ref) else norm(ref)
+
 # ① 像素口径 —— 真浏览器
 px = {'days': {}, 'paths': Counter(), 'refs': Counter(), 'bots': 0, 'ours': 0, 'total': 0}
 if os.path.exists('%(PX)s'):
@@ -111,11 +119,13 @@ if os.path.exists('%(PX)s'):
         if q.get('w') in PX_W_BOT: px['bots'] += 1; continue
         if ip in OFFICE: px['ours'] += 1; continue
         import urllib.parse as U
-        px['days'].setdefault(d, {'pv': 0, 'ips': []})
+        px['days'].setdefault(d, {'pv': 0, 'ips': [], 'sources': {}})
         px['days'][d]['pv'] += 1
         px['days'][d]['ips'].append(ip)
         px['paths'][U.unquote(q.get('p', '?'))[:48]] += 1
         r = U.unquote(q.get('r', ''))
+        source = pixel_source(q, r)
+        sources = px['days'][d]['sources']; sources[source] = sources.get(source, 0) + 1
         if r and not is_internal(r): px['refs'][norm(r)] += 1
 # 2026-10-10：留下「當天打過像素的 IP 集合」，給 ② 的 referer 口徑做真人交叉核驗
 px_ips_by_day = {d: set(v['ips']) for d, v in px['days'].items()}
@@ -194,9 +204,11 @@ if os.path.exists('%(TOBPX)s'):
         d = ts(t).strftime('%%Y-%%m-%%d')
         q = dict(pp.split('=', 1) for pp in path.split('?', 1)[-1].split('&') if '=' in pp)
         if q.get('w') in PX_W_BOT or ip in OFFICE: continue
-        tob['px_days'].setdefault(d, {'pv': 0, 'ips': []})
+        tob['px_days'].setdefault(d, {'pv': 0, 'ips': [], 'sources': {}})
         tob['px_days'][d]['pv'] += 1; tob['px_days'][d]['ips'].append(ip)
         r = U2.unquote(q.get('r', ''))
+        source = pixel_source(q, r)
+        sources = tob['px_days'][d]['sources']; sources[source] = sources.get(source, 0) + 1
         if r and not is_internal(r): tob['px_refs'][norm(r)] += 1
     for d in tob['px_days']: tob['px_days'][d]['uv'] = len(set(tob['px_days'][d].pop('ips')))
 tob['refs'] = tob['refs'].most_common(10); tob['paths'] = tob['paths'].most_common(10)
@@ -298,6 +310,19 @@ def render_text(d):
 #     真浏览器不可能不打) → 那行「昨日搜索/AI 来源」此前基本全是伪造 referer。现在改报核验后的数。
 #   · 样本太小的时候明说"样本小",不给百分比 —— 日均只有个位数,涨跌%全是噪声
 # ——————————————————————————————————————————————
+def daily_source_line(label, observed):
+    sources = (observed or {}).get('sources')
+    if sources is None:
+        return f"_{label}：昨日來源未取得，不使用累計值替代。_"
+    total = sum(sources.values())
+    if not total:
+        return f"_{label}：尚無可歸因的像素訪問。_"
+    pairs = sorted(sources.items(), key=lambda kv: (-kv[1], kv[0]))[:5]
+    line = '、'.join(f"{k} {v}（{v/total:.0%}）" for k, v in pairs)
+    other = total - sum(v for _, v in pairs)
+    return f"_{label}（PV）: {line}" + (f"；其餘 {other}" if other else '') + '_'
+
+
 def render_daily(d):
     from datetime import date, timedelta
     px, rf, tob = d["pixel"], d["referer"], d["tob"]
@@ -346,8 +371,7 @@ def render_daily(d):
 
     # ①.6 像素口径的来源(2026-09-15 加):referer 口径就算剔了 43.x 仍会残留伪造 referer,
     #     像素是唯一干净口径 —— 两个数并排放,差得离谱时以像素为准。
-    if px.get("refs"):
-        L.append("_🧭 像素口径来源(累计,真浏览器):_ " + "、".join(f"{k} {v}" for k, v in px["refs"][:6]))
+    L.append(daily_source_line('🧭 昨日主站前五來源', yd))
 
     # ② 搜索到来的真人(referer 口径 × 同日像素核验 —— 见脚本顶部 2026-10-10 注)
     day_src = (rf.get("daily_v") or {}).get(y) or {}
@@ -383,10 +407,7 @@ def render_daily(d):
         ruv = (tob.get('real_uv_days') or {}).get(y)
         if ruv is not None:
             L.append(f"*🧪 昨日 tob:* {ruv} 个 IP(旧资源口径，含预取，不可当真人数)")
-    if tob.get('px_refs'):
-        L.append("_tob 像素来源(累计):_ " + "、".join(f"{k} {v}" for k, v in tob['px_refs'][:5]))
-    elif tob["refs"]:
-        L.append("_tob 真浏览器首次来源(30 天累计):_ " + "、".join(f"{k} {v}" for k, v in tob["refs"][:5]))
+    L.append(daily_source_line('🧭 昨日檢索站前五來源', tpx))
 
     return "\n".join(L)
 

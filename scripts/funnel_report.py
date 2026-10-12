@@ -61,6 +61,7 @@ def summarize(data, target):
         groups[name].add(sid); sources[source][name].add(sid)
         times[sid][name].append(dt.datetime.fromisoformat(event['received_at'].replace('Z','+00:00')).timestamp())
     receipts = [r for r in data.get("receipts", []) if r.get("received_at") and day(r["received_at"]) == target and not (r.get("funnel") or {}).get("qa") and not r.get("bot") and not r.get("self")]
+    receipts = list({(r.get('kind'), r.get('id')): r for r in receipts if r.get('id')}.values())
     receipt_sids = {r["funnel"]["sid"] for r in receipts if (r.get("funnel") or {}).get("sid")}
     groups["lead_received"].update(receipt_sids)
     for r in receipts:
@@ -91,11 +92,15 @@ def main():
     target = dt.date.fromisoformat(args.date) if args.date else dt.datetime.now(SGT).date() - dt.timedelta(days=1)
     result = summarize(data, target)
     if args.json: print(json.dumps(result, ensure_ascii=False)); return
-    if result["status"] == "unmeasured": print("*🧭 昨日轉化漏斗:* 尚未開始量測，不能報0或比較轉化率。"); return
+    if result["status"] == "unmeasured":
+        print("*🧭 昨日轉化漏斗:* 尚未開始量測，不能報0或比較轉化率。")
+        print("*📨 昨日實際提交需求:* 此日期尚未建立統一量測，數量未知。")
+        return
     c = result["counts"]
     partial = "（上線首日，僅涵蓋上線後時段）" if result["status"] == "partial_first_day" else ""
     print(f"*🧭 昨日轉化漏斗{partial}:* 進站 {c['landing_sessions']} → 成功檢索 {c['search_success_sessions']} → 展開庫內正文 {c['fulltext_open_sessions']} → 需求提交 {c['search_to_read_to_lead_sessions']}（同訪次鏈）")
-    print(f"_研究需求實收 {c['report_demand_receipts']} 筆 · MCP機構申請 {c['mcp_demand_receipts']} 筆 · 部分正文 {c['fulltext_partial_sessions']} 訪次 · 檢索失敗 {c['search_error_sessions']} 訪次；聯絡點擊／需求提交都不代表付費。_")
+    print(f"*📨 昨日實際提交需求:* 合計 {c['report_demand_receipts'] + c['mcp_demand_receipts']} 筆（研究報告 {c['report_demand_receipts']} · MCP機構申請 {c['mcp_demand_receipts']}）；按服務端回執去重、排除QA／自訪／已知爬蟲。")
+    print(f"_部分正文 {c['fulltext_partial_sessions']} 訪次 · 檢索失敗 {c['search_error_sessions']} 訪次；聯絡點擊／需求提交都不代表付費。_")
 
 if __name__ == "__main__":
     try: main()
