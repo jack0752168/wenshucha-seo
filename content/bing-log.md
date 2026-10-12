@@ -11,6 +11,13 @@
 | 2026-09-21 | 近3月 | 354 | 5.9K | 5.96% | 第二周（排程写成「首周基线」，已更正）。AI Performance（近3月）Total Citations 462，Avg. Cited Pages 2 |
 | 2026-09-21 | 近7天 | 51 | 1.1K | 4.53% | 第二周。按天覆盖 09-14~09-19：点击 9/11/9/18/3/1，展现 271/222/226/193/88/127（09-18 起明显下滑） |
 
+## 2026-10-12 週 · 正式讀數（未完成）
+
+- 取得 browser-lane 锁后，Codex CUA 的 IAB 分页查询与明确 `visible:false` 的建页调用均返回 **Browser is not available: iab**，记 `background_unavailable / iab_unavailable`。没有进入 Bing 页面，不能判定会话失效；没有改走 Chrome 或抽 Cookie，锁已释放。
+- 近 3 月／7 D 的点击、展现、CTR、关键词前 10、Pages 前 10、AI Performance 均**未读到**。2026-10-10 登录稽核的 24 点击／1.4K 展现不属于本轮读数，不回填。
+- 2026-10-05 平台周账未完成，本轮无法比较上周，也无法提供新的展现 ≥5、平均排名 4–10 的优化词。
+- 保留全部历史表格与明细；只新增本段缺项记录，未新增 `| 2026-10-12 |` 完成行，待隐藏 IAB 恢复后补读。证据：`/Users/chenjiaxin/.codex/automations/10-40-bing/runs/2026-10-12/run.json`。
+
 ## 2026-10-05 週 · 2026-10-08 正式補跑（部分完成）
 
 - 批次：`20261008T031832Z / shenma-weekly-readout`。11:58（UTC+8）取得瀏覽器全域鎖後，核驗 Chrome 沒有 `bing.com/webmasters` 的既有分頁；依原任務停止 Bing 後台讀取，鎖已釋放，未另建分頁、修改設定或提交資料。

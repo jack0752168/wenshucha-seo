@@ -17,6 +17,15 @@
 - 夸克真搜：09-21 两次抽样（排程一次、主 session 一次）搜「文书查」都没有 wenshucha，09-17 还排第 3；「文书查 裁判文书」也没有。原因未查明，下周再抽样。
 - 若 10-05 周读数仍全 0、sitemap 仍「暂未处理」（验证后近三周），走平台意见反馈（对外动作，先问 Jack）。
 
+## 2026-10-12 週 · 正式讀數（部分完成）
+
+- 本轮约 10:44 开始等待 browser-lane，约 10:50 取得锁；Codex CUA 的 `listTabs({browser:"iab"})` 与明确 `visible:false` 的建页调用均返回 **Browser is not available: iab**，记 `background_unavailable / iab_unavailable`。未进入神马报表，不能判断今天的登录状态或数据是否仍为空；没有改用 Chrome、CDP、XHR、Cookie 或直接 fluxInterface。锁已释放。
+- tob（15063019）与 www（15063021）的展现、点击、索引量、平台抓取数、sitemap 状态均**未读到**，不记 0；2026-10-05 平台周账未完成，无法与上周平台数据比较。
+- 服务器现存日志尾部最多 1,200,000 行唯读核验，每个日志均覆盖两个比较窗口的全部日期。上一完整周 **2026-10-05～10-11**，YisouSpider **UA 命中请求**：tob **586**，前周 09-28～10-04 为 **3,214**；www **8**，前周也为 **8**。这些是 UA 候选请求，包含资源请求且未逐 IP 验证，不是展现、索引量或独立蜘蛛数。
+- 同窗口两站像素日志 `UCBrowser|Quark` UA 候选均 **0**，前周也均 0；只代表本次没有捕捉到此类 UA，不能推断搜索真人或平台点击为 0。
+- 夸克各一次 curl（UC 手机 UA，间隔超过 25 秒）：两次均 HTTP 200、未见验证码标记，各解析到 9 个带 `norm_url` 的结果卡片。「文书查」回传页含 `https://tob.wenshucha.com/cases?province=广东`（第 5 个有 norm_url 的卡片，平台卡片 ID `sc_ss_pic_1_6_06814_82765`）；「裁判文书检索系统」回传页未含 wenshucha。仅记本次 HTTP 样本位置，不报真实首页排名或整体收录结论。
+- 未新增 `| 2026-10-12 |` 完成表格行，保留本周补跑入口。证据：`/Users/chenjiaxin/.codex/automations/10-40-bing/runs/2026-10-12/` 的 server-evidence.json、quark-evidence.json、原始 HTML 与 run.json。
+
 ## 2026-10-05 週 · 2026-10-08 正式補跑（部分完成）
 
 - 批次：`20261008T031832Z / shenma-weekly-readout`。11:58（UTC+8）取得瀏覽器全域鎖；Chrome 有 26 個分頁，沒有 `zhanzhang.sm.cn` 或 `bing.com/webmasters` 的既有分頁。依原任務停止後台讀取，鎖已釋放，未另建分頁或改動站長設定。
