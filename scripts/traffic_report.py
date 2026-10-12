@@ -313,10 +313,14 @@ def render_daily(d):
         if prev and prev["pv"]:
             pct = (yd["pv"] - prev["pv"]) / prev["pv"] * 100
             delta = f"({pct:+.0f}%)" if abs(pct) >= 10 else "(基本持平)"
-        L.append(f"*📊 昨日访问:* {yd['pv']} PV · {yd['uv']} 人 {delta}")
-        vals = [v["pv"] for k, v in sorted(px["days"].items())[-7:]]
-        if len(vals) >= 3:
-            L.append(f"_近 {len(vals)} 天日均 {sum(vals)/len(vals):.0f} PV_")
+        L.append(f"*📊 昨日访问:* {yd['pv']} PV · {yd['uv']} 独立 IP {delta}")
+        # Use seven completed calendar days, never today's partial data or older filler dates.
+        completed = [(date.today() - timedelta(days=i)).isoformat() for i in range(1, 8)]
+        vals = [px["days"][k]["pv"] for k in completed if k in px["days"]]
+        if len(vals) == 7:
+            L.append(f"_近 7 个完整日日均 {sum(vals)/7:.0f} PV_")
+        else:
+            L.append(f"_近 7 个完整日仅 {len(vals)}/7 日有像素数据，暂不计算日均_")
     else:
         n = len(px["days"])
         L.append(f"*📊 昨日访问:* 像素暂无昨日数据"
@@ -335,7 +339,7 @@ def render_daily(d):
                 ch.get({"/bjh": "baijiahao", "/zh": "zhihu", "/wx": "weixin"}[path], 0) + n
     if ch:
         名 = {"baijiahao": "百家号", "zhihu": "知乎", "weixin": "公众号"}
-        L.append("*🏷 渠道归因(带标记的):* "
+        L.append("*🏷 渠道归因(带标记的累计):* "
                  + "、".join(f"{名.get(k, k)} {v}" for k, v in sorted(ch.items(), key=lambda x: -x[1])))
     else:
         L.append("_🏷 渠道归因:暂无带标记的访问(短链 /bjh /zh 2026-08-24 才上，需要新发的内容带上才会有数)_")
@@ -374,11 +378,11 @@ def render_daily(d):
     # ④ tob 产品站:昨日真人(像素优先,没有像素就用「取过静态资源」的下限)+ 外部来源
     tpx = (tob.get('px_days') or {}).get(y)
     if tpx:
-        L.append(f"*🧪 昨日 tob 真人:* {tpx['pv']} PV · {tpx['uv']} 人(像素)")
+        L.append(f"*🧪 昨日 tob 访问:* {tpx['pv']} PV · {tpx['uv']} 独立 IP(像素)")
     else:
         ruv = (tob.get('real_uv_days') or {}).get(y)
         if ruv is not None:
-            L.append(f"*🧪 昨日 tob 真人:* ≥{ruv} 人(下限口径:取过静态资源的 IP)")
+            L.append(f"*🧪 昨日 tob:* {ruv} 个 IP(旧资源口径，含预取，不可当真人数)")
     if tob.get('px_refs'):
         L.append("_tob 像素来源(累计):_ " + "、".join(f"{k} {v}" for k, v in tob['px_refs'][:5]))
     elif tob["refs"]:
