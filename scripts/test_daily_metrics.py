@@ -51,5 +51,8 @@ class DailyMetrics(unittest.TestCase):
         result=narrative.parse_input('=== TRAFFIC ===\n'+text+'=== INDEXNOW ===\n')
         self.assertTrue(any('Bing 點擊率' in line for line in result['traffic']))
         self.assertTrue(any('合計 1 筆' in line for line in result['traffic']))
+    def test_legacy_receipts_without_ids_are_not_silently_dropped(self):
+        data={'meta':{'started_at':'2026-10-10T01:00:00Z'},'events':[],'receipts':[{'kind':'mcp','received_at':'2026-10-11T01:00:00Z','funnel':None}]}
+        self.assertEqual(funnel.summarize(data,dt.date(2026,10,11))['counts']['mcp_demand_receipts'],1)
 
 if __name__=='__main__':unittest.main()

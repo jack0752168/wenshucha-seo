@@ -40,6 +40,7 @@ import re, json, os
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 
+DAILY_PIXEL_ONLY = False
 LINE = re.compile(r'^(\S+) \S+ \S+ \[([^\]]+)\] "(\S+) ([^"]*?) \S+" (\d{3}) (\d+) "([^"]*)" "([^"]*)"')
 MON = {m: i for i, m in enumerate('Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(), 1)}
 BOT = re.compile(r'bot|spider|crawler|slurp|bytespider|python-requests|curl|wget|headless|'
@@ -141,7 +142,7 @@ land = Counter(); fake_n = 0; daily = defaultdict(Counter); daily_v = defaultdic
 # 2026-10-10：referer 口徑會被偽造 referer 灌水。實測 10-09 www 的 42 次 Google + 7 次百度
 # 來自 28 個 IP，沒有一個打像素（像素是內嵌在 HTML 裡的，真瀏覽器不可能不打）→ 全判為偽造。
 # 規則：同一天同一 IP 必須打過像素，該次搜索來源才計入 *_v。像素未覆蓋的日期退回原口徑。
-for raw in open('%(MAIN)s', 'rb'):
+for raw in ([] if DAILY_PIXEL_ONLY else open('%(MAIN)s', 'rb')):
     m = LINE.match(raw.decode('utf-8', 'replace'))
     if not m: continue
     ip, t, meth, path, code, size, ref, ua = m.groups()
@@ -160,7 +161,7 @@ for raw in open('%(MAIN)s', 'rb'):
         land[path.split('?')[0][:44]] += 1
         daily[dk][e] += 1
         if ver: daily_v[dk][e] += 1
-out['referer'] = {'windows': {k: v.most_common() for k, v in ref_b.items()},
+out['referer'] = {'available': not DAILY_PIXEL_ONLY, 'windows': {k: v.most_common() for k, v in ref_b.items()},
                   'windows_v': {k: v.most_common() for k, v in ref_bv.items()},
                   'fake_dropped': fake_n, 'landing': land.most_common(12),
                   'daily': {d: dict(c) for d, c in sorted(daily.items())[-30:]},
@@ -171,7 +172,7 @@ tob = {'total': 0, 'refs': Counter(), 'paths': Counter(), 'since': None, 'scan_d
        'real_uv_days': {}, 'real_ips': 0, 'px_days': {}, 'px_refs': Counter()}
 # 真浏览器下限：同一 IP 既打过页面又取过 /_next/static(裸拉 HTML 的机器不会取)。tob 09-15 前没像素,只有这招。
 static_ips = set(); page_days = defaultdict(set); ref_first = {}
-if os.path.exists('%(TOB)s'):
+if not DAILY_PIXEL_ONLY and os.path.exists('%(TOB)s'):
     for raw in open('%(TOB)s', 'rb'):
         m = LINE.match(raw.decode('utf-8', 'replace'))
         if not m: continue
@@ -219,14 +220,16 @@ print(json.dumps(out, ensure_ascii=False))
 ''' % {"PX": PX_LOG, "MAIN": MAIN_LOG, "TOB": TOB_LOG, "TOBPX": TOB_PX}
 
 
-def fetch():
+def fetch(pixel_only=False):
     """日志在生产机上。本机(Mac)走 SSH;如果就在生产机上跑(daily_run.sh),直接就地执行。"""
+    code = REMOTE.replace('DAILY_PIXEL_ONLY = False', 'DAILY_PIXEL_ONLY = True') if pixel_only else REMOTE
+    timeout = 45 if pixel_only else 300
     if Path(MAIN_LOG).exists():          # 已经在生产机上
-        r = subprocess.run(["python3", "-"], input=REMOTE,
-                           capture_output=True, text=True, timeout=300)
+        r = subprocess.run(["python3", "-"], input=code,
+                           capture_output=True, text=True, timeout=timeout)
     else:
         r = subprocess.run(["ssh", "-o", "ConnectTimeout=45", HOST, "python3 -"],
-                           input=REMOTE, capture_output=True, text=True, timeout=300)
+                           input=code, capture_output=True, text=True, timeout=timeout)
     line = [l for l in r.stdout.splitlines() if l.startswith("{")]
     if not line:
         print("取数失败:", r.stderr[-500:], file=sys.stderr)
@@ -377,7 +380,9 @@ def render_daily(d):
     day_src = (rf.get("daily_v") or {}).get(y) or {}
     raw_src = (rf.get("daily") or {}).get(y) or {}
     tot, raw_tot = sum(day_src.values()), sum(raw_src.values())
-    if day_src:
+    if rf.get('available') is False:
+        pass  # Daily source counts come directly from cleaned pixel arrivals above.
+    elif day_src:
         pairs = sorted(day_src.items(), key=lambda kv: -kv[1])
         note = f"（另剔 {raw_tot - tot} 次偽造 referer）" if raw_tot > tot else ""
         L.append(f"*🔎 昨日搜索來源(像素核驗真人):* 共 {tot} 次 —— "
@@ -417,7 +422,7 @@ if __name__ == "__main__":
     ap.add_argument("--daily", action="store_true", help="日报用的紧凑块")
     ap.add_argument("--dump", help="把原始 JSON 存到文件")
     a = ap.parse_args()
-    data = fetch()
+    data = fetch(pixel_only=a.daily)
     if a.dump:
         Path(a.dump).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     if a.json:

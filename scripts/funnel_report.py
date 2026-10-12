@@ -61,7 +61,7 @@ def summarize(data, target):
         groups[name].add(sid); sources[source][name].add(sid)
         times[sid][name].append(dt.datetime.fromisoformat(event['received_at'].replace('Z','+00:00')).timestamp())
     receipts = [r for r in data.get("receipts", []) if r.get("received_at") and day(r["received_at"]) == target and not (r.get("funnel") or {}).get("qa") and not r.get("bot") and not r.get("self")]
-    receipts = list({(r.get('kind'), r.get('id')): r for r in receipts if r.get('id')}.values())
+    receipts = list({(r.get('kind'), r.get('id')) if r.get('id') else ('legacy', i): r for i, r in enumerate(receipts)}.values())
     receipt_sids = {r["funnel"]["sid"] for r in receipts if (r.get("funnel") or {}).get("sid")}
     groups["lead_received"].update(receipt_sids)
     for r in receipts:
