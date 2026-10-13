@@ -62,6 +62,8 @@
 | 25 | Chinese Court Judgments Dataset for LLM Fine-tuning: Structure, Volume, Freshness | Chinese case law dataset | ML engineers at legal AI |
 | 26 | Enterprise Data Partnership Models: Bulk + API + Sync for AI vendors | enterprise data partner Chinese law | Partnership leads |
 
+| 26c ✅ | China Environmental Enforcement Data: Official Sources and Court Records | China environmental enforcement data / China environmental penalty records | Head of Data / China-practice researchers | ✅ 2026-10-13 /blog/china-environmental-enforcement-data-official-sources-court-records.html（MEE决定/典型叙事/法院记录分轨；真查询记录池不当处罚总数） |
+
 ### B2. China practice 律所(次级目标,优先级 ⭐⭐⭐)
 
 | # | 标题 | 核心关键词 | 目标读者 |

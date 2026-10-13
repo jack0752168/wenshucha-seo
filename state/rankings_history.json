@@ -625,6 +625,32 @@
         "google": "final API data",
         "google_sinoverdict": "no query with impressions >=5"
       }
+    },
+    {
+      "date": "2026-10-13",
+      "totals": {
+        "baidu_keywords": null,
+        "baidu_clicks": null,
+        "period": "GSC final 2026-09-11～2026-10-10; Baidu PC selected30D only, mature dates unknown"
+      },
+      "baidu": [],
+      "google": [
+        {
+          "kw": "中国裁判文书网",
+          "rank": 47.25,
+          "impr": 8,
+          "clicks": 0
+        }
+      ],
+      "notes": "GSC dates confirmed from date rows; qualified domain query only. SinoVerdict has no query with impressions >=5. Bing daily target snapshot is separate and has its own mature seven-day scope. Baidu PC selected30D UI: 0 clicks/1 impression, only operator/self-check query below5; mobile still unverified. Domain-wide totals remain unknown.",
+      "baidu_pc": {
+        "selected_period": "30D",
+        "clicks": 0,
+        "impressions": 1,
+        "qualified_keywords_ge5": 0,
+        "exclude_reason": "Only self-check/operator query with 1 impression; not an organic ranking result",
+        "evidence": "/Users/chenjiaxin/.codex/automations/daily-seo-optimize/runs/2026-10-13/baidu-pc-30d.txt"
+      }
     }
   ]
 }

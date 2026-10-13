@@ -81,6 +81,9 @@ def report(state, now=None):
     verified = timestamp(reading['observed_at']).astimezone(SGT).strftime('%m/%d %H:%M')
     line = f"*📈 Bing 點擊率:* {ctr} · 點擊 {reading['clicks']} / 曝光 {reading['impressions']}（{reading['date_start']}～{reading['date_end']}；最近核驗 {verified}）"
     line += '\n_範圍：Web「裁判文书」→ /cases；平台成熟窗口，非昨日單日或全站。_'
+    position = reading.get('avg_position')
+    position_label = f'{position:.2f}' if position is not None else '未知'
+    line += f'\n_平台均位 {position_label}；同頁／查詢的裝置交叉與其他詞構成未核驗，不以整域分布代替。_'
     if notes: line += '\n⚠️ '+ '；'.join(notes)+'；以上為最後核驗值，不冒充今日新數據。'
     return line
 
