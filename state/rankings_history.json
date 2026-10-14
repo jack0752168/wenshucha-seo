@@ -651,6 +651,24 @@
         "exclude_reason": "Only self-check/operator query with 1 impression; not an organic ranking result",
         "evidence": "/Users/chenjiaxin/.codex/automations/daily-seo-optimize/runs/2026-10-13/baidu-pc-30d.txt"
       }
+    },
+    {
+      "date": "2026-10-14",
+      "totals": {
+        "baidu_keywords": null,
+        "baidu_clicks": null,
+        "period": "GSC final 2026-09-12～2026-10-11; Baidu unavailable"
+      },
+      "baidu": [],
+      "google": [
+        {
+          "kw": "中国裁判文书网",
+          "rank": 47.25,
+          "impr": 8,
+          "clicks": 0
+        }
+      ],
+      "notes": "GSC final actual dates checked by date rows. Sino has no query >=5 impressions. Baidu UI and Bing fresh data unavailable: no IAB browser exposed; no Chrome fallback. Bing last verified state retained separately."
     }
   ]
 }
