@@ -171,6 +171,7 @@ sites:
   host: sinoverdict.wenshucha.com
   sitemap: https://sinoverdict.wenshucha.com/sitemap.xml
   urls_to_push:
+  - https://sinoverdict.wenshucha.com/blog/china-securities-enforcement-data-csrc-penalties-court-records.html
   - https://sinoverdict.wenshucha.com/blog/china-merger-review-data-samr-decisions-court-records.html
   - https://sinoverdict.wenshucha.com/blog/china-patent-invalidation-data-cnipa-decisions-court-records.html
   - https://sinoverdict.wenshucha.com/blog/china-environmental-enforcement-data-official-sources-court-records.html
