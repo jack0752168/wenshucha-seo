@@ -723,6 +723,24 @@
         }
       ],
       "notes": "GSC final date rows verified through10/14. Sino no>=5 query. Baidu unknown, not zero; Bing separate query/page/Web snapshot. Browser: partial_pc_verified_mobile_unmounted; exact backend observations in browser-status-final.json. Browser: partial_pc_verified_mobile_unmounted; exact backend observations in browser-status-final.json."
+    },
+    {
+      "date": "2026-10-18",
+      "totals": {
+        "baidu_keywords": null,
+        "baidu_clicks": null,
+        "period": "近30天；PC/mobile明細另存，整域未知"
+      },
+      "baidu": [],
+      "google": [
+        {
+          "kw": "中国裁判文书网",
+          "rank": 45.833333333333336,
+          "impr": 6,
+          "clicks": 0
+        }
+      ],
+      "notes": "GSC final2026-09-16～10-15 confirmed dates. Exclude<5 impressions; clean-search ranking unknown. Baidu partial_pc_verified_mobile_unmounted; no zero substituted for unmounted mobile."
     }
   ]
 }
