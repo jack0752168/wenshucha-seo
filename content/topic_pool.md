@@ -189,3 +189,5 @@
 - ✅ 2026-10-15 海外监管资料源线：China Merger Review Data: SAMR Publications and Court Records，区分简易公示/批准名单/附条件决定/司法文书；245/4/10594为重叠候选记录池，非行政决定数。https://sinoverdict.wenshucha.com/blog/china-merger-review-data-samr-decisions-court-records.html
 
 - ✅ 2026-10-16 海外官方资料源线：China Securities Enforcement Data: CSRC Penalties and Court Records；区分证监会处罚/禁入/监管措施与司法记录；19844/2050/863为重叠候选记录池，非处罚总数。https://sinoverdict.wenshucha.com/blog/china-securities-enforcement-data-csrc-penalties-court-records.html
+
+- ✅ 2026-10-18 海外官方资料源线：China Government Procurement Complaint Data: MOF Notices and Court Records；财政部投诉结果公告/处罚/法院记录分轨，3541号混合结论示例；未宣称行政登记簿覆盖或全国投诉数量。https://sinoverdict.wenshucha.com/blog/china-government-procurement-complaint-data-mof-court-records.html
