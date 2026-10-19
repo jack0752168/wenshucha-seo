@@ -741,6 +741,33 @@
         }
       ],
       "notes": "GSC final2026-09-16～10-15 confirmed dates. Exclude<5 impressions; clean-search ranking unknown. Baidu partial_pc_verified_mobile_unmounted; no zero substituted for unmounted mobile."
+    },
+    {
+      "date": "2026-10-19",
+      "totals": {
+        "baidu_keywords": null,
+        "baidu_clicks": null,
+        "period": "近30天",
+        "baidu_pc_clicks": 0,
+        "baidu_pc_impressions": 1,
+        "baidu_mobile_status": "unknown_unmounted"
+      },
+      "baidu": [],
+      "google": [
+        {
+          "kw": "中国裁判文书网",
+          "rank": 45.833333333333336,
+          "impr": 6,
+          "clicks": 0
+        }
+      ],
+      "notes": [
+        "Only >=5 impressions and non-operator queries reported",
+        "GSC final 2026-09-17 to 2026-10-16, date table verified",
+        "Sinoverdict site: operator query excluded; no eligible non-operator keywords",
+        "Clean SERP ranking unknown; no eligible existing search tab",
+        "Baidu PC self-check row1impression excluded; mobile unknown"
+      ]
     }
   ]
 }
