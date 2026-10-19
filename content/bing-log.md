@@ -12,6 +12,46 @@
 | 2026-09-21 | 近7天 | 51 | 1.1K | 4.53% | 第二周。按天覆盖 09-14~09-19：点击 9/11/9/18/3/1，展现 271/222/226/193/88/127（09-18 起明显下滑） |
 | 2026-10-12 | 近3月 | 466 | 11,870 | 3.93% | All；成熟07/12～10/10；AI引用686，非實驗page口徑 |
 | 2026-10-12 | 近7天 | 55 | 3,198 | 1.72% | All；10/05～10六個成熟日，10/11未知；上週帳缺失 |
+| 2026-10-19 | 近3月 | 517 | 16,443 | 3.14% | All；圖表 07/19～10/18、實際 91 個成熟日到 10/17。精算 517/16,443=3.1442%。AI Performance 3M：Total Citations 799、Avg. Cited Pages 3 |
+| 2026-10-19 | 近7天 | 61 | 3,988 | 1.53% | All；窗口 10/12～10/18，實際只有 10/12～10/17 六個成熟日，10/18 未知不補0。精算 61/3,988=1.5296%。上週（10/05～10/10 六日）為 55/3,198/1.72% |
+
+## 2026-10-19 週 · 15:40 補跑（Bing 週讀數補齊）
+
+- 以本聊天專屬隱藏 IAB（`cua.listBrowsers({emit:false})` 動態取得 type=iab id `2`，session `01a15318-…`，tab `1`，`visible:false`）讀 wenshucha.com 站長後台；頁面顯示站點 `wenshucha.com/`、右上有登入頭像 ⇒ 已登入。全程未用 Chrome、未改 Cookie、未新建 Chrome 分頁。
+- 近3月（Filter=All）：Total Clicks **517**、Total Impressions **16,443**、Avg. CTR 平台顯示 **3.14%**（精算 3.1442%）。圖表 aria 為「July 19, 2026 to October 18, 2026」但逐日資料 91 點止於 **10/17** ⇒ 最後成熟日 10/17。
+- 近7天：Total Clicks **61**、Total Impressions **3,988**、CTR **1.53%**（精算 1.5296%）。圖表範圍 10/12～10/18，逐日只有 10/12～10/17 六個成熟日，**10/18 未知、不補 0**。
+- 與上週（10/12 週帳：近3月 466/11,870/3.93%、近7天 55/3,198/1.72%）相比曝光升、CTR 降；窗口天數不同、非隨機對照，不作因果或「退步」定論。
+- 近7天 Web 關鍵詞（曝光≥5；全表 62 詞，前 25 條只 6 詞達門檻；平均排名是平台自報，不是乾淨真搜首頁證明）：
+
+| 詞 | 曝光 | 點擊 | CTR | 均位 |
+|---|---|---|---|---|
+| 裁判文书 | 2.2K（query-page CSV 精確 2,171） | 3 | 0.14% | 7.60 |
+| 判决文书 | 44 | 0 | 0.00% | 8.48 |
+| sinoverdict | 5 | 1 | 20.00% | 4.40 |
+| sinoverdict api | 5 | 1 | 20.00% | 4.80 |
+| 裁判文书查询 | 5 | 3 | 60.00% | 7.20 |
+| 文书网判决书 | 5 | 0 | 0.00% | 5.20 |
+
+- 近7天 Pages 前 10（Served pages）：
+
+| 頁面 | 曝光 | 點擊 | CTR | 均位 |
+|---|---|---|---|---|
+| https://tob.wenshucha.com/cases | 3.2K | 29 | 0.89% | 7.48 |
+| https://www.wenshucha.com/data/ | 141 | 8 | 5.67% | 6.62 |
+| https://www.wenshucha.com/case-search/ | 78 | 0 | 0.00% | 9.24 |
+| https://www.wenshucha.com/ | 69 | 3 | 4.35% | 7.72 |
+| https://mcp.wenshucha.com/ | 9 | 2 | 22.22% | 7.78 |
+| https://tob.wenshucha.com/sifa/region/江西省 | 5 | 1 | 20.00% | 4.40 |
+| https://www.wenshucha.com/blog/mediation-settlement-agreement-enforceability.html | 4 | 0 | 0.00% | 5.75 |
+| https://www.wenshucha.com/legal-ai/ | 4 | 0 | 0.00% | 5.50 |
+| https://sinoverdict.wenshucha.com/blog/china-securities-enforcement-data-csrc-penalties-court-records.html | 3 | 2 | 66.67% | 2.33 |
+| https://tob.wenshucha.com/sifa/region/陕西省 | 3 | 0 | 0.00% | 9.00 |
+
+- 最值得優化（展現≥5 且平台均位 4–10）：**文书网判决书** 5 曝光／0 點擊／均位 5.20、**sinoverdict** 5／1／4.40、**sinoverdict api** 5／1／4.80。**裁判文书** 2,171 曝光卻只有 0.14% CTR、均位 7.60，屬高曝光低點擊，但低樣本不宣稱顯著。
+- AI Performance（3M）：Total Citations **799**、Avg. Cited Pages **3**；引用不是進站、點擊或需求。
+- 每日 query-page 真 CSV（Web「裁判文书」→ Served pages）：`https://tob.wenshucha.com/cases` 成熟 **2026-10-12～10-17**、**2,171 曝光／3 點擊／CTR 0.14%／均位 7.6374924**；已 `record --sync-server`，本機與伺服器 `/opt/wenshucha-seo/state/bing-search-performance.json` 唯讀 JSON 完全一致（僅尾換行位元組差）。原 30D 基準 2988/9 保留，窗口不同不稱提升。
+- 神馬本週仍受阻（見 shenma-log.md）：Chrome 無神馬既有分頁，背景借用既有 Gmail 廣告落地頁導航到 `fluxAnalyze/id/15063019` 後被導回 `zhanzhang.sm.cn` 登入頁 ⇒ `login_required`；已用 `history.back()` 還原原 URL。神馬兩站本週未補完成行。
+- 去重：本輪未命中週去重（shenma-log 仍無 10/19 完成行），Bing 這兩行只追加、未覆蓋任何歷史列。證據：`/Users/chenjiaxin/.codex/automations/10-40-bing/runs/2026-10-19/retry-1537/`。
 
 ## 2026-10-19 週 · 正式讀數（部分完成）
 

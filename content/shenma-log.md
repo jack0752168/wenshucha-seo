@@ -19,6 +19,14 @@
 - 夸克真搜：09-21 两次抽样（排程一次、主 session 一次）搜「文书查」都没有 wenshucha，09-17 还排第 3；「文书查 裁判文书」也没有。原因未查明，下周再抽样。
 - 若 10-05 周读数仍全 0、sitemap 仍「暂未处理」（验证后近三周），走平台意见反馈（对外动作，先问 Jack）。
 
+## 2026-10-19 週 · 15:40 補跑（神馬仍未登入）
+
+- 背景復用 Chrome 既有非活動工作分頁（原 URL `https://workspace.google.com/intl/en-US/gmail/?__shortid__=1wZ9&utm_source=google&utm_medium=cpc&…`），導航到 `https://zhanzhang.sm.cn/open/fluxAnalyze/id/15063019` 後被導回 `https://zhanzhang.sm.cn/` 登入頁（頁面只有「登 錄／註冊新帳號／忘記密碼」，236 字）⇒ **login_required**；未碰驗證碼、未提交任何設定。
+- 兩站（15063019／15063021）展現、點擊、索引量、平台抓取、sitemap 本輪仍**未讀到**；不沿用上週狀態、不填 0，本週不新增完成表格行，保留週二補跑入口。
+- 借用後已用 `history.back()` 還原原 URL（回讀確認 `workspace.google.com/intl/en-US/gmail/…` 完全一致、標題還原）；未新建分頁、未抬前台；Chrome lane 已 release（owner `10-40-bing--d24b250ba54f41aa84755f4412724d09`）。
+- 說明：依 2026-10-14 Jack 授權，文書查工作線（含神馬）走 Chrome，故此步未改用隱藏 IAB。
+- 證據：`/Users/chenjiaxin/.codex/automations/10-40-bing/runs/2026-10-19/retry-1537/shenma-browser-result.json`。
+
 ## 2026-10-19 週 · 正式讀數（部分完成）
 
 - 背景 Chrome 復用非活動百度報表頁，按站點 ID 15063019 進 fluxAnalyze 後導向神馬登入頁，出現帳號／密碼／圖片驗證欄及登入按鈕，記 login_required；停止同帳號下兩站後台讀取，未碰驗證碼或提交設定。兩站曝光、點擊、索引、平台抓取與 sitemap 本輪均未知，不沿用上週狀態、不填0。借用頁導航還原雖逾時，同頁 AX 已確認原百度 URL／報表標題；未新建分頁或抬前台。
