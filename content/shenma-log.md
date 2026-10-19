@@ -19,6 +19,15 @@
 - 夸克真搜：09-21 两次抽样（排程一次、主 session 一次）搜「文书查」都没有 wenshucha，09-17 还排第 3；「文书查 裁判文书」也没有。原因未查明，下周再抽样。
 - 若 10-05 周读数仍全 0、sitemap 仍「暂未处理」（验证后近三周），走平台意见反馈（对外动作，先问 Jack）。
 
+## 2026-10-19 週 · 正式讀數（部分完成）
+
+- 背景 Chrome 復用非活動百度報表頁，按站點 ID 15063019 進 fluxAnalyze 後導向神馬登入頁，出現帳號／密碼／圖片驗證欄及登入按鈕，記 login_required；停止同帳號下兩站後台讀取，未碰驗證碼或提交設定。兩站曝光、點擊、索引、平台抓取與 sitemap 本輪均未知，不沿用上週狀態、不填0。借用頁導航還原雖逾時，同頁 AX 已確認原百度 URL／報表標題；未新建分頁或抬前台。
+- 完整上週2026-10-12～10-18，伺服器各檔尾段120萬行覆蓋全部比較日期。YisouSpider UA請求 tob **742**（前週586）、www **10**（前週8）；含資源且未逐IP驗證，不能當曝光、索引或真人流量。
+- 同窗像素 UCBrowser／Quark UA候選兩站均0；只代表未捕捉到該UA，不能推論搜索真人或平台點擊0。
+- 夸克每詞單次curl，間隔26秒，均HTTP200、9個norm_url卡片、未見驗證頁標記。品牌詞回傳tob/cases第4卡，檢索系統詞未見本站；僅HTTP樣本，不稱乾淨真搜排名或收錄結論。
+- 證據：`/Users/chenjiaxin/.codex/automations/10-40-bing/runs/2026-10-19`。本週未新增完成表格行，保留原合法補跑；title/description/H1未改。
+
+
 ## 2026-10-12 週 · 隱藏 IAB 補讀完成（data_unavailable）
 
 - 兩站登入有效，按15063019／15063021獨立URL實讀fluxAnalyze、indexAnalyze、spiderAnalyze、sitemap；未用XHR／fluxInterface／CDP／Cookie。

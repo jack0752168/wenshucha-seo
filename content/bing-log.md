@@ -13,6 +13,15 @@
 | 2026-10-12 | 近3月 | 466 | 11,870 | 3.93% | All；成熟07/12～10/10；AI引用686，非實驗page口徑 |
 | 2026-10-12 | 近7天 | 55 | 3,198 | 1.72% | All；10/05～10六個成熟日，10/11未知；上週帳缺失 |
 
+## 2026-10-19 週 · 正式讀數（部分完成）
+
+- 動態瀏覽器清單兩次只提供Chrome extension，獨立SSH／Mac mini報表後最後重查仍無type=iab，記 iab_unavailable_route，不是Chrome BUSY、登入失效或平台空表。Bing依最新專用IAB規則，未改走Chrome、硬編碼id、改Cookie或建立重複頁。
+- 本輪近3月／近7天整域總數、Web關鍵詞前10／Pages前10／AI引用均未新讀，無新CSV；無法報整域週比或新增優化詞。今早10:05:36 SGT由daily-seo-optimize核驗的既有真CSV保留：Web「裁判文书」→/cases，成熟2026-10-11～17，2482曝光／3點擊／CTR0.1208702659%／均位7.5028185737；這是既有query-page快照，不冒充本輪整域週報。
+- 已執行unavailable --reason data_unavailable --sync-server，保留最新真值；本輪唯讀JSON核驗本機／既有server完全一致。原30D基準2988/9與14完整成熟post候選10/14～27保持，不判效果。
+- Mac mini funnel唯讀成功：SGT昨日10/18完整日47進站訪次→12成功檢索→3展開正文；研究實收0、MCP實收0，聯絡點擊1不是提交，訪次不是人數。traffic helper依既定規則blocked_unverified，昨日兩站來源未知，未本機重跑長查詢；Bing worker只分析既有快照。Mac通知器loaded／LastExitStatus0不等於本輪新通知送達。
+- 證據：`/Users/chenjiaxin/.codex/automations/10-40-bing/runs/2026-10-19`。本週未新增完成表格行，保留原合法補跑；title/description/H1未改。
+
+
 ## 2026-10-12 週 · 隱藏 IAB 補讀完成
 
 - 3 M、7 D均明確點選並等loading結束。All近3月466點擊／11,870曝光／CTR3.93%，成熟日期07/12～10/10；All近7天55／3,198／1.72%，選取10/05～11但**實際只有10/05～10六個成熟日**，10/11未知不補0。上週10/05帳缺失，不能報週環比。
