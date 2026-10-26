@@ -8,6 +8,7 @@ sites:
   host: www.wenshucha.com
   sitemap: https://www.wenshucha.com/sitemap.xml
   urls_to_push:
+  - https://www.wenshucha.com/data/overtime-pay-report/
   - https://www.wenshucha.com/data/shareholder-inspection-report/
   - https://www.wenshucha.com/data/private-lending-interest-report/
   - https://www.wenshucha.com/data/reputation-online-report/
