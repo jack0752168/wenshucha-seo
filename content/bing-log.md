@@ -15,6 +15,17 @@
 | 2026-10-19 | 近3月 | 517 | 16,443 | 3.14% | All；圖表 07/19～10/18、實際 91 個成熟日到 10/17。精算 517/16,443=3.1442%。AI Performance 3M：Total Citations 799、Avg. Cited Pages 3 |
 | 2026-10-19 | 近7天 | 61 | 3,988 | 1.53% | All；窗口 10/12～10/18，實際只有 10/12～10/17 六個成熟日，10/18 未知不補0。精算 61/3,988=1.5296%。上週（10/05～10/10 六日）為 55/3,198/1.72% |
 
+## 2026-10-26 週 · 正式讀數（受阻：IAB 已登出，未新增完成行）
+
+- 週期：目標為 2026-10-19～10-25。週去重未命中（bing-log 尚無 `| 2026-10-26 |` 完成行）。全程只讀，未改任何站長設定或 title／description／H1。
+- 通道：本輪用任務專屬隱藏 Codex IAB（`cua.listBrowsers` 動態取得 type=iab 實際 id `3`，codexSessionId `01a17612-…`，`visible:false` 新建分頁）。`searchperf` 請求被導向 `https://www.bing.com/webmasters/about?siteUrl=…&from=searchperf`，頁面只有 **Sign In／Sign Up**；6 秒後重試同一 URL 仍是同一個 `/about` 導向 ⇒ **IAB 會話已登出 Bing Webmaster Tools**。
+- 依 2026-10-14 授權，Bing 讀數只走這個 IAB、**不轉用 Chrome**（Chrome 是另一個 profile，Bing 自 09-17 起一直登出，10-21 已實測失敗）；故本輪未使用 Chrome、未硬編碼 id、未改 Cookie、未新建重複頁。
+- 本輪近 3 月／近 7 天整域總數、Web 關鍵詞前 10、Pages 前 10、AI Performance 全部 **未新讀**；不補缺日 0、不沿用上週數字冒充本週。已執行 `python3 scripts/bing_report.py unavailable --reason login_required --sync-server`，保留最後已核驗值（query 裁判文书 → /cases，成熟 10/17～10/19，1,426 曝光／2 點擊／CTR 0.14%／均位 7.89，10-24 核驗）。
+- 同日 daily-seo-optimize 10:20 輪次亦記同一阻礙（login_required）。Bing IAB 登入自 **10-25 起**連續兩個輪次失效，10-24 10:32 仍可讀。
+- 影響：`reports/2026-10-12-ctr-funnel/experiment.json` 的固定觀察窗 10/13～10/26 在最後兩天缺 query-page 成熟窗，效果評估需順延或標缺口；title／description／H1 保持固定不動。
+- 待 Jack：在 Codex 隱藏 IAB 的 Bing 站長頁點一次 Sign In → Google（Chrome 那邊不算）。
+- 證據：`/Users/chenjiaxin/.codex/automations/10-40-bing/runs/2026-10-26/bing-iab-login-state.json`。
+
 ## 2026-10-19 週 · 15:40 補跑（Bing 週讀數補齊）
 
 - 以本聊天專屬隱藏 IAB（`cua.listBrowsers({emit:false})` 動態取得 type=iab id `2`，session `01a15318-…`，tab `1`，`visible:false`）讀 wenshucha.com 站長後台；頁面顯示站點 `wenshucha.com/`、右上有登入頭像 ⇒ 已登入。全程未用 Chrome、未改 Cookie、未新建 Chrome 分頁。

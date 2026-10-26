@@ -12,6 +12,16 @@
 | 2026-10-12 | tob | 未讀到（data_unavailable） | 未讀到 | 未出數 | 未出數 | 暫未處理（sitemap.xml） | 登入有效；伺服器UA請求586（前週3214），不是展現或真人點擊 |
 | 2026-10-12 | www | 未讀到（data_unavailable） | 未讀到 | 未出數 | 未出數 | 暫未處理（sitemap.xml） | 登入有效；伺服器UA請求8（前週8），不是展現或真人點擊 |
 
+## 2026-10-26 週 · 正式讀數（受阻，未新增完成行）
+
+- 週期：目標為 2026-10-19～10-25（本輪為週一 10:40 時段）。週去重未命中（shenma-log 尚無 `| 2026-10-26 |` 完成行）。全程只讀，未改任何站長設定。
+- 背景 Chrome（browser-lane owner `10-40-bing--539b0108a6474da38c0f28ff77f21e41`，第 1 次即取得鎖）：本輪 Chrome 只有 5 個分頁——4 個 OKX（交易／帳號頁，交易頁禁借用）＋1 個 `https://x.com/home`（X 工作線使用中的分頁）。**沒有 `zhanzhang.sm.cn` 既有分頁，也沒有可安全借用的非活動純文件工作頁。**依原任務規則（`goto --match` 找不到匹配分頁即停手），記 `no_eligible_safe_work_tab` 並停手；未新建分頁、未抬前台、未碰 Cookie、未改用 IAB（神馬依 10-14 授權走 Chrome）。
+- 神馬登入狀態：最近可驗證的狀態仍是 2026-10-20 的 `login_required`（自 10-19 起連續多輪），本輪無新登入訊號。兩站（15063019／15063021）展現、點擊、索引量、平台抓取數、sitemap 狀態全部 **unknown，不填 0**；本週不新增完成表格行，保留原合法補跑入口。
+- 伺服器週日誌（完整週 2026-10-19～10-25，唯讀）：YisouSpider UA 請求 tob **1,192**（前週 742）、www **3**（前週 10）；逐日 tob 為 134／535／1／4／516／1／1。含資源請求且未逐 IP 驗證，不是展現、索引量或真人點擊。
+- 同窗像素 `UCBrowser|Quark` UA 候選：tob **1**、www **1**，同一 IP `119.143.212.21` 於 10-20 22:05 以 `Quark/10.7.0.1045` 由 www 進 tob `/cases`——記為 1 次真實夸克站內訪問，不等於展現或平台點擊（前週兩站皆 0）。
+- 夸克單次 curl（UC 手機 UA，兩次間隔 26 秒）：兩詞均 HTTP 200、無驗證碼標記。「文书查」回傳頁含 tob.wenshucha.com/cases 富文本卡（結構化結果第 2 條，卡片標題已是**新 title**「裁判文书查询与类案检索_免费试用-文书查」，`nu=…/cases?province=广东`）；「裁判文书检索系统」回傳頁未含本站（解析到 5 張卡）。僅單次 HTTP 樣本，不當乾淨真搜排名或收錄結論。
+- 證據：`/Users/chenjiaxin/.codex/automations/10-40-bing/runs/2026-10-26/`（preflight.json、shenma-browser-result.json、server-evidence.json、quark-evidence.json、lane-summary.json）。
+
 **2026-09-21 主 session 交叉核对（服务器日志，09-14~09-21）**：
 - 神马后台流量接口 `/open/fluxInterface?type=0&tag=1&domain_id=<ID>` 能取近 30 天（08-22 起），**两站 30 天全 0**，连 09-03 起夸克爬虫大抓 tob 的那段也是 0 ⇒ 平台统计还没对这两个站开始算，不是「真没人看到」。
 - 同一周我们自己的日志：YisouSpider 抓 tob **8,444 次**（每天 339–2,517，全部 200），抓 www 只有 17 次；UC 无 referer 打开 tob `/cases` 每天 13–40 次（UC 只预取它展示的结果）。⇒ 后台「抓取：暂未获取到数据」是后台滞后。
