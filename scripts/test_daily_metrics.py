@@ -41,6 +41,16 @@ class DailyMetrics(unittest.TestCase):
         self.assertIn('未取得',traffic.daily_source_line('昨日',None))
         line=traffic.daily_source_line('昨日',{'sources':{'Bing':3,'直接／來源不明':7}})
         self.assertIn('Bing 3（30%）',line);self.assertIn('來源不明',line)
+    def test_mcp_cta_dedup_excludes_qa_and_does_not_become_a_receipt(self):
+        base = {'received_at':'2026-11-03T01:00:00Z','event':'cta_mcp','sid':'a','source':'bing'}
+        data = {'meta':{'started_at':'2026-10-12T01:00:00Z'}, 'receipts':[], 'events':[
+            {**base,'eid':'one'}, {**base,'eid':'one'}, {**base,'eid':'two'},
+            {**base,'eid':'qa','sid':'qa','qa':True}, {**base,'eid':'bot','sid':'bot','bot':True}]}
+        result = funnel.summarize(data,dt.date(2026,11,3))
+        self.assertEqual(result['counts']['mcp_cta_sessions'],1)
+        self.assertEqual(result['counts']['mcp_demand_receipts'],0)
+        self.assertEqual(result['source_session_counts']['bing']['cta_mcp'],1)
+
     def test_receipts_are_deduped_exclude_qa_self_bots_and_need_not_follow_search(self):
         r={'id':'real','kind':'report','received_at':'2026-10-11T01:00:00Z','funnel':None}
         data={'meta':{'started_at':'2026-10-10T01:00:00Z'},'events':[],'receipts':[r,r,{**r,'id':'qa','funnel':{'qa':True}},{**r,'id':'self','self':True},{**r,'id':'bot','bot':True}]}

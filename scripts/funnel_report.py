@@ -79,7 +79,7 @@ def summarize(data, target):
             if later: next_stage[sid] = min(later)
         progression = next_stage; stages.append(set(progression))
     search, read, lead = stages
-    counts = {"landing_sessions": len(landing), "search_success_sessions": len(search), "fulltext_open_sessions": len(read), "search_to_read_to_lead_sessions": len(lead), "search_empty_sessions": len(groups["search_empty"]), "search_error_sessions": len(groups["search_error"]), "fulltext_partial_sessions": len(groups["fulltext_partial"]), "report_cta_sessions": len(groups["cta_report"]), "report_demand_start_sessions": len(groups["lead_start"]), "report_demand_receipts": sum(r.get('kind') == 'report' for r in receipts), "mcp_demand_receipts": sum(r.get('kind') == 'mcp' for r in receipts), "demand_sessions": len(groups["lead_received"]), "contact_click_sessions": len(groups["contact_email"] | groups["contact_phone"])}
+    counts = {"landing_sessions": len(landing), "search_success_sessions": len(search), "fulltext_open_sessions": len(read), "search_to_read_to_lead_sessions": len(lead), "search_empty_sessions": len(groups["search_empty"]), "search_error_sessions": len(groups["search_error"]), "fulltext_partial_sessions": len(groups["fulltext_partial"]), "mcp_cta_sessions": len(groups["cta_mcp"]), "report_cta_sessions": len(groups["cta_report"]), "report_demand_start_sessions": len(groups["lead_start"]), "report_demand_receipts": sum(r.get('kind') == 'report' for r in receipts), "mcp_demand_receipts": sum(r.get('kind') == 'mcp' for r in receipts), "demand_sessions": len(groups["lead_received"]), "contact_click_sessions": len(groups["contact_email"] | groups["contact_phone"])}
     def rate(a, b): return round(a / b, 4) if b else None
     return {"date": str(target), "status": "partial_first_day" if day(started) == target else "observed", "started_at": started, "counts": counts, "rates": {"landing_to_search": rate(len(search), len(landing)), "search_to_fulltext": rate(len(read), len(search)), "fulltext_to_demand": rate(len(lead), len(read))}, "source_session_counts": {k: {name: len(v) for name, v in values.items()} for k, values in sources.items()}, "limits": ["anonymous sessions are not identified people", "contact clicks are not submitted demands", "submitted demands are not paid orders", "old MCP receipts without funnel context remain unattributed", "cross-day sessions are counted within each day; no historical conversion baseline exists", "cookies blocked or deleted can break cross-domain joins"]}
 
@@ -99,6 +99,9 @@ def main():
     c = result["counts"]
     partial = "（上線首日，僅涵蓋上線後時段）" if result["status"] == "partial_first_day" else ""
     print(f"*🧭 昨日轉化漏斗{partial}:* 進站 {c['landing_sessions']} → 成功檢索 {c['search_success_sessions']} → 展開庫內正文 {c['fulltext_open_sessions']} → 需求提交 {c['search_to_read_to_lead_sessions']}（同訪次鏈）")
+    mcp_sources = {source: counts.get("cta_mcp", 0) for source, counts in result["source_session_counts"].items() if counts.get("cta_mcp", 0)}
+    source_text = "、".join(f"{source} {n}" for source, n in sorted(mcp_sources.items(), key=lambda x: (-x[1], x[0]))) or "無已記錄點擊"
+    print(f"*🔌 昨日 MCP 入口:* {c['mcp_cta_sessions']} 訪次點擊接入／申請入口（{source_text}）；機構申請 {c['mcp_demand_receipts']} 筆。入口點擊不等於工具調用；獨立 Key 首調與付款未接入本報表，記未知。")
     print(f"*📨 昨日實際提交需求:* 合計 {c['report_demand_receipts'] + c['mcp_demand_receipts']} 筆（研究報告 {c['report_demand_receipts']} · MCP機構申請 {c['mcp_demand_receipts']}）；按服務端回執去重、排除QA／自訪／已知爬蟲。")
     print(f"_部分正文 {c['fulltext_partial_sessions']} 訪次 · 檢索失敗 {c['search_error_sessions']} 訪次；聯絡點擊／需求提交都不代表付費。_")
 
