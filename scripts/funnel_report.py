@@ -42,6 +42,34 @@ def fetch():
 def day(value):
     return dt.datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(SGT).date()
 
+def product_ctas(events, started, target):
+    """Classify only explicit new static-site surface semantics, never guess history."""
+    buckets = collections.defaultdict(set)
+    paths = collections.defaultdict(lambda: collections.defaultdict(set))
+    for event in events:
+        name, path = event.get('event'), event.get('path', '')
+        product = None
+        if name == 'cta_mcp':
+            product = 'mcp'
+        elif name == 'cta_search':
+            before_rollout = not started or dt.datetime.fromisoformat(event['received_at'].replace('Z', '+00:00')) < dt.datetime.fromisoformat(started.replace('Z', '+00:00'))
+            if before_rollout or event.get('site') != 'www':
+                product = 'legacy_or_ambiguous'
+            else:
+                product = {'inline': 'research_intro', 'report': 'research_app', 'detail': 'classic_search'}.get(event.get('surface'), 'legacy_or_ambiguous')
+        if product:
+            buckets[product].add(event['sid'])
+            paths[product][path].add(event['sid'])
+    status = 'unmeasured' if not started or day(started) > target else ('partial_first_day' if day(started) == target else 'observed')
+    counts = {key: len(buckets[key]) for key in ('research_intro', 'research_app', 'classic_search', 'mcp', 'legacy_or_ambiguous')}
+    if status == 'unmeasured':
+        for key in ('research_intro', 'research_app', 'classic_search'):
+            counts[key] = None
+    return {'research_cta_tracking_started_at': started, 'status': status,
+            'session_counts': counts,
+            'entry_path_sessions': {key: {p: len(sids) for p, sids in values.items()} for key, values in paths.items()},
+            'research_registered_source': None, 'research_inquiries': None, 'research_payments': None}
+
 def summarize(data, target):
     meta = data.get("meta") or {}
     started = meta.get("started_at")
@@ -51,6 +79,7 @@ def summarize(data, target):
     sources = collections.defaultdict(lambda: collections.defaultdict(set))
     seen = set()
     times = collections.defaultdict(lambda: collections.defaultdict(list))
+    accepted = []
     for event in data.get("events", []):
         if event.get("qa") or event.get("self") or event.get("bot") or day(event["received_at"]) != target: continue
         eid = event.get("eid")
@@ -58,6 +87,7 @@ def summarize(data, target):
         seen.add(eid)
         sid, name, source = event.get("sid"), event.get("event"), event.get("source", "other")
         if not sid: continue
+        accepted.append(event)
         groups[name].add(sid); sources[source][name].add(sid)
         times[sid][name].append(dt.datetime.fromisoformat(event['received_at'].replace('Z','+00:00')).timestamp())
     receipts = [r for r in data.get("receipts", []) if r.get("received_at") and day(r["received_at"]) == target and not (r.get("funnel") or {}).get("qa") and not r.get("bot") and not r.get("self")]
@@ -81,7 +111,7 @@ def summarize(data, target):
     search, read, lead = stages
     counts = {"landing_sessions": len(landing), "search_success_sessions": len(search), "fulltext_open_sessions": len(read), "search_to_read_to_lead_sessions": len(lead), "search_empty_sessions": len(groups["search_empty"]), "search_error_sessions": len(groups["search_error"]), "fulltext_partial_sessions": len(groups["fulltext_partial"]), "mcp_cta_sessions": len(groups["cta_mcp"]), "report_cta_sessions": len(groups["cta_report"]), "report_demand_start_sessions": len(groups["lead_start"]), "report_demand_receipts": sum(r.get('kind') == 'report' for r in receipts), "mcp_demand_receipts": sum(r.get('kind') == 'mcp' for r in receipts), "demand_sessions": len(groups["lead_received"]), "contact_click_sessions": len(groups["contact_email"] | groups["contact_phone"])}
     def rate(a, b): return round(a / b, 4) if b else None
-    return {"date": str(target), "status": "partial_first_day" if day(started) == target else "observed", "started_at": started, "counts": counts, "rates": {"landing_to_search": rate(len(search), len(landing)), "search_to_fulltext": rate(len(read), len(search)), "fulltext_to_demand": rate(len(lead), len(read))}, "source_session_counts": {k: {name: len(v) for name, v in values.items()} for k, values in sources.items()}, "limits": ["anonymous sessions are not identified people", "contact clicks are not submitted demands", "submitted demands are not paid orders", "old MCP receipts without funnel context remain unattributed", "cross-day sessions are counted within each day; no historical conversion baseline exists", "cookies blocked or deleted can break cross-domain joins"]}
+    return {"date": str(target), "status": "partial_first_day" if day(started) == target else "observed", "started_at": started, "counts": counts, "rates": {"landing_to_search": rate(len(search), len(landing)), "search_to_fulltext": rate(len(read), len(search)), "fulltext_to_demand": rate(len(lead), len(read))}, "products": product_ctas(accepted, meta.get('research_cta_tracking_started_at'), target), "source_session_counts": {k: {name: len(v) for name, v in values.items()} for k, values in sources.items()}, "limits": ["anonymous sessions are not identified people", "contact clicks are not submitted demands", "submitted demands are not paid orders", "old MCP receipts without funnel context remain unattributed", "cross-day sessions are counted within each day; no historical conversion baseline exists", "cookies blocked or deleted can break cross-domain joins", "research app funnel_daily includes QA and cannot prove cross-site signup attribution or payment"]}
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--json", action="store_true"); ap.add_argument("--date"); ap.add_argument("--input"); ap.add_argument("--qa-sid"); args = ap.parse_args()
@@ -102,6 +132,12 @@ def main():
     mcp_sources = {source: counts.get("cta_mcp", 0) for source, counts in result["source_session_counts"].items() if counts.get("cta_mcp", 0)}
     source_text = "、".join(f"{source} {n}" for source, n in sorted(mcp_sources.items(), key=lambda x: (-x[1], x[0]))) or "無已記錄點擊"
     print(f"*🔌 昨日 MCP 入口:* {c['mcp_cta_sessions']} 訪次點擊接入／申請入口（{source_text}）；機構申請 {c['mcp_demand_receipts']} 筆。入口點擊不等於工具調用；獨立 Key 首調與付款未接入本報表，記未知。")
+    products = result['products']
+    pc = products['session_counts']
+    if products['status'] == 'unmeasured' or day(products['research_cta_tracking_started_at']) > target:
+        print('*🔎 類案研究入口:* 此日期尚未有可區分目的地的埋點，不能將舊 cta_search 猜成研究導流。')
+    else:
+        print(f"*🔎 分產品入口:* 研究介紹 {pc['research_intro']}、研究應用 {pc['research_app']} 訪次；經典檢索 {pc['classic_search']}、MCP {pc['mcp']}。各項為獨立去重點擊，非完整轉化鏈；研究註冊來源、微信詢單與收款未知。")
     print(f"*📨 昨日實際提交需求:* 合計 {c['report_demand_receipts'] + c['mcp_demand_receipts']} 筆（研究報告 {c['report_demand_receipts']} · MCP機構申請 {c['mcp_demand_receipts']}）；按服務端回執去重、排除QA／自訪／已知爬蟲。")
     print(f"_部分正文 {c['fulltext_partial_sessions']} 訪次 · 檢索失敗 {c['search_error_sessions']} 訪次；聯絡點擊／需求提交都不代表付費。_")
 
