@@ -1,8 +1,16 @@
 #!/bin/bash
-# wenshucha-site 同步:tarball 方式拉整个 repo(支持 blog/ 等子目录)
-# codeload 解压目录名 = <repo>-<branch> = wenshucha-site-main
-cd /tmp && rm -rf wenshucha-site-main wsc.tgz
-curl -fsSLo wsc.tgz https://codeload.github.com/jack0752168/wenshucha-site/tar.gz/main || exit 1
-tar xzf wsc.tgz || exit 1
-cp -rf wenshucha-site-main/. /www/wwwroot/wenshucha.com/
-rm -rf wenshucha-site-main wsc.tgz
+# Legacy daily entry delegates to the verified publisher; never copy a tarball.
+set -u
+ENTRY=${WSC_FORMAL_SYNC:-/root/sync-wenshucha-site.sh}
+LOCK=${WSC_SYNC_LOCK:-/tmp/sync-wsc.lock}
+if [ ! -f "$ENTRY" ] || ! command -v flock >/dev/null 2>&1; then
+    echo 'UNKNOWN: formal site publisher or shared lock unavailable; no publish' >&2
+    exit 2
+fi
+# Same lock as the five-minute autoheal and direct deployment transaction.
+flock -x -w 120 "$LOCK" bash "$ENTRY"
+rc=$?
+if [ "$rc" -ne 0 ]; then
+    echo "UNKNOWN: formal site publisher failed ($rc); no legacy fallback" >&2
+fi
+exit "$rc"
