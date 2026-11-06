@@ -89,6 +89,21 @@ class UsageTests(unittest.TestCase):
         self.assertTrue(all(x['remaining']==8 for x in r['accounts']))
         self.assertEqual(a['registration_time_unknown_accounts'],1)
 
+    def test_actual_collect_config_and_event_names(self):
+        config=self.root/'product-usage-qa.json'
+        config.write_text(json.dumps({'version':'fixture-v1','accounts':[src.anonymous('raw-known-qa')]}))
+        db=sqlite3.connect(self.db)
+        db.executemany('INSERT INTO funnel_daily VALUES(?,?,?)',[('2026-11-06','trial_cta',4),('2026-11-06','trial_click',999),('2026-11-06','unknown_event',999)])
+        db.commit();db.close()
+        result=src.collect(self.db,self.log,self.leads,now=NOW,known_qa_path=config)
+        r=result['research'];self.assertEqual(r['account_count'],2)
+        self.assertEqual(r['exclusions']['explicit_known_qa'],1)
+        self.assertEqual(r['qa_config']['version'],'fixture-v1')
+        ops=r['windows']['today']['qa_mixed_operations']
+        self.assertEqual(ops['trial_cta'],4);self.assertNotIn('trial_click',ops);self.assertNotIn('unknown_event',ops)
+        config.write_text('{"version":"bad","accounts":["raw-id"]}')
+        self.assertEqual(src.collect(self.db,self.log,self.leads,now=NOW,known_qa_path=config)['research']['status'],'unknown')
+
     def test_sg_boundaries_and_maturity(self):
         spans=src.windows(NOW);self.assertEqual(src.iso(spans['today']['start']),'2026-11-05T16:00:00+00:00')
         self.assertEqual(spans['7d']['start'],spans['today']['start']-6*DAY)
@@ -122,11 +137,21 @@ class UsageTests(unittest.TestCase):
         dash.save(failed,out);v=json.loads((out/'latest.json').read_text())
         self.assertEqual(v['research']['status'],'stale');self.assertEqual(v['research']['as_of'],src.iso(NOW))
         self.assertEqual(v['research']['window_bounds']['today'],a['research']['window_bounds']['today'])
+        self.assertEqual(v['read_attempt']['research']['status'],'unknown')
         self.assertEqual(good,(out/'last-good.json').read_bytes());self.assertEqual(original,(out/first['snapshot']).read_bytes())
         failed['research']=a['research'];dash.save(failed,out)
         self.assertEqual(json.loads((out/'latest.json').read_text())['web']['status'],'stale')
         self.assertEqual(len(list((out/'snapshots').rglob('*.json'))),3)
         self.assertEqual((out/'index.html').stat().st_mode&0o777,0o600)
+
+    def test_history_comparison_quality(self):
+        a=self.snapshot();b=self.snapshot();b['generated_at']=src.iso(NOW+1000);b['research']['as_of']=src.iso(NOW+1000);b['research']['account_count']+=1
+        old=dash.history_summary(a,'snapshots/2026-11-06/old.json');new=dash.history_summary(b,'snapshots/2026-11-06/new.json')
+        self.assertEqual(dash.compare(old,new)['net_change']['accounts'],1)
+        new['research']['status']='stale';self.assertEqual(dash.compare(old,new)['status'],'unknown')
+        page=dash.html_page(b,[old['path'],new['path']],new['path'],[new,old])
+        self.assertIn('2026-11-06 12:00:00 SGT',page)
+        self.assertIn('snapshots/2026-11-06/old.md',page);self.assertIn('snapshots/2026-11-06/old.csv',page)
 
     def test_public_rejected_and_offline_isolated(self):
         with self.assertRaises(ValueError):dash.save(self.snapshot(),self.root/'wenshucha-site'/'admin')

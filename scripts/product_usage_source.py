@@ -6,11 +6,26 @@ import datetime as dt
 import hashlib
 import json
 from pathlib import Path
+import re
 import sqlite3
 
 SG = dt.timezone(dt.timedelta(hours=8))
 STATES = ('awaiting_confirmation', 'queued', 'running', 'completed', 'failed', 'cancelled', 'no_result')
 PLANS = {'trial', 'pass', 'monthly', 'annual', 'team', 'personal'}
+
+
+def qa_config(path=None):
+    base = Path(__file__).resolve().parent if __file__ != '<stdin>' else Path('/opt/wenshucha-seo/scripts')
+    path = Path(path) if path else base/'product-usage-qa.json'
+    if not path.exists():
+        return [], {'status':'empty_not_configured','source':'product-usage-qa.json','version':None,'count':0}
+    config = json.loads(path.read_text())
+    codes=config['accounts'];version=config['version']
+    if not isinstance(codes,list) or len(codes)>5000 or not all(isinstance(x,str) and re.fullmatch(r'R-[a-f0-9]{12}',x) for x in codes):
+        raise ValueError('invalid_anonymous_qa_config')
+    if not isinstance(version,str) or not re.fullmatch(r'[a-zA-Z0-9._-]{1,64}',version):
+        raise ValueError('invalid_qa_config_version')
+    return set(codes), {'status':'configured' if codes else 'configured_empty','source':'product-usage-qa.json','version':version,'count':len(set(codes))}
 
 
 def iso(ms):
@@ -89,7 +104,7 @@ def research(db_path, now, known_qa=()):
             subset = [t for t in kept if lo <= t['created'] <= hi]
             counts = collections.Counter(t['status'] for t in subset)
             day_lo=dt.datetime.fromtimestamp(lo/1000,SG).date().isoformat()
-            allowed_ops={'landing_view','example_open','trial_click','trial_registered','research_submitted','research_completed','research_refunded','plan_select','pricing_view','contact_open','contact_copy','contact_qr_save','entitlement_granted'}
+            allowed_ops={'landing_view','example_open','trial_cta','trial_registered','research_submitted','research_completed','research_refunded','plan_select','pricing_view','contact_open','contact_copy','contact_qr_save','entitlement_granted'}
             operations=collections.Counter()
             for item in mixed:
                 if item['day']>=day_lo and item['event'] in allowed_ops:operations[item['event']]+=item['n']
@@ -165,10 +180,14 @@ def web(root, now, application_log):
     return {'status':'observed' if quality['status']=='observed' else 'unknown','as_of':iso(now),'window_bounds':{k:{x:iso(y) for x,y in v.items()} for k,v in windows(now).items()},'windows':periods,'exclusions':{'qa_log_rows':len(qa) if qa_quality['status']!='unknown' else None,**dict(excluded)},'quality':{'events':quality,'qa':qa_quality,'mcp_receipts':lead_quality},'started_at':meta.get('started_at'),'research_cta_started_at':meta.get('research_cta_tracking_started_at'),'native_mcp_tool_calls':None,'native_mcp_active_keys':None,'mcp_verified_payments':None,'limits':['網站CTA是匿名去重訪次，不是研究完成或客戶人數。','MCP僅接既有網站入口與機構申請回執；獨立Key原生調用/付款尚未接入。','研究應用funnel_daily含QA且沒有逐帳號來源，不能跨站歸因。']}
 
 
-def collect(db_path='/var/lib/wsc-research/research.sqlite', log_root='/opt/wenshucha-seo/state/funnel', application_log='/opt/mcp-applications/applications.jsonl', now=None):
+def collect(db_path='/var/lib/wsc-research/research.sqlite', log_root='/opt/wenshucha-seo/state/funnel', application_log='/opt/mcp-applications/applications.jsonl', now=None, known_qa_path=None):
     now=now if now is not None else int(dt.datetime.now(dt.timezone.utc).timestamp()*1000)
     result={'schema_version':1,'generated_at':iso(now),'windows':{key:{k:iso(v) for k,v in span.items()} for key,span in windows(now).items()},'mode':'production'}
-    for name, function in [('research',lambda:research(db_path,now)),('web',lambda:web(Path(log_root),now,Path(application_log)))]:
+    def research_with_config():
+        codes,config=qa_config(known_qa_path)
+        data=research(db_path,now,codes);data['qa_config']=config
+        return data
+    for name, function in [('research',research_with_config),('web',lambda:web(Path(log_root),now,Path(application_log)))]:
         try:result[name]=function()
         except (OSError,ValueError,sqlite3.Error,KeyError,TypeError,AttributeError):result[name]={'status':'unknown','as_of':None,'reason':'source_unavailable_or_invalid'}
     return result

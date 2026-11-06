@@ -41,7 +41,27 @@ def merged(attempt, previous):
             display[name]=json.loads(json.dumps(previous[name]));display[name]['status']='stale'
             display[name]['last_successful_at']=previous[name].get('as_of')
             display[name]['failure_reason']='source_unavailable_or_invalid'
+    display['read_attempt']={name:{key:attempt.get(name,{}).get(key) for key in ('status','as_of','quality','reason','qa_config')} for name in ('research','web')}
     return display
+
+
+def history_summary(data, name):
+    result={'path':name,'generated_at':data['generated_at'],'mode':data.get('mode'),'research':{},'web':{},'read_attempt':data.get('read_attempt',{})}
+    for key in ('research','web'):
+        component=data.get(key,{})
+        result[key]={k:component.get(k) for k in ('status','as_of','window_bounds')}
+    r=data.get('research',{});rows=r.get('accounts',[])
+    result['research']['totals']={'accounts':r.get('account_count'),'research_accounts':sum(x.get('first_research_at') is not None for x in rows) if r.get('status')=='observed' else None,'completed_tasks':sum(x.get('states',{}).get('completed',0) for x in rows) if r.get('status')=='observed' else None}
+    return result
+
+
+def compare(a,b):
+    if a.get('mode')!=b.get('mode') or any(x.get('research',{}).get('status')!='observed' for x in (a,b)):
+        return {'status':'unknown','reason':'mode_or_freshness_not_comparable'}
+    if a['research']['as_of']>b['research']['as_of']:
+        return {'status':'unknown','reason':'choose_earlier_then_later'}
+    before=a['research']['totals'];after=b['research']['totals']
+    return {'status':'observed','net_change':{k:after[k]-before[k] if isinstance(after.get(k),int) and isinstance(before.get(k),int) else None for k in ('accounts','research_accounts','completed_tasks')},'before_as_of':a['research']['as_of'],'after_as_of':b['research']['as_of'],'scope':'cumulative_current_state_not_new_customers_or_payments'}
 
 
 def accounts_csv(data):
@@ -64,10 +84,19 @@ def markdown(data):
     return '\n'.join(lines)+'\n'
 
 
-def html_page(data, history, snapshot):
+def html_page(data, history, snapshot, summaries=None):
     # Data is exclusively anonymous analytics. Escape script delimiters anyway.
     encoded=json.dumps(data,ensure_ascii=False).replace('<','\\u003c')
-    links=''.join('<li><a href="'+name+'">'+name.split('/')[-1]+'</a></li>' for name in history)
+    import html
+    summaries=summaries or []
+    by_name={row['path']:row for row in summaries}
+    links=''
+    for name in history:
+        row=by_name.get(name,{})
+        stamp=dt.datetime.fromisoformat(row['generated_at']).astimezone(SG).strftime('%Y-%m-%d %H:%M:%S SGT') if row.get('generated_at') else '/'.join(name.split('/')[1:])
+        quality='研究 '+str(row.get('research',{}).get('status','unknown'))+' 截止 '+str(row.get('research',{}).get('as_of','unknown'))+' / 網站 '+str(row.get('web',{}).get('status','unknown'))+' 截止 '+str(row.get('web',{}).get('as_of','unknown'))
+        links+='<li>'+html.escape(stamp+' · '+quality)+' · <a href="'+name.replace('.json','.md')+'">日報</a> · <a href="'+name.replace('.json','.csv')+'">CSV</a> · <a href="'+name+'">JSON</a></li>'
+    history_data=json.dumps(summaries,ensure_ascii=False).replace('<','\\u003c')
     page='''<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>文書查｜內部產品使用復盤</title><style>
 *{box-sizing:border-box}body{margin:0;background:#eef2f7;color:#1d2c43;font:15px/1.65 -apple-system,BlinkMacSystemFont,"PingFang TC",sans-serif}header{background:#13233c;color:#fff;padding:30px max(20px,calc((100% - 1220px)/2))}header h1{margin:4px 0;font-size:28px}.eyebrow{color:#9fc7df;letter-spacing:2px;font-size:12px}.wrap{max-width:1260px;padding:24px 20px;margin:auto}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.tabs{display:flex;gap:8px}button{border:1px solid #bfd0df;background:#fff;padding:9px 17px;border-radius:8px;color:#20344b;cursor:pointer}button.active{background:#243f65;color:white}.products{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;margin:20px 0}.panel{background:white;border:1px solid #dce3ed;border-radius:14px;padding:24px;margin-bottom:20px;min-width:0}.panel h2{margin:0 0 8px;font-size:21px}.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}.metric{padding:15px;border:1px solid #e1e6ef;border-radius:10px}.metric b{display:block;font-size:29px;color:#255b70}.muted{font-size:13px;color:#62748a}.badge{display:inline-block;border-radius:6px;padding:3px 8px;background:#e4f2ea;color:#236344;font-size:12px}.warn{background:#fff3d9;color:#825b1d;padding:13px 16px;border-radius:8px;margin:12px 0}.stale{background:#fbe8df;color:#8c4321}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #e5e9ef;vertical-align:top;min-width:100px}th{color:#617289;font-weight:600}a{color:#246b91}input{font:inherit;padding:9px 12px;border:1px solid #becbdb;border-radius:7px;max-width:100%}.chart{height:115px;display:flex;gap:4px;align-items:end;padding:8px 0}.bar{flex:1;min-width:2px;background:#36788e;position:relative;border-radius:3px 3px 0 0}.bar.unknown{background:repeating-linear-gradient(45deg,#ccd5e1,#ccd5e1 3px,#edf1f6 3px,#edf1f6 6px)}.bar:hover:after{content:attr(data-tip);position:absolute;bottom:100%;background:#13233c;color:white;white-space:nowrap;font-size:11px;padding:4px;z-index:2}.links{display:flex;gap:15px;flex-wrap:wrap}.limit-list{padding-left:20px}code{font-size:12px;overflow-wrap:anywhere}footer{padding:10px 0 30px;font-size:13px;color:#64758a}@media(max-width:780px){.products{grid-template-columns:1fr}header h1{font-size:24px}.panel{padding:18px}.wrap{padding:16px 12px}.metrics{gap:9px}.metric{padding:11px}.metric b{font-size:25px}}
 </style></head><body><header><div class="eyebrow">WENSHUCHA · INTERNAL ONLY</div><h1>產品使用，分開看清楚。</h1><div id="freshness"></div><div class="muted" style="color:#bac9da">本機／內部靜態報表 · 不含客戶郵箱、案情、文書、密碼或 Key</div></header><main class="wrap"><div class="toolbar"><div class="tabs"><button data-window="today" class="active">今天</button><button data-window="7d">近 7 天</button><button data-window="30d">近 30 天</button></div><div class="links"><a href="SNAPSHOT">本次 JSON</a><a href="CSV">匿名帳號 CSV</a><a href="MD">可回看日報</a></div></div><div id="mode"></div><div class="products"><section class="panel"><h2>類案研究 <span id="research-status" class="badge"></span></h2><div id="research-time" class="muted"></div><div id="research-note"></div><div class="metrics" id="research-metrics"></div><div id="research-states"></div><p class="muted">窗口按任務發起日期分組，完成／退名額為目前狀態。名額退還不是現金退款；帳號不等於真人。</p></section><section class="panel"><h2>MCP <span id="web-status" class="badge"></span></h2><div id="web-time" class="muted"></div><div class="metrics" id="mcp-metrics"></div><p class="muted">只接可信網站入口與機構申請回執。獨立 Key 原生調用、付費人數及實收金額尚未接入，保持未知。</p><div id="mcp-quality"></div></section></div>
@@ -77,13 +106,24 @@ def html_page(data, history, snapshot):
 <script id="snapshot-data" type="application/json">DATA</script><script>
 const d=JSON.parse(document.getElementById('snapshot-data').textContent), r=d.research||{}, w=d.web||{};let selected='today';const $=id=>document.getElementById(id);const f=x=>x===null||x===undefined?'未知':String(x);const esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const when=x=>x?new Date(x).toLocaleString('zh-TW',{timeZone:'Asia/Singapore',hour12:false}):'未知';const labels={awaiting_confirmation:'待確認',queued:'排隊',running:'執行中',completed:'完成',failed:'失敗',cancelled:'取消',no_result:'無可用文書'};const behavior={registered_only:'帳號存在／未見研究',research_started:'已發起研究',research_failed:'研究未完成',completed_research:'有完成研究'};function metric(name,value){return '<div class="metric"><span class="muted">'+name+'</span><b>'+f(value)+'</b></div>';}function badge(id,s){$(id).textContent=s||'unknown';if(s!=='observed')$(id).classList.add('stale');}
 $('freshness').textContent='更新嘗試：'+when(d.generated_at);badge('research-status',r.status);badge('web-status',w.status);$('research-time').textContent='研究資料截止：'+when(r.as_of);$('web-time').textContent='網站資料截止：'+when(w.as_of);if(d.mode!=='production')$('mode').innerHTML='<p class="warn">合成測試／離線回放，非本次正式客戶資料。</p>';if(r.status==='stale'||w.status==='stale')$('mode').innerHTML+='<p class="warn">本次部分來源讀取失敗，正在顯示最後成功資料；舊快照未被覆寫。</p>';
-function render(){for(const [component,id,label] of [[r,'research-time','研究'],[w,'web-time','網站']]){const bounds=(component.window_bounds||{})[selected]||{};$(id).textContent=label+'資料截止：'+when(component.as_of)+'；實際窗口：'+when(bounds.start)+' → '+when(bounds.end);}const a=(r.windows||{})[selected]||{},b=(w.windows||{})[selected]||{},c=b.cta_sessions||{},ops=a.qa_mixed_operations||{};$('research-note').innerHTML=r.account_count===0?'<p class="warn">目前未觀測到非測試帳號研究。已排除 '+f((r.exclusions||{}).reserved_test_domain)+' 個保留測試域帳號。</p>':'';$('research-metrics').innerHTML=metric('非測試帳號（目前總數）',r.account_count)+metric('本窗首次發起研究帳號',a.first_research_accounts)+metric('本窗完成研究帳號',a.completed_accounts)+metric('本窗完成研究次數',a.completed_tasks);$('research-states').textContent='最近一次研究使用：'+when((r.accounts||[]).map(x=>x.last_use_at).filter(Boolean).sort().slice(-1)[0])+'；本窗新增註冊 '+f(a.new_registered_accounts)+' · 實際操作帳號 '+f(a.active_accounts)+' · 退還研究名額 '+f(a.refunded_slots)+'；'+Object.entries(labels).map(([s,l])=>l+' '+f((a.states||{})[s])).join(' / ');$('mcp-metrics').innerHTML=metric('MCP 入口點擊訪次',b.mcp_cta_sessions)+metric('機構申請回執',b.mcp_application_receipts)+metric('獨立 Key 真調用',null)+metric('已核收款',null);$('mcp-quality').textContent='本窗網站資料品質：'+f(b.status);const stage=[['研究介紹入口訪次',c.research_intro,'排 QA/self/bot，按事件去重'],['進研究應用訪次',c.research_app,'不能追認註冊來源'],['新增非測試註冊',a.new_registered_accounts,'按 register 活動；非真人認證'],['發起研究',Object.values(a.states||{}).reduce((n,v)=>n+v,0),'非測試帳號任務'],['完成研究',a.completed_tasks,'按發起窗、目前完成狀態'],['查看方案操作',ops.pricing_view??0,'含 QA，只是操作數'],['聯絡開窗操作',ops.contact_open??0,'含 QA，非詢單'],['人工授權操作',ops.entitlement_granted??0,'含 QA，非已收款'],['已核實詢單／收款',null,'沒有憑證，不補 0']];$('stages').innerHTML='<div class="table-wrap"><table><tr><th>階段</th><th>本窗</th><th>判讀</th></tr>'+stage.map(([l,v,n])=>'<tr><td>'+l+'</td><td>'+f(r.status==='unknown'&&!l.includes('入口')&&!l.includes('應用')?null:v)+'</td><td>'+n+'</td></tr>').join('')+'</table></div>';}
+function render(){for(const [component,id,label] of [[r,'research-time','研究'],[w,'web-time','網站']]){const bounds=(component.window_bounds||{})[selected]||{};$(id).textContent=label+'資料截止：'+when(component.as_of)+'；實際窗口：'+when(bounds.start)+' → '+when(bounds.end);}const a=(r.windows||{})[selected]||{},b=(w.windows||{})[selected]||{},c=b.cta_sessions||{},ops=a.qa_mixed_operations||{};$('research-note').innerHTML=r.account_count===0?'<p class="warn">目前未觀測到非測試帳號研究。已排除 '+f((r.exclusions||{}).reserved_test_domain)+' 個保留測試域帳號。</p>':'';$('research-metrics').innerHTML=metric('非測試帳號（目前總數）',r.account_count)+metric('本窗首次發起研究帳號',a.first_research_accounts)+metric('本窗完成研究帳號',a.completed_accounts)+metric('本窗完成研究次數',a.completed_tasks);$('research-states').textContent='最近一次研究使用：'+when((r.accounts||[]).map(x=>x.last_use_at).filter(Boolean).sort().slice(-1)[0])+'；本窗新增註冊 '+f(a.new_registered_accounts)+' · 實際操作帳號 '+f(a.active_accounts)+' · 退還研究名額 '+f(a.refunded_slots)+'；'+Object.entries(labels).map(([s,l])=>l+' '+f((a.states||{})[s])).join(' / ');$('mcp-metrics').innerHTML=metric('MCP 入口點擊訪次',b.mcp_cta_sessions)+metric('機構申請回執',b.mcp_application_receipts)+metric('獨立 Key 真調用',null)+metric('已核收款',null);$('mcp-quality').textContent='本窗網站資料品質：'+f(b.status);const stage=[['研究介紹入口訪次',c.research_intro,'排 QA/self/bot，按事件去重'],['進研究應用訪次',c.research_app,'不能追認註冊來源'],['新增非測試註冊',a.new_registered_accounts,'按 register 活動；非真人認證'],['發起研究',Object.values(a.states||{}).reduce((n,v)=>n+v,0),'非測試帳號任務'],['完成研究',a.completed_tasks,'按發起窗、目前完成狀態'],['試用入口操作',ops.trial_cta??0,'含 QA，非已註冊或研究'],['查看方案操作',ops.pricing_view??0,'含 QA，只是操作數'],['聯絡開窗操作',ops.contact_open??0,'含 QA，非詢單'],['人工授權操作',ops.entitlement_granted??0,'含 QA，非已收款'],['已核實詢單／收款',null,'沒有憑證，不補 0']];$('stages').innerHTML='<div class="table-wrap"><table><tr><th>階段</th><th>本窗</th><th>判讀</th></tr>'+stage.map(([l,v,n])=>'<tr><td>'+l+'</td><td>'+f(r.status==='unknown'&&!l.includes('入口')&&!l.includes('應用')?null:v)+'</td><td>'+n+'</td></tr>').join('')+'</table></div>';}
 document.querySelectorAll('[data-window]').forEach(b=>b.onclick=()=>{selected=b.dataset.window;document.querySelectorAll('[data-window]').forEach(x=>x.classList.toggle('active',x===b));render();});
 const trend=r.trend||[],maximum=Math.max(1,...trend.map(x=>x.started||0));$('chart').innerHTML=trend.map(x=>'<div class="bar '+(x.started===null?'unknown':'')+'" style="height:'+(x.started===null?14:Math.max(3,x.started/maximum*100))+'%" data-tip="'+x.day+'：'+f(x.started)+'"></div>').join('');const ret=r.return_7d||{};$('returns').textContent='7日內跨日回訪：'+(ret.rate===null||ret.rate===undefined?'未知（成熟觀察窗不足或尚無研究帳號）':(ret.rate*100).toFixed(1)+'%')+'；成熟帳號 '+f(ret.mature_accounts)+'，未成熟 '+f(ret.immature_accounts)+'.';
 function rows(){const filter=$('filter').value.toLowerCase(),items=(r.accounts||[]).filter(x=>x.account.toLowerCase().includes(filter));$('accounts').innerHTML=items.length?items.map(x=>'<tr><td><code>'+esc(x.account)+'</code><br>'+esc(behavior[x.behavior]||'未知')+'</td><td>'+when(x.registered_at)+'<br>首次研究：'+when(x.first_research_at)+'</td><td>'+when(x.last_use_at)+'<br>操作日期數：'+f(x.distinct_use_days)+'<br>7日回訪：'+esc(({not_started:'未研究',immature:'觀察窗未成熟',returned:'有跨日回訪',not_observed:'未觀測到'})[x.return_7d]||'未知')+'</td><td>'+Object.entries(labels).map(([s,l])=>l+' '+f(x.states[s])).join('<br>')+'<br>退名額 '+f(x.refunded_slots)+'</td><td>'+esc(x.used_plans.join(' / ')||'未見研究方案')+'</td><td>剩餘 '+f(x.remaining)+(x.quota_shared_with_other_accounts?'（團隊共享）':'')+'<br>'+when(x.next_expiry_at)+'</td></tr>').join(''):'<tr><td colspan="6">'+(r.status==='unknown'?'研究資料未知，沒有填成0。':'目前沒有符合條件的非測試帳號。')+'</td></tr>';}$('filter').oninput=rows;
-$('quality').innerHTML='<p>來源讀取品質：<code>'+esc(JSON.stringify(w.quality||{}))+'</code></p><p>研究排除：<code>'+esc(JSON.stringify(r.exclusions||{}))+'</code></p><p>網站排除：<code>'+esc(JSON.stringify(w.exclusions||{}))+'</code></p><ul class="limit-list">'+[...(r.limits||[]),...(w.limits||[])].map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';render();rows();
+$('quality').innerHTML='<p>來源讀取品質：<code>'+esc(JSON.stringify(w.quality||{}))+'</code></p><p>已知 QA 設定：<code>'+esc(JSON.stringify(r.qa_config||{}))+'</code></p><p>本次讀取：<code>'+esc(JSON.stringify(d.read_attempt||{}))+'</code></p><p>研究排除：<code>'+esc(JSON.stringify(r.exclusions||{}))+'</code></p><p>網站排除：<code>'+esc(JSON.stringify(w.exclusions||{}))+'</code></p><ul class="limit-list">'+[...(r.limits||[]),...(w.limits||[])].map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';render();rows();
 </script></body></html>'''
-    return page.replace('SNAPSHOT',snapshot).replace('href="CSV"','href="'+snapshot.replace('.json','.csv')+'"').replace('href="MD"','href="'+snapshot.replace('.json','.md')+'"').replace('HISTORY',links).replace('DATA',encoded)
+    page=page.replace('SNAPSHOT',snapshot).replace('href="CSV"','href="'+snapshot.replace('.json','.csv')+'"').replace('href="MD"','href="'+snapshot.replace('.json','.md')+'"').replace('HISTORY',links).replace('DATA',encoded)
+    panel='''<section class="panel"><h2>兩次快照的研究淨變化</h2><label>較早 <select id="compare-before"></select></label> <label>較晚 <select id="compare-after"></select></label><p id="comparison"></p><p class="muted">比較累計帳號／曾發起研究帳號／目前完成任務的淨差，並非新客戶、當日完成事件或收款。同一模式且兩次來源皆 observed 才比較；不對 stale/unknown 算成長。各次原窗口仍保留於 JSON／日報。</p></section>'''
+    page=page.replace('<details class="panel">',panel+'<details class="panel">')
+    script='''<script id="history-data" type="application/json">__HISTORY_JSON__</script><script>
+const historyRows=JSON.parse(document.getElementById('history-data').textContent);
+const earlier=document.getElementById('compare-before'),later=document.getElementById('compare-after');
+historyRows.forEach((row,i)=>{for(const select of [earlier,later]){const option=document.createElement('option');option.value=i;option.textContent=when(row.generated_at)+' · '+(row.research.status||'unknown');select.appendChild(option);}});
+earlier.selectedIndex=Math.min(1,historyRows.length-1);later.selectedIndex=historyRows.length?0:-1;
+function compareSelected(){const a=historyRows[earlier.value],b=historyRows[later.value];const target=document.getElementById('comparison');if(!a||!b||a.mode!==b.mode||a.research.status!=='observed'||b.research.status!=='observed'||a.research.as_of>b.research.as_of){target.textContent='未知：請選擇同模式、由早至晚且兩次都成功讀取的快照。';return;}const labels={accounts:'非測試帳號',research_accounts:'曾發起研究帳號',completed_tasks:'目前完成研究'};target.textContent='資料截止 '+when(a.research.as_of)+' → '+when(b.research.as_of)+'；'+Object.keys(labels).map(k=>{const x=a.research.totals[k],y=b.research.totals[k];return labels[k]+' '+(typeof x==='number'&&typeof y==='number'?(y-x>0?'+':'')+(y-x):'未知');}).join(' / ');}
+earlier.onchange=later.onchange=compareSelected;compareSelected();
+</script>'''.replace('__HISTORY_JSON__',history_data)
+    return page.replace('</body>',script+'</body>')
 
 
 def save(attempt, output):
@@ -120,7 +160,13 @@ def save(attempt, output):
         atomic(output/'last-good.json',json.dumps(good,ensure_ascii=False,indent=2)+'\n')
     atomic(output/'latest.json',json.dumps(view,ensure_ascii=False,indent=2)+'\n')
     history=sorted((str(p.relative_to(output)) for p in (output/'snapshots').rglob('*.json')),reverse=True)[:60]
-    atomic(output/'index.html',html_page(view,history,name))
+    summaries=[]
+    for item in history:
+        old=output/item
+        if old.stat().st_size>8*1024*1024: continue
+        try:summaries.append(history_summary(json.loads(old.read_text()),item))
+        except (OSError,ValueError,KeyError,TypeError):continue
+    atomic(output/'index.html',html_page(view,history,name,summaries))
     return {'snapshot':name,'research_status':view.get('research',{}).get('status'),'web_status':view.get('web',{}).get('status')}
 
 
