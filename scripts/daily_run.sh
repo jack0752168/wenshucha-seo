@@ -10,6 +10,16 @@ set +e  # 单个失败不中断其他
 
 cd "$(dirname "$0")/.." || exit 1
 ROOT=$(pwd)
+# Private product analytics: never copy account rows to narrative or public relay.
+update_product_usage() {
+    python3 "$ROOT/scripts/product_usage_dashboard.py" --output "$ROOT/state/private/product-usage" --quiet
+}
+# Same collector as the daily path, without self-update, publishing, push or notification.
+if [ "${1:-}" = "--usage-dashboard-only" ]; then
+    update_product_usage
+    exit $?
+fi
+
 TS=$(date '+%Y-%m-%d %H:%M:%S')
 
 echo "============================================================"
@@ -86,6 +96,7 @@ echo "--- [7/8] 访问量与来源(Jack 2026-08-18 定案:日报头条就是这�
 python3 scripts/traffic_report.py --daily 2>&1 | tee /tmp/seo_daily_traffic.out
 python3 scripts/funnel_report.py >> /tmp/seo_daily_traffic.out 2>&1
 python3 scripts/bing_report.py report >> /tmp/seo_daily_traffic.out 2>&1
+update_product_usage || echo "  ⚠️ 內部使用看板來源不完整，保留最後成功資料"
 
 echo
 echo "--- [8/8] 生成人话日报 ---"

@@ -5,3 +5,4 @@ state.json
 __pycache__/
 .DS_Store
 state/
+reports/internal/
