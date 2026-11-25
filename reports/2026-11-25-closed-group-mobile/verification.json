@@ -1,0 +1,102 @@
+{
+  "time": "2026-11-25T07:31:27.426186+00:00",
+  "main_site_commit": "047e757349e094a1c5c061aba0dbcf38facafaf0",
+  "application_commit": "dd0faaf23a4c6d1ecbf322ccd47fa932bdcef699",
+  "app_build_id": "yngbCJO1jY8fyNaR0SINh",
+  "pricing_public_sha_match": true,
+  "old_images": {
+    "https://www.wenshucha.com/img/neice-qr.jpg": 410,
+    "https://tob.wenshucha.com/neice-qr.jpg": 410
+  },
+  "contact_api": {
+    "http": 200,
+    "wechatQr": null,
+    "business_contact": true,
+    "no_payment_or_key_created": true
+  },
+  "responsive": {
+    "pricing": [
+      {
+        "width": 320,
+        "scrollWidth": 320,
+        "retired_group_text": false,
+        "retired_group_image": false
+      },
+      {
+        "width": 375,
+        "scrollWidth": 375,
+        "retired_group_text": false,
+        "retired_group_image": false
+      },
+      {
+        "width": 1280,
+        "scrollWidth": 1280,
+        "retired_group_text": false,
+        "retired_group_image": false
+      }
+    ],
+    "case_contact_expanded": [
+      {
+        "width": 320,
+        "scrollWidth": 320,
+        "retired_group_text": false,
+        "retired_group_image": false
+      },
+      {
+        "width": 375,
+        "scrollWidth": 375,
+        "retired_group_text": false,
+        "retired_group_image": false
+      },
+      {
+        "width": 1280,
+        "scrollWidth": 1280,
+        "retired_group_text": false,
+        "retired_group_image": false
+      }
+    ],
+    "ai": [
+      {
+        "width": 320,
+        "scrollWidth": 320,
+        "retired_group_text": false,
+        "retired_group_image": false
+      },
+      {
+        "width": 375,
+        "scrollWidth": 375,
+        "retired_group_text": false,
+        "retired_group_image": false
+      },
+      {
+        "width": 1280,
+        "scrollWidth": 1280,
+        "retired_group_text": false,
+        "retired_group_image": false
+      }
+    ]
+  },
+  "end_to_end": "case fulltext -> open business contact -> pricing/#business-wechat verified in UI",
+  "tests": {
+    "typescript": "pass",
+    "eslint_changed_files": "pass",
+    "production_build": "pass",
+    "contact_and_ai_quota": {
+      "passed": 22
+    },
+    "old_shared_quota_suite": {
+      "passed": 18,
+      "preexisting_failed": 2,
+      "baseline_proven_by_HEAD": "outdated copy assertion and capOfKey source-string assertion"
+    }
+  },
+  "safety": {
+    "customer_entitlements_changed": false,
+    "production_env_unchanged": true,
+    "existing_linux_dependencies_preserved": true,
+    "temporary_service_stopped": true,
+    "qa_browsing": true,
+    "paid_ai_generation": false
+  },
+  "memory_update": "/Users/chenjiaxin/.codex/memories/extensions/ad_hoc/notes/2026-11-25-wenshucha-mobile-parity-and-closed-group.md"
+}

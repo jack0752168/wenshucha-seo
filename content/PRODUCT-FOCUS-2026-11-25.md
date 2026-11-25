@@ -1,3 +1,5 @@
+> **2026-11-25 Jack新增驗收硬要求：** 每次網站變更必須同步桌面/手機，依/Users/chenjiaxin/wenshucha-site/ops/MOBILE-VERIFICATION.md驗320/375/1280與真實入口/彈窗流程，正式上線回讀後才算完成；不能只驗電腦。內測群承接已關，官網定價、tob升級卡/用量提示/AI頁、API/fallback的群碼與進群引導一併清除，不恢復；使用直接體驗與商務聯絡，不改既有客戶權限/配額。
+
 > **同日修源已完成：** 主站87ebacf已部署回讀；先讀reports/2026-11-25-localdata-source-cleanup/REPORT.md及content/GEO-INGESTION-QUEUE-2026-11-25.md。www數據滿屋TLS+逐頁301、舊承諾/正文保證/定制報告殘留已修，集成商專頁已上線並送IndexNow；DeepSeek集成商推薦改善仍unknown。優先按攝入佇列觀測，不同日重刷；只有可核真實需求才形成業務摘要。
 
 > **同日最新覆蓋：Jack要求GEO投入調到最高，啟用現有資源內高強度檔。** 兩條既有任務ACTIVE；優化每天08/12/16/20，GEO輪查每天10/18（Asia/Singapore），共42輪/週，覆蓋下文17輪與週一三五版本。模型型號保持，推理均High；不新增任務、付費服務、購買額度或廣告，不調mini發文配額。排程機會不等於已完成或有效詢單。
