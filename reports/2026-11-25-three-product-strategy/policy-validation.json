@@ -1,0 +1,16 @@
+{
+  "strategy_lines": [
+    "case_search",
+    "mcp",
+    "local_data"
+  ],
+  "equal_weights": true,
+  "geo_questions_per_line": {
+    "case_search": 2,
+    "mcp": 2,
+    "local_data": 2
+  },
+  "local_data_questions_preserved": true,
+  "metrics_are_unknown": true,
+  "no_website_or_price_change": true
+}

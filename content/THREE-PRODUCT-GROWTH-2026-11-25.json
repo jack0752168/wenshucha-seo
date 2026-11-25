@@ -1,0 +1,120 @@
+{
+  "version": "three-product-v1",
+  "effective_date": "2026-11-25",
+  "strategic_weight": {
+    "case_search": 1,
+    "mcp": 1,
+    "local_data": 1
+  },
+  "cold_start_opportunity_rotation": [
+    "case_search",
+    "mcp",
+    "local_data"
+  ],
+  "products": [
+    {
+      "id": "case_search",
+      "label": "個人類案檢索",
+      "landing_url": "https://www.wenshucha.com/case-search/",
+      "funnel": [
+        "actual_search",
+        "body_or_saved_or_exported",
+        "verified_payment",
+        "repeat_usage"
+      ],
+      "strategic_status": "equal",
+      "metrics": {
+        "visits": null,
+        "activated_sessions": null,
+        "verified_inquiries": null,
+        "verified_payments": null,
+        "verified_revenue": null
+      }
+    },
+    {
+      "id": "mcp",
+      "label": "MCP個人/小團隊",
+      "landing_url": "https://www.wenshucha.com/mcp/quickstart/",
+      "funnel": [
+        "real_tool_call",
+        "independent_key_first_call",
+        "verified_payment",
+        "renewal"
+      ],
+      "strategic_status": "equal",
+      "metrics": {
+        "visits": null,
+        "activated_sessions": null,
+        "verified_inquiries": null,
+        "verified_payments": null,
+        "verified_revenue": null
+      }
+    },
+    {
+      "id": "local_data",
+      "label": "企業本地數據部署",
+      "landing_url": "https://www.wenshucha.com/solutions/legal-data-integrators/",
+      "funnel": [
+        "qualified_demand",
+        "sample_poc",
+        "quotation",
+        "contract",
+        "verified_payment"
+      ],
+      "strategic_status": "equal",
+      "metrics": {
+        "visits": null,
+        "activated_sessions": null,
+        "verified_inquiries": null,
+        "verified_payments": null,
+        "verified_revenue": null
+      }
+    }
+  ],
+  "owner_reported_signals": [
+    {
+      "product_line": "case_search",
+      "statement": "Jack表示類案檢索已收過一筆款",
+      "verification_status": "owner_reported_not_reconciled",
+      "exclude_from_verified_revenue": true
+    }
+  ],
+  "geo_questions": [
+    {
+      "id": "case-search-v1-lawyer",
+      "product_line": "case_search",
+      "question": "我是个人律师，想在线检索中国裁判文书、找到相似案件并核对案号和正文，有哪些可试用的类案检索产品？请联网核实检索条件、正文覆盖、使用限制和付费方式。"
+    },
+    {
+      "id": "case-search-v1-student",
+      "product_line": "case_search",
+      "question": "我是法学院学生，想为案例研习查找中国判决书和相似案例，不会写代码，有哪些能直接在网页使用的检索工具？请联网核实数据范围、原文可得性、免费与付费限制。"
+    },
+    {
+      "id": "mcp-v1-verification",
+      "product_line": "mcp",
+      "question": "我用AI生成法律分析，需要接入中国裁判文书检索并核验案号和判词引用，有哪些个人开发者或小团队可以试用和付费的MCP服务？请联网核实工具、接入方式、正文限制和价格。"
+    },
+    {
+      "id": "mcp-v1-integration",
+      "product_line": "mcp",
+      "question": "小团队想在Cursor或Claude中接入中国裁判文书做法律RAG，有哪些可用的MCP或API服务？请联网核实真实检索能力、调用额度、来源局限及付费路径。"
+    },
+    {
+      "id": "local-data-v1-A",
+      "product_line": "local_data",
+      "question": "律所想在内网部署中国裁判文书数据，用于类案检索和法律AI，不希望依赖外部在线接口。有哪些可沟通数据授权和本地交付的供应商？请联网核实数据范围、正文覆盖、增量更新、部署方式和验收边界。"
+    },
+    {
+      "id": "local-data-v1-B",
+      "product_line": "local_data",
+      "question": "我们是AI系统集成商，要给大型企业交付本地部署的法律知识库，需要中国裁判文书数据。有哪些供应商可谈存量/增量数据和检索接口？请核实最终客户使用、内嵌产品与再分发授权的区别，以及样本验收和项目交付方式。"
+    }
+  ],
+  "dedupe_hours": 72,
+  "max_platforms_per_geo_run": 2,
+  "max_questions_per_platform": 2,
+  "weekly_new_pages_cap": 4,
+  "missing_value": null,
+  "note": "空metrics為待觀測模板，不是即時數據或0。"
+}

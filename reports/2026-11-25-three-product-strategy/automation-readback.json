@@ -1,0 +1,42 @@
+[
+  {
+    "id": "daily-seo-optimize",
+    "status": "ACTIVE",
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "high",
+    "rrule": "RRULE:FREQ=DAILY;BYHOUR=8,12,16,20;BYMINUTE=0;BYSECOND=0",
+    "strategy_reference_verified": true,
+    "prompt_sha256": "19833b66b0144f1c2989f641540b6457555fdbf12caed7651df0cc6616af457d",
+    "execution": "future_runs_not_yet_verified"
+  },
+  {
+    "id": "wenshucha-geo-monthly-check",
+    "status": "ACTIVE",
+    "model": "gpt-6.1-terra",
+    "reasoning_effort": "high",
+    "rrule": "RRULE:FREQ=DAILY;BYHOUR=10,18;BYMINUTE=0;BYSECOND=0",
+    "strategy_reference_verified": true,
+    "prompt_sha256": "a584f1633edca97974dee848444a652729b29e743438085f3bd904b4f72db3ad",
+    "execution": "future_runs_not_yet_verified"
+  },
+  {
+    "id": "growth-scorecard",
+    "status": "PAUSED",
+    "model": "gpt-6.1-terra",
+    "reasoning_effort": "medium",
+    "rrule": "RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=10;BYMINUTE=40;BYSECOND=0",
+    "strategy_reference_verified": true,
+    "prompt_sha256": "28ef5a0d9396bc7cb0627df0061cce3649ae7cde96863e1552f0521923707eb0",
+    "execution": "future_runs_not_yet_verified"
+  },
+  {
+    "id": "biz-engine",
+    "status": "ACTIVE",
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "rrule": "RRULE:FREQ=DAILY;BYHOUR=15;BYMINUTE=0;BYSECOND=0",
+    "strategy_reference_verified": true,
+    "prompt_sha256": "8bfd7c35d5831c04106b1882fce3691a0e46ea8f5f72bb6526cb892eb6d15693",
+    "execution": "future_runs_not_yet_verified"
+  }
+]

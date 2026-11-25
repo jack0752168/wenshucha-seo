@@ -1,0 +1,8 @@
+{
+  "strategy_sha256": "324cdbe73898f18a71cb3f555554193dec3fed8fd9eae254a47565d266b60c68",
+  "mandatory_log_header": true,
+  "historical_log_bytes_preserved": true,
+  "scheduler_store_unchanged": true,
+  "route": "both existing tasks read PUBLISH-LOG before publishing; latest strategy loaded there",
+  "future_execution": "not_yet_observed"
+}
