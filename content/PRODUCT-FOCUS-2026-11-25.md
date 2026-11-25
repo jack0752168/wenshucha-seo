@@ -1,3 +1,5 @@
+> **同日補充：網頁類案檢索產品詞須獨立覆蓋。** 先讀CASE-SEARCH-KEYWORD-MAP-2026-11-25.md及JSON：產品詞由/case-search/承接，AI買賣合同/貨款研究詞由/case-research/承接，私有化與MCP依意圖分流。舊「所有類案檢索詞封口」僅歷史選題樣本，不作永久禁推。沿既有執行預算補產品頁/方法頁內鏈與可靠流量量測；未核搜尋量/排名/詢單保持unknown。不得另造同義詞門頁或為每天產出改title；保留tob/cases實驗與手機同步驗收。
+
 > **2026-11-25 Jack新增驗收硬要求：** 每次網站變更必須同步桌面/手機，依/Users/chenjiaxin/wenshucha-site/ops/MOBILE-VERIFICATION.md驗320/375/1280與真實入口/彈窗流程，正式上線回讀後才算完成；不能只驗電腦。內測群承接已關，官網定價、tob升級卡/用量提示/AI頁、API/fallback的群碼與進群引導一併清除，不恢復；使用直接體驗與商務聯絡，不改既有客戶權限/配額。
 
 > **同日修源已完成：** 主站87ebacf已部署回讀；先讀reports/2026-11-25-localdata-source-cleanup/REPORT.md及content/GEO-INGESTION-QUEUE-2026-11-25.md。www數據滿屋TLS+逐頁301、舊承諾/正文保證/定制報告殘留已修，集成商專頁已上線並送IndexNow；DeepSeek集成商推薦改善仍unknown。優先按攝入佇列觀測，不同日重刷；只有可核真實需求才形成業務摘要。

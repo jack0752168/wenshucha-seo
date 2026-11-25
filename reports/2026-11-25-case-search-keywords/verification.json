@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-25",
+  "site_commit": "5c0afdee4efac3a5e9f63f094a083569375027ee",
+  "app_commit": "aa0fd844a04eabe3579021f819d2e3c46edecab1",
+  "app_build_id": "v5BMtKENJDSi7DWvtdFSu",
+  "public_product_url": "https://www.wenshucha.com/case-search/",
+  "public_status": 200,
+  "static_linkcheck_pages": 167,
+  "production_build": "pass",
+  "query_flow": {
+    "keyword": "拖欠货款",
+    "province": "广东",
+    "qa": true,
+    "result_cards": 10
+  },
+  "loaded_result_viewports": [
+    {
+      "innerWidth": 320,
+      "scrollWidth": 320
+    },
+    {
+      "innerWidth": 375,
+      "scrollWidth": 375
+    },
+    {
+      "innerWidth": 1280,
+      "scrollWidth": 1280
+    }
+  ],
+  "indexnow": "accepted HTTP 200; not indexing proof",
+  "actual_rank": null,
+  "new_verified_inquiries": null,
+  "changes": [
+    "product title H1 visible FAQ and schema aligned",
+    "method pages link to product",
+    "30 target terms mapped to 6 intent groups",
+    "result toolbar and case actions wrap on mobile"
+  ],
+  "unchanged": [
+    "tob/cases title experiment",
+    "quotas and customer rights",
+    "automation frequency and models"
+  ]
+}
