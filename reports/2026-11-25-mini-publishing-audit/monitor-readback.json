@@ -1,0 +1,13 @@
+{
+  "automation_id": "daily-seo-optimize",
+  "health_check_in_prompt": true,
+  "prompt_sha256": "6c871ee155b28bfc97f506d7b7b33082f4fe35b79054b36ddb19c8e1850ec606",
+  "schedule_changed_by_this_audit": false,
+  "new_schedule_created": false,
+  "logic_checks": [
+    "missing date stays unknown",
+    "expired restriction not treated as current",
+    "fresh restriction remains blocked"
+  ],
+  "future_run_verified": false
+}
