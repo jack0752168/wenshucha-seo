@@ -1,0 +1,55 @@
+{
+  "checked_at": "2026-11-25T08:31:24.008216+00:00",
+  "listeners": {
+    "3425": true,
+    "9201": true
+  },
+  "platforms": {
+    "zhihu": {
+      "delivery_status": "observed",
+      "execution_status": "unknown_before_receipt_policy",
+      "business_status": "blocked_account_restricted",
+      "last_ledger_publication_date": "2026-11-10",
+      "last_ledger_publication_id": "2103512628450669156",
+      "outcome_writer_linked": true,
+      "last_account_gate": {
+        "checked_at": "2026-11-25T16:08:50.014691+08:00",
+        "status": "account_restricted",
+        "publication_attempted": false,
+        "restriction": [
+          "你的账号由于可能包含 AI 创作内容暂时被限制使用，16天后恢复正常。"
+        ]
+      }
+    },
+    "baijiahao": {
+      "delivery_status": "observed",
+      "execution_status": "published_verified",
+      "business_status": "recent_ledger_publication_requires_backend_verification",
+      "last_ledger_publication_date": "2026-11-25",
+      "last_ledger_publication_id": "1882817944872605285",
+      "outcome_writer_linked": true,
+      "last_account_gate": {
+        "checked_at": "2026-11-25T16:27:34.827080+08:00",
+        "status": "ready_for_publication_checks",
+        "publication_attempted": false,
+        "restriction": null
+      }
+    }
+  },
+  "growth_jobs": {
+    "daily-seo-optimize": {
+      "execution_status": "awaiting_terminal_receipt",
+      "schedule_status": "ACTIVE"
+    },
+    "wenshucha-geo-monthly-check": {
+      "execution_status": "partial",
+      "schedule_status": "ACTIVE"
+    }
+  },
+  "issues": {
+    "zhihu:publishing": "blocked_account_restricted",
+    "daily-seo-optimize": "partial",
+    "wenshucha-geo-monthly-check": "partial"
+  },
+  "live_tunnel_restarted": false
+}
