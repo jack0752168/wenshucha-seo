@@ -1,0 +1,37 @@
+[
+  {
+    "path": "/solutions/legal-data-integrators/",
+    "status": 200,
+    "sha256_matches": true
+  },
+  {
+    "path": "/data/",
+    "status": 200,
+    "sha256_matches": true
+  },
+  {
+    "path": "/buyers-guide/",
+    "status": 200,
+    "sha256_matches": true
+  },
+  {
+    "path": "/pricing/",
+    "status": 200,
+    "sha256_matches": true
+  },
+  {
+    "path": "/blog/law-firm-private-ai-deployment-guide.html",
+    "status": 200,
+    "sha256_matches": true
+  },
+  {
+    "path": "/llms.txt",
+    "status": 200,
+    "sha256_matches": true
+  },
+  {
+    "path": "/llms-full.txt",
+    "status": 200,
+    "sha256_matches": true
+  }
+]

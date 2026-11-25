@@ -1,0 +1,20 @@
+[
+  {
+    "id": "daily-seo-optimize",
+    "status": "ACTIVE",
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "high",
+    "rrule": "RRULE:FREQ=DAILY;BYHOUR=8,12,16,20;BYMINUTE=0;BYSECOND=0",
+    "prompt_sha256": "4916df971e0200b41ae99949d690b1b187052121054f0fd97fec825e84dad979",
+    "routine_notification_policy_verified": true
+  },
+  {
+    "id": "wenshucha-geo-monthly-check",
+    "status": "ACTIVE",
+    "model": "gpt-6.1-terra",
+    "reasoning_effort": "high",
+    "rrule": "RRULE:FREQ=DAILY;BYHOUR=10,18;BYMINUTE=0;BYSECOND=0",
+    "prompt_sha256": "7f4f478024679146f75abc0cd9356c8d9caeb3ddb40f91dc565ac815530e1844",
+    "routine_notification_policy_verified": true
+  }
+]

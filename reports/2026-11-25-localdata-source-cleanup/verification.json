@@ -1,0 +1,47 @@
+{
+  "verified_at": "2026-11-25T04:12:47.136989+00:00",
+  "site_commit": "87ebacf6e0b0a82670865f7541f851751fa342b8",
+  "linkcheck_pages": 167,
+  "json_ld_modified_pages_parse": "passed",
+  "new_page_visible_faq_schema_parity": "passed",
+  "fact_guard_cases": {
+    "fulltext_blanket_guarantee": "rejected",
+    "obsolete_248k_price": "rejected",
+    "fixed_demo_delivery": "rejected",
+    "competitor_007_price": "allowed"
+  },
+  "responsive": {
+    "integrator": [
+      {
+        "width": 320,
+        "scroll_width": 320
+      },
+      {
+        "width": 375,
+        "scroll_width": 375
+      },
+      {
+        "width": 1280,
+        "scroll_width": 1280
+      }
+    ],
+    "home": [
+      {
+        "width": 320,
+        "scroll_width": 320
+      },
+      {
+        "width": 375,
+        "scroll_width": 375
+      },
+      {
+        "width": 1280,
+        "scroll_width": 1280
+      }
+    ]
+  },
+  "contact_navigation": "business-wechat section observed; no message sent",
+  "external_cache_cleaned": false,
+  "deepseek_B_post_update_improvement": null,
+  "new_real_inquiries": null
+}
