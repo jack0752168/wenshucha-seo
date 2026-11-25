@@ -1,0 +1,52 @@
+{
+  "checked_at": "2026-11-25T08:21:02.526619+00:00",
+  "platforms": {
+    "zhihu": {
+      "last_ledger_publication_date": "2026-11-10",
+      "ledger_is_not_current_backend": true,
+      "schedule_status": "active",
+      "last_delivery": {
+        "scheduledAt": "2026-11-25T07:40:00.000Z",
+        "deliveredAt": "2026-11-25T07:40:00.327Z",
+        "messageId": "886e2ac0-8611-4bc5-a3c4-d0538a771f28"
+      },
+      "next_delivery": "2026-11-25T11:40:00.000Z",
+      "last_browser_check": {
+        "checked_at": "2026-11-25T16:08:50.014691+08:00",
+        "status": "account_restricted",
+        "publication_attempted": false,
+        "restriction": [
+          "你的账号由于可能包含 AI 创作内容暂时被限制使用，16天后恢复正常。"
+        ]
+      },
+      "days_since_ledger_publication": 15,
+      "business_status": "blocked_account_restricted",
+      "browser_evidence_fresh": true
+    },
+    "baijiahao": {
+      "last_ledger_publication_date": "2026-11-16",
+      "ledger_is_not_current_backend": true,
+      "schedule_status": "active",
+      "last_delivery": {
+        "scheduledAt": "2026-11-25T08:20:00.000Z",
+        "deliveredAt": "2026-11-25T08:20:00.010Z",
+        "messageId": "6e5dbd5f-70db-4bbb-8be7-f241533ab92c"
+      },
+      "next_delivery": "2026-11-26T03:20:00.000Z",
+      "last_browser_check": {
+        "checked_at": "2026-11-25T16:08:48.710436+08:00",
+        "status": "ready_for_publication_checks",
+        "publication_attempted": false,
+        "restriction": null
+      },
+      "days_since_ledger_publication": 9,
+      "business_status": "stale_publication_requires_investigation",
+      "browser_evidence_fresh": true
+    }
+  },
+  "limits": [
+    "No browser action or publication attempted.",
+    "A delivered reminder or active schedule never proves execution or publication.",
+    "Ledger age is an alert, not proof of root cause; current account gate evidence has its own timestamp."
+  ]
+}
