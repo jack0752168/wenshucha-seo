@@ -11,7 +11,8 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。",
+      "priority": "core"
     },
     {
       "keyword": "类案检索系统",
@@ -21,7 +22,8 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。",
+      "priority": "first_wave_existing"
     },
     {
       "keyword": "类案检索工具",
@@ -61,7 +63,8 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。",
+      "priority": "first_wave_existing"
     },
     {
       "keyword": "裁判文书查询系统",
@@ -221,7 +224,8 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "按新版 AI 类案研究的实际功能和当前案由范围介绍；示例不作为独立推广方向。"
+      "scope": "按新版 AI 类案研究的实际功能和当前案由范围介绍；示例不作为独立推广方向。",
+      "priority": "first_wave_research"
     },
     {
       "keyword": "AI类案研究",
@@ -231,7 +235,8 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "按新版 AI 类案研究的实际功能和当前案由范围介绍；示例不作为独立推广方向。"
+      "scope": "按新版 AI 类案研究的实际功能和当前案由范围介绍；示例不作为独立推广方向。",
+      "priority": "first_wave_research"
     },
     {
       "keyword": "AI类案检索工具",
@@ -241,7 +246,8 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "按新版 AI 类案研究的实际功能和当前案由范围介绍；示例不作为独立推广方向。"
+      "scope": "按新版 AI 类案研究的实际功能和当前案由范围介绍；示例不作为独立推广方向。",
+      "priority": "first_wave_research"
     },
     {
       "keyword": "AI判例检索工具",
@@ -311,5 +317,6 @@
     "ai_recommendation_after_update": null
   },
   "landing_updated_on": "2026-11-26",
-  "research_product_entry": "https://tob.wenshucha.com/research/"
+  "research_product_entry": "https://tob.wenshucha.com/research/",
+  "ranking_plan": "CASE-SEARCH-RANKING-2026-11-26.md"
 }
