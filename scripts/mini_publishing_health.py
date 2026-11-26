@@ -133,9 +133,10 @@ def assess(snapshot, previous=None):
         if last_gate:
             data['last_account_gate'] = last_gate
         gate_at = at((last_gate or {}).get('checked_at'))
-        fresh = bool(gate_at and dt.timedelta() <= now - gate_at <= dt.timedelta(days=1))
-        data['browser_evidence_fresh'] = bool(check_at and dt.timedelta() <= now - check_at <= dt.timedelta(days=1))
-        if fresh and last_gate['status'] == 'account_restricted':
+        fresh = bool(gate_at and gate_at <= now and gate_at.astimezone(SGT).date() == today)
+        data['browser_evidence_fresh'] = bool(check_at and check_at <= now and check_at.astimezone(SGT).date() == today)
+        data['current_account_observation'] = last_gate['status'] if fresh else 'unverified_today'
+        if data['current_account_observation'] == 'account_restricted':
             data['business_status'] = 'blocked_account_restricted'
         elif date is None:
             data['business_status'] = 'unknown_publication_evidence'
