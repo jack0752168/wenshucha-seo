@@ -15,3 +15,9 @@
 同日[舊頁基準](../2026-11-26-case-search-ranking/BASELINE.md)，Bing 桌面「裁判文书检索系统」第 3、「类案检索系统」第 7，兩者都是 `https://www.wenshucha.com/case-search/`。同日[百度通用詞手機基準](../2026-11-26-baidu-case-search/BASELINE.md)，這兩詞首頁未見。這次未對 Google 或神馬聲稱真實名次。
 
 策略見[首批詞與引擎計畫](../../content/CASE-SEARCH-RANKING-2026-11-26.md)。單次取樣窗口有限，沒有證據的排名保持未知。
+
+## 新版網址收錄查核 · 2026-11-26 11:42 UTC+8
+
+- **Bing**。依[官方網址查核方法](https://www.bing.com/webmasters/help/why-is-my-site-not-in-the-index-2141dfab)，桌面 `url:` 查詢可回傳對照網址 `https://www.wenshucha.com/case-search/` 一筆。精確查 `url:https://tob.wenshucha.com/research/` 顯示沒有相關結果，公開索引未見。站長工具未登入。先前新版 IndexNow 回應 200。
+- **百度**。手機輸入完整新版網址顯示未找到相關結果。官方索引平台未登入，單頁索引狀態待核。生產送件台帳最新批次為 09:01、10 條、餘額 0，新版沒有成功送件記錄。下一輪核 11/27 09:00 送件回執。
+- **現網與抓取**。精確網址 HTTP 200、`index,follow`、自指 canonical、沒有 `X-Robots-Tag` 限制，首頁可抓且在 tob sitemap。已檢查開放索引後 10:58–11:42 的源站完整窗口，精確路徑請求中未見這兩個爬蟲；11/25 的百度抓取屬開放索引前。沿既有排程先核送件與重新抓取，排名仍以兩個目標詞實搜並核精確落點為準。
