@@ -161,7 +161,9 @@ def select(urls: list) -> list:
     if not normalized:
         return []
 
-    uncrawled = baidu_uncrawled_paths()
+    # crawl_health currently reads the www sitemap and access log only.
+    # Use the canonical tob sitemap and accepted-submission history for tob.
+    uncrawled = baidu_uncrawled_paths() if DOMAIN == "www.wenshucha.com" else None
     if uncrawled is not None:
         def path_of(u):
             p = u.replace("https://" + DOMAIN, "") or "/"
@@ -179,7 +181,10 @@ def select(urls: list) -> list:
         print(f"(闭环队列:百度未抓 {len(never)} 条排最前,已抓 {len(done)} 条轮转保鲜)")
     else:
         never, done = [], normalized
-        print("(拿不到 nginx 抓取数据,退回纯轮转)")
+        if DOMAIN == "tob.wenshucha.com":
+            print("(tob 按本站 sitemap 和成功推送记录轮转)")
+        else:
+            print("(拿不到 nginx 抓取数据,退回纯轮转)")
 
     # 不能用 never[:10]:在百度不抓取时会把同一批 10 页重复推一辈子。
     # 先按成功推送历史冷却轮转,让每日 10 条真正覆盖完整 sitemap。
@@ -289,7 +294,7 @@ def main():
             if site["host"] in ("wenshucha.com", "www.wenshucha.com"):
                 urls.extend(site["urls_to_push"])
     else:
-        # tob 不在 config.yml 里管，直接吃它自己的 sitemap（237 条）
+        # tob 不在 config.yml 里管，直接吃它自己的 sitemap。
         try:
             xml = urllib.request.urlopen(SITE["sitemap"], timeout=20).read().decode("utf-8", "replace")
             import re as _re
@@ -300,25 +305,28 @@ def main():
             # 这是【硬过滤】不是排序 —— 排序只是把它们排后面，配额一多照样推出去。
             # 每天总共 10 条(按账号共享,见 reference_baidu_verify_blocked_by_ipset)，
             # 一条都不能浪费在不推的产品上。
+            RESEARCH_HOME = "/research/"
             ALLOW = ("/cases", "/sifa", "/analytics")   # 类案检索 + 其可索引外壳 + 结果统计视图
             DENY  = ("/tob", "/ai")                     # 律师工作台/胜算评估/API试用、AI助手
             def _keep(u):
                 path = u.split(DOMAIN, 1)[-1] or "/"
                 if any(path.startswith(d) for d in DENY):
                     return False
-                return any(path.startswith(a) for a in ALLOW)
+                return path == RESEARCH_HOME or any(path.startswith(a) for a in ALLOW)
             before = len(urls)
             urls = [u for u in urls if _keep(u)]
             PRIO = ALLOW
             def _rank(u):
                 path = u.split(DOMAIN, 1)[-1] or "/"
+                if path == RESEARCH_HOME:
+                    return (-1, len(path))
                 for i, pre in enumerate(PRIO):
                     if path.startswith(pre):
                         return (i, len(path))
                 return (len(PRIO), len(path))
             urls.sort(key=_rank)
             print(f"({DOMAIN} sitemap {before} 条 → 过滤后 {len(urls)} 条"
-                  f"（只留类案检索相关；剔除 {before - len(urls)} 条工作台/AI 助手）)")
+                  f"（只留类案检索相关；剔除 {before - len(urls)} 条非目标网址）)")
         except Exception as e:
             print(f"取 {DOMAIN} sitemap 失败: {e}")
             return 0
