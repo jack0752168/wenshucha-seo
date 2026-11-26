@@ -74,7 +74,7 @@ def tob_urls(limit=10000):
         path = u.split("tob.wenshucha.com", 1)[-1] or "/"
         if any(path.startswith(d) for d in TOB_DENY):
             continue
-        if any(path.startswith(a) for a in TOB_ALLOW):
+        if path == "/research/" or any(path.startswith(a) for a in TOB_ALLOW):
             out.append(u)
     return out[:limit]
 

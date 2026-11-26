@@ -15,10 +15,11 @@
     {
       "id": "case_search",
       "label": "個人類案檢索",
-      "landing_url": "https://www.wenshucha.com/case-search/",
+      "landing_url": "https://tob.wenshucha.com/research/",
       "funnel": [
-        "actual_search",
-        "body_or_saved_or_exported",
+        "research_app_cta",
+        "first_research_started",
+        "completed_research",
         "verified_payment",
         "repeat_usage"
       ],
@@ -29,7 +30,9 @@
         "verified_inquiries": null,
         "verified_payments": null,
         "verified_revenue": null
-      }
+      },
+      "generic_search_seo_url": "https://www.wenshucha.com/case-search/",
+      "classic_search_url": "https://tob.wenshucha.com/cases?legacy=1"
     },
     {
       "id": "mcp",

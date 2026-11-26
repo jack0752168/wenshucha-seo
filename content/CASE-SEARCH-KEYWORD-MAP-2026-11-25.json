@@ -11,7 +11,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "类案检索系统",
@@ -21,7 +21,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "类案检索工具",
@@ -31,7 +31,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "类案检索平台",
@@ -41,7 +41,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "裁判文书检索",
@@ -51,7 +51,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "裁判文书检索系统",
@@ -61,7 +61,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "裁判文书查询系统",
@@ -71,7 +71,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "裁判文书全文检索",
@@ -81,7 +81,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "判决书查询",
@@ -91,7 +91,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "判决书检索",
@@ -101,7 +101,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "案例检索",
@@ -111,7 +111,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "法律案例检索",
@@ -121,7 +121,7 @@
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "页面产品/方法相关性映射，不代表排名或全部功能适用"
+      "scope": "通用检索词保留现有SEO落地，页内给新版AI研究和经典查询入口。"
     },
     {
       "keyword": "类案检索怎么查全",
@@ -216,62 +216,62 @@
     {
       "keyword": "AI类案检索",
       "intent_group": "ai_research",
-      "landing_url": "https://www.wenshucha.com/case-research/",
+      "landing_url": "https://tob.wenshucha.com/research/",
       "mapping_status": "mapped_to_existing_page",
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "AI研究仅买卖合同/货款结算；本地交付须另行约定"
+      "scope": "新版AI研究承接买卖合同和货款结算。"
     },
     {
       "keyword": "AI类案研究",
       "intent_group": "ai_research",
-      "landing_url": "https://www.wenshucha.com/case-research/",
+      "landing_url": "https://tob.wenshucha.com/research/",
       "mapping_status": "mapped_to_existing_page",
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "AI研究仅买卖合同/货款结算；本地交付须另行约定"
+      "scope": "新版AI研究承接买卖合同和货款结算。"
     },
     {
       "keyword": "买卖合同类案检索",
       "intent_group": "ai_research",
-      "landing_url": "https://www.wenshucha.com/case-research/",
+      "landing_url": "https://tob.wenshucha.com/research/",
       "mapping_status": "mapped_to_existing_page",
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "AI研究仅买卖合同/货款结算；本地交付须另行约定"
+      "scope": "新版AI研究承接买卖合同和货款结算。"
     },
     {
       "keyword": "货款纠纷类案检索",
       "intent_group": "ai_research",
-      "landing_url": "https://www.wenshucha.com/case-research/",
+      "landing_url": "https://tob.wenshucha.com/research/",
       "mapping_status": "mapped_to_existing_page",
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "AI研究仅买卖合同/货款结算；本地交付须另行约定"
+      "scope": "新版AI研究承接买卖合同和货款结算。"
     },
     {
       "keyword": "货款纠纷类案研究",
       "intent_group": "ai_research",
-      "landing_url": "https://www.wenshucha.com/case-research/",
+      "landing_url": "https://tob.wenshucha.com/research/",
       "mapping_status": "mapped_to_existing_page",
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "AI研究仅买卖合同/货款结算；本地交付须另行约定"
+      "scope": "新版AI研究承接买卖合同和货款结算。"
     },
     {
       "keyword": "类案研究Word报告",
       "intent_group": "ai_research",
-      "landing_url": "https://www.wenshucha.com/case-research/",
+      "landing_url": "https://tob.wenshucha.com/research/",
       "mapping_status": "mapped_to_existing_page",
       "search_volume": null,
       "current_rank": null,
       "inquiries": null,
-      "scope": "AI研究仅买卖合同/货款结算；本地交付须另行约定"
+      "scope": "新版AI研究承接买卖合同和货款结算。"
     },
     {
       "keyword": "律所类案检索本地部署",
@@ -306,8 +306,10 @@
   ],
   "measurement": {
     "deployed_not_ranked": true,
-    "main_case_search_title_window": "2026-11-25 through 2026-12-09; no repeated title edits without new defect evidence",
+    "main_case_search_title_window": "2026-11-25 through 2026-12-09; maintain the original indexed page and track the two URLs separately",
     "tob_cases_title_changed": false,
     "ai_recommendation_after_update": null
-  }
+  },
+  "landing_updated_on": "2026-11-26",
+  "research_product_entry": "https://tob.wenshucha.com/research/"
 }

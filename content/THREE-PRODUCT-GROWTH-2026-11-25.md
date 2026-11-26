@@ -4,11 +4,11 @@
 
 | product_line | 對象與任務 | 承接 | 主要結果 |
 |---|---|---|---|
-| case_search | 個人律師、法學院學生、司法從業者；找相關判例、核對案號/正文、形成可回核類案清單 | /case-search/ → tob.wenshucha.com/cases | 真檢索→正文/收藏/導出等可觀察使用→已核付款→再次使用/續費 |
+| case_search | 個人律師、法學院學生、司法從業者；找相關判例、核對案號/正文、形成可回核類案清單 | 產品主入口[AI 類案研究](https://tob.wenshucha.com/research/)，通用搜尋[SEO 頁](https://www.wenshucha.com/case-search/)，按案號及多案由操作走[經典檢索](https://tob.wenshucha.com/cases?legacy=1) | 進新版→首次研究→完成研究→已核付款→再次使用 |
 | mcp | 個人開發者、專業使用者、小團隊/小B；已有AI/Agent工作流接入裁判數據與核驗 | /mcp/ → /mcp/quickstart/ | 真tool call→獨立Key首調/再調→已核付費/續費 |
 | local_data | 律所、企業、項目公司、替大型最終客戶交付AI的集成商；本地/內網數據與接口交付 | /solutions/legal-data-integrators/、/#onpremise → /pricing/#business-wechat | 明確需求→樣本/POC→報價→合同→實際收款 |
 
-Jack表示類案檢索已收過一筆款，據此要求重點推廣To C。這是owner_reported訊號；尚未逐筆對帳，不能填進已核收款/公開案例。MCP也服務技術型個人，勿只因名稱把所有用戶歸成企業。AI類案研究/Word是case_search的獨立功能承接，保留現行買賣合同/貨款範圍，不和經典檢索能力/價額混用。法律工作台不推；裁判數據定制統計報告已下架，不恢復。價格、配額及內測/付費狀態以當前產品真值核實，不重設價。
+Jack 確認用戶已使用新版 AI 類案研究並付費，個人線的推廣與成交指向新版。付款對帳取得前，保留為業主確認的需求訊號。MCP也服務技術型個人，勿只因名稱把所有用戶歸成企業。AI類案研究/Word是case_search的獨立功能承接，保留現行買賣合同/貨款範圍，不和經典檢索能力/價額混用。法律工作台不推；裁判數據定制統計報告已下架，不恢復。價格、配額及內測/付費狀態以當前產品真值核實，不重設價。
 
 ## SEO：按需求分流，不互相搶詞
 
